@@ -37,9 +37,8 @@ const generate = () => {
             shell.cp('-r', file, `src/${entityname}`);
             shell.cp('-r', `src/${entityname}/${filename}`, `src/${entityname}/${newfilename}`);
             shell.rm('-rf', `src/${entityname}/${filename}`);
-            shell.sed('-i', 'EntityLogicalName', entityLogicalName, `src/${entityname}/${newfilename}`);
-            shell.sed('-i', 'Entity', entityname, `src/${entityname}/${newfilename}`);
-            shell.sed('-i', '/Entity', `/${entityname}`, `src/${entityname}/${newfilename}`);
+            shell.sed('-i', new RegExp('EntityLogicalName', 'ig'), entityLogicalName, `src/${entityname}/${newfilename}`);
+            shell.sed('-i', new RegExp('Entity', 'ig'), entityname, `src/${entityname}/${newfilename}`);
         });
         shell.exec("echo Adding CE Entity done");
         rl.close();

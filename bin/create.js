@@ -54,15 +54,15 @@ const create = () => {
     });
     shell.sed('-i', 'PROJECTNAME', projectname.toLowerCase(), packageJsonFile);
     rl.question('What is the project description? ', function (answer) {
-        shell.sed('-i', 'PROJECTDESCRIPTION', answer, packageJsonFile);
+        shell.sed('-i', new RegExp('PROJECTDESCRIPTION', 'ig'), answer, packageJsonFile);
         rl.question('What is the Publisher abbreviation (3 chars a-z)? ', function (answer) {
-            shell.sed('-i', 'PUBLISHER', answer, webpackConfigFile);
+            shell.sed('-i', new RegExp('PUBLISHER', 'ig'), answer, webpackConfigFile);
+            shell.sed('-i', new RegExp('PUBLISHER', 'ig'), answer, packageJsonFile);
             rl.question('What is the Project abbreviation (3 chars a-z)? ', function (answer) {
-                shell.sed('-i', 'PROJECTABBR', answer, webpackConfigFile);
-                // shell.exec("echo Please run 'npm install' in Webresources folder to start");
+                shell.sed('-i', new RegExp('PROJECTABBR', 'ig'), answer, webpackConfigFile);
                 shell.cd('Webresources');
                 shell.exec(`echo Installing npm packages. This may take a while...`);
-                shell.exec('npm install');
+                // shell.exec('npm install');
                 shell.exec("echo Initializing CE Project done");
                 shell.exec(`echo ${BLUE}ce generate Entity x${NOCOLOR} in Webresources folder generates Entity x files and settings.`);
                 shell.exec(`echo ${BLUE}npm run build:prod${NOCOLOR} in Webresources folder creates the deployment package. See package.json#scripts for all options.`);
