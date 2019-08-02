@@ -62,7 +62,7 @@ const create = () => {
                 // shell.exec("echo Please run 'npm install' in Webresources folder to start");
                 shell.cd('Webresources');
                 shell.exec(`echo Installing npm packages. This may take a while...`);
-                // shell.exec('npm install');
+                shell.exec('npm install');
                 shell.exec("echo Initializing CE Project done");
                 shell.exec(`echo ${BLUE}ce generate Entity x${NOCOLOR} in Webresources folder generates Entity x files and settings.`);
                 shell.exec(`echo ${BLUE}npm run build:prod${NOCOLOR} in Webresources folder creates the deployment package. See package.json#scripts for all options.`);
