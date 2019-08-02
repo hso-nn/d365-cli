@@ -32,10 +32,9 @@ const generate = () => {
             shell.cp('-r', file, `src/${webresourcename}`);
             shell.cp('-r', `src/${webresourcename}/${filename}`, `src/${webresourcename}/${newfilename}`);
             shell.rm('-rf', `src/${webresourcename}/${filename}`);
-            shell.sed('-i', 'Webresource', webresourcename, `src/${webresourcename}/${newfilename}`);
-            shell.sed('-i', '/Webresource', `/${webresourcename}`, `src/${webresourcename}/${newfilename}`);
-            shell.sed('-i', 'PUBLISHER', publisher, `src/${webresourcename}/${newfilename}`);
-            shell.sed('-i', 'PROJECTABBR', projectabbr, `src/${webresourcename}/${newfilename}`);
+            shell.sed('-i', new RegExp('Webresource', 'ig'), webresourcename, `src/${webresourcename}/${newfilename}`);
+            shell.sed('-i', new RegExp('PUBLISHER', 'ig'), publisher, `src/${webresourcename}/${newfilename}`);
+            shell.sed('-i', new RegExp('PROJECTABBR', 'ig'), projectabbr, `src/${webresourcename}/${newfilename}`);
         });
         shell.exec("echo Adding CE Webresource done");
     });
