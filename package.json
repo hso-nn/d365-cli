@@ -1,0 +1,20 @@
+{
+  "name": "@hso/ce-cli",
+  "version": "1.0.0",
+  "description": "CE CLI",
+  "scripts": {},
+  "author": "HSO Innovation",
+  "license": "ISC",
+  "bin": {
+    "ce": "bin/ce.js"
+  },
+  "devDependencies": {
+    "@types/node": "^12.6.8",
+    "@types/xrm": "^9.0.14",
+    "tslint": "^5.18.0",
+    "typescript": "^3.5.3"
+  },
+  "dependencies": {
+    "shelljs": "^0.8.3"
+  }
+}
