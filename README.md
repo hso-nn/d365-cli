@@ -6,7 +6,7 @@ A [Command-line interface](https://en.wikipedia.org/wiki/Command-line_interface)
 ## Prerequisites
 Please have [Node](https://nodejs.org/en/) installed
   
-Recommanded for debugging: [Fiddler](https://www.telerik.com/fiddler)
+Recommended for debugging: [Fiddler](https://www.telerik.com/fiddler)
 
 ## Installation process
 Since this package is not deployed yet, you need to install it locally.
