@@ -1,28 +1,43 @@
 #! /usr/bin/env node
-const shell = require("shelljs");
+
+'use strict';
+
 const create = require('./create');
 const generator = require('./generate');
+const program = require('commander');
 
-const getHelp = () => {
-    const BLUE="\033[1;34m";
-    const NOCOLOR="\033[0m";
-    shell.exec(`echo Available Commands:\n`);
-    shell.exec(`echo ${BLUE}help${NOCOLOR} (h) Lists available commands and their short descriptions.`);
-};
+program
+    .version(require('../package').version)
+    .usage('<command> [options]');
 
-const command = process.argv[2];
-if (['new', 'n'].includes(command)) {
-    create.createProject();
-} else if (['generate', 'g'].includes(command)) {
-    generator.generate();
-} else if (['help', 'h'].includes(command)) {
-    getHelp();
-    generator.getHelp();
-    create.getHelp();
-} else {
-    const BLUE="\033[1;34m";
-    const NOCOLOR="\033[0m";
-    shell.exec(`echo Unknown command! Try ${BLUE}ce help${NOCOLOR}`);
-}
+program
+    .command('new <project>')
+    .alias('n')
+    .description('Creates a new workspace and an initial Webresource setup')
+    .action(project => {
+        create.createProject(project);
+    })
+    .on('--help', () => {
+        create.showCreateHelp();
+    });
 
+program
+    .command('generate <schematic> <name>')
+    .alias('g')
+    .description('Generates and/or modifies files bases on a schematic.')
+    .action((schematic, name) => {
+         generator.generate(schematic, name);
+    })
+    .on('--help', () => {
+        generator.showGenerateHelp();
+    });
 
+program
+    .arguments('<command>')
+    .action((cmd) => {
+        program.outputHelp();
+        console.log('');
+        console.log(`echo Unknown command!`);
+    });
+
+program.parse(process.argv);

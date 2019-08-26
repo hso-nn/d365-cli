@@ -1,26 +1,23 @@
 #! /usr/bin/env node
 const shell = require("shelljs");
+const colors = require('colors');
 
 module.exports = {
-    generateWebresource() {
-        const webresourcename = process.argv[4];
-        if (!webresourcename) {
-            shell.exec(`echo No Webresource name specified!`);
-        } else if(!new RegExp("[A-Z]").test(webresourcename[0])) {
-            shell.exec(`echo Webresource name must be UpperCamelCase!`);
+    generateWebresource(webresourcename) {
+        if(!new RegExp("[A-Z]").test(webresourcename[0])) {
+            console.log(colors.red(`Webresource name must be UpperCamelCase!`));
         } else if (shell.test('-e', `src/${webresourcename}`)) {
-            shell.exec(`echo Webresource ${webresourcename} already exists!`);
+            console.log(colors.red(`echo Webresource ${webresourcename} already exists!`));
         } else if (process.argv[5]) {
-            shell.exec(`echo No spaces allowed!`);
+            console.log(colors.red(`echo No spaces allowed!`));
         } else {
-            generate();
+            generate(webresourcename);
         }
     }
 };
 
-const generate = () => {
-    const webresourcename = process.argv[4];
-    shell.exec(`echo Adding CE Webresource ${webresourcename}...`);
+const generate = (webresourcename) => {
+    console.log(`Adding CE Webresource ${webresourcename}...`);
     const webpackConfigFile = shell.ls('webpack.config.js')[0];
     shell.sed('-i', 'entry: {', `entry: {\n        ${webresourcename}: [\n            path.resolve(__dirname, "src/${webresourcename}/${webresourcename}.ts")\n        ],`, webpackConfigFile);
     shell.mkdir(`src/${webresourcename}`);
@@ -36,7 +33,7 @@ const generate = () => {
             shell.sed('-i', new RegExp('PUBLISHER', 'ig'), publisher, `src/${webresourcename}/${newfilename}`);
             shell.sed('-i', new RegExp('PROJECTABBR', 'ig'), projectabbr, `src/${webresourcename}/${newfilename}`);
         });
-        shell.exec("echo Adding CE Webresource done");
+        console.log("Adding CE Webresource done");
     });
 };
 
