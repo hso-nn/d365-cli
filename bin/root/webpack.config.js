@@ -1,6 +1,6 @@
 var path = require("path"),
-    publisher = "PUBLISHER",
-    projectabbr = "PROJECTABBR",
+    publisher = "<%= publisher %>",
+    projectabbr = "<%= projectabbr %>",
     webpack = require("webpack"),
     DEBUG = process.env.NODE_ENV !== "production",
     mode = DEBUG ? "development" : "production",

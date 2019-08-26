@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 const shell = require("shelljs");
-const readline = require('readline');
 const colors = require('colors');
+const inquirer = require('inquirer');
 
 module.exports = {
     createProject(projectname) {
@@ -20,7 +20,7 @@ module.exports = {
     }
 };
 
-const create = () => {
+const create = async (projectname) => {
     console.log(`Initializing CE Project ${projectname}...`);
     shell.mkdir(projectname);
     shell.cd(projectname);
@@ -29,30 +29,31 @@ const create = () => {
     shell.cp('-R', `${__dirname}/root/.*`, 'Webresources');
     shell.cp('-R', `${__dirname}/root/src`, 'Webresources');
 
-    // shell.rm('-rf', 'Webresources/.idea');
-
     const packageJsonFile = shell.ls('Webresources/package.json')[0];
     const webpackConfigFile = shell.ls('Webresources/webpack.config.js')[0];
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
     shell.sed('-i', 'PROJECTNAME', projectname.toLowerCase(), packageJsonFile);
-    rl.question('What is the project description? ', function (answer) {
-        shell.sed('-i', new RegExp('PROJECTDESCRIPTION', 'ig'), answer, packageJsonFile);
-        rl.question('What is the Publisher abbreviation (3 chars a-z)? ', function (answer) {
-            shell.sed('-i', new RegExp('PUBLISHER', 'ig'), answer, webpackConfigFile);
-            shell.sed('-i', new RegExp('PUBLISHER', 'ig'), answer, packageJsonFile);
-            rl.question('What is the Project abbreviation (3 chars a-z)? ', function (answer) {
-                shell.sed('-i', new RegExp('PROJECTABBR', 'ig'), answer, webpackConfigFile);
-                shell.cd('Webresources');
-                shell.exec(`echo Installing npm packages. This may take a while...`);
-                // shell.exec('npm install');
-                shell.exec("echo Initializing CE Project done");
-                shell.exec(`echo ${BLUE}ce generate Entity x${NOCOLOR} in Webresources folder generates Entity x files and settings.`);
-                shell.exec(`echo ${BLUE}npm run build:prod${NOCOLOR} in Webresources folder creates the deployment package. See package.json#scripts for all options.`);
-                rl.close();
-            });
-        });
-    });
+    const answers = await inquirer.prompt([{
+        type: 'input',
+        name: 'description',
+        message: 'Project description:'
+    }, {
+        type: 'input',
+        name: 'publisher',
+        message: 'Publisher abbreviation (3 chars a-z):'
+    }, {
+        type: 'input',
+        name: 'projectabbr',
+        message: 'Project abbreviation (3 chars a-z):'
+    }]);
+
+    shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.description, packageJsonFile);
+    shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, webpackConfigFile);
+    shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, packageJsonFile);
+    shell.sed('-i', new RegExp('<%= projectabbr %>', 'ig'), answers.projectabbr, webpackConfigFile);
+    shell.cd('Webresources');
+    console.log(`Installing npm packages. This may take a while...`);
+    shell.exec('npm install');
+    console.log('Initializing CE Project done');
+    console.log(`${colors.blue('ce generate Entity x')} in Webresources folder generates Entity x files and settings.`);
+    console.log(`${colors.blue('npm run build:prod')} in Webresources folder creates the deployment package. See package.json#scripts for all options.`);
 };
