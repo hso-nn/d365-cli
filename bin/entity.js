@@ -1,27 +1,24 @@
 #! /usr/bin/env node
 const shell = require("shelljs");
 const readline = require('readline');
+const colors = require('colors');
 
 module.exports = {
-    generateEntity() {
-        const entityname = process.argv[4];
-        if (!entityname) {
-            shell.exec(`echo No Entity name specified!`);
-        } else if(!new RegExp("[A-Z]").test(entityname[0])) {
-            shell.exec(`echo Entity name must be UpperCamelCase!`);
+    generateEntity(entityname) {
+        if(!new RegExp("[A-Z]").test(entityname[0])) {
+            console.log(colors.red(`Entity name must be UpperCamelCase!`));
         } else if (shell.test('-e', `src/${entityname}`)) {
-            shell.exec(`echo Entity ${entityname} already exists!`);
+            console.log(colors.red(`Entity ${entityname} already exists!`));
         } else if (process.argv[5]) {
-            shell.exec(`echo No spaces allowed!`);
+            console.log(colors.red(`No spaces allowed!`));
         } else {
-            generate();
+            generate(entityname);
         }
     }
 };
 
-const generate = () => {
-    const entityname = process.argv[4];
-    shell.exec(`echo Adding CE Entity ${entityname}...`);
+const generate = (entityname) => {
+    console.log(`Adding CE Entity ${entityname}...`);
     const webpackConfigFile = shell.ls('webpack.config.js')[0];
     const rl = readline.createInterface({
         input: process.stdin,
@@ -40,7 +37,7 @@ const generate = () => {
             shell.sed('-i', new RegExp('EntityLogicalName', 'ig'), entityLogicalName, `src/${entityname}/${newfilename}`);
             shell.sed('-i', new RegExp('Entity', 'ig'), entityname, `src/${entityname}/${newfilename}`);
         });
-        shell.exec("echo Adding CE Entity done");
+        console.log("Adding CE Entity done");
         rl.close();
     });
 };

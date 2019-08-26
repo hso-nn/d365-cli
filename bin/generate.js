@@ -2,38 +2,27 @@
 const shell = require("shelljs");
 const entity = require('./entity');
 const webresource = require('./webresource');
-const BLUE="\033[1;34m";
-const NOCOLOR="\033[0m";
+const colors = require('colors');
 
 module.exports = {
-    generate() {
-        const schematic = process.argv[3];
+    generate(schematic, name) {
         const supportedSchematics = ['entity', 'webresource'];
-        if (process.argv.includes('--help')) {
-            this.showGenerateHelp();
-        } else if (!shell.test('-e', 'src')) {
-            shell.exec(`echo You are not inside the project Webresources folder!`);
+        if (!shell.test('-e', 'src')) {
+            console.log(colors.red(`You are not inside the project Webresources folder!`));
         } else if (!schematic) {
-            shell.exec(`echo No schematic specified!`);
+            console.log(colors.red(`No schematic specified!`));
         } else if (!supportedSchematics.includes(schematic.toLowerCase())) {
-            shell.exec(`echo Schematic ${schematic} not supported!`);
+            console.log(colors.red(`Schematic ${schematic} not supported!`));
         } else if (schematic.toLowerCase() === 'entity') {
-            entity.generateEntity();
+            entity.generateEntity(name);
         } else if (schematic.toLowerCase() === 'webresource') {
-            webresource.generateWebresource();
+            webresource.generateWebresource(name);
         }
     },
-    getHelp() {
-        shell.exec(`echo ${BLUE}generate${NOCOLOR} (g) Generates and/or modifies files bases on a schematic.`);
-    },
     showGenerateHelp() {
-        shell.exec(`echo arguments:`);
-        shell.exec(`echo   ${BLUE}schematic${NOCOLOR}`);
-        shell.exec(`echo     The schematic or collection:schematic to generate.`);
-        shell.exec(`echo     Example: Entity.`);
-
-        shell.exec(`echo options:`);
-        shell.exec(`echo   ${BLUE}--help${NOCOLOR}`);
-        shell.exec(`echo     Shows a help message for this command in the console.`);
+        console.log(`Arguments:`);
+        console.log(`   ${colors.blue('schematic')}`);
+        console.log(`     The schematic or collection:schematic to generate.`);
+        console.log(`     Example: Entity or Webresource.`);
     }
 };
