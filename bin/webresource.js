@@ -43,22 +43,17 @@ const getVariables = (handler) =>  {
         input: require('fs').createReadStream(`webpack.config.js`)
     });
     lineReader.on('line', function (line) {
-        if (line.includes('publisher =')) {
-            const split = line.split('"');
-            publisher = split[1];
-        }
-        if (line.includes('projectabbr =')) {
-            const split = line.split('"');
-            projectabbr = split[1];
-        }
-        if (publisher && projectabbr) {
+        if (line.includes('dir_build =')) {
+            const split = line.split('"'),
+                publisherProjectabbr = split[1],
+                ppSplit = publisherProjectabbr.split("_/");
+            publisher = ppSplit[0];
+            projectabbr = ppSplit[1];
             lineReader.close();
             handler({
                 publisher: publisher,
                 projectabbr: projectabbr
             });
-            publisher = null;
-            projectabbr = null;
         }
     });
 };
