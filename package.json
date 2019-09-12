@@ -1,12 +1,12 @@
 {
   "name": "@hso/ce-cli",
   "version": "1.0.0",
-  "description": "CE CLI",
+  "description": "HSO D365 CLI",
   "scripts": {},
   "author": "HSO Innovation",
   "license": "ISC",
   "bin": {
-    "ce": "bin/ce.js"
+    "hso-d365": "bin/hso-d365.js"
   },
   "devDependencies": {
     "@types/node": "^12.6.8",

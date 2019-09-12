@@ -17,7 +17,7 @@ module.exports = {
 };
 
 const generate = (webresourcename) => {
-    console.log(`Adding CE Webresource ${webresourcename}...`);
+    console.log(`Adding D365 Webresource ${webresourcename}...`);
     const webpackConfigFile = shell.ls('webpack.config.js')[0];
     shell.sed('-i', 'entry: {', `entry: {\n        ${webresourcename}: [\n            path.resolve(__dirname, "src/${webresourcename}/${webresourcename}.ts")\n        ],`, webpackConfigFile);
     shell.mkdir(`src/${webresourcename}`);
@@ -33,7 +33,7 @@ const generate = (webresourcename) => {
             shell.sed('-i', new RegExp('PUBLISHER', 'ig'), publisher, `src/${webresourcename}/${newfilename}`);
             shell.sed('-i', new RegExp('PROJECTABBR', 'ig'), projectabbr, `src/${webresourcename}/${newfilename}`);
         });
-        console.log("Adding CE Webresource done");
+        console.log("Adding D365 Webresource done");
     });
 };
 
