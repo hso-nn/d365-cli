@@ -19,7 +19,7 @@ module.exports = {
 };
 
 const generate = async (entityname) => {
-    console.log(`Adding CE Entity ${entityname}...`);
+    console.log(`Adding D365 Entity ${entityname}...`);
     const webpackConfigFile = shell.ls('webpack.config.js')[0];
     const answers = await inquirer.prompt([{
         type: 'input',
@@ -39,5 +39,5 @@ const generate = async (entityname) => {
         shell.sed('-i', new RegExp('EntityLogicalName', 'ig'), answers.entityLogicalName, `src/${entityname}/${newfilename}`);
         shell.sed('-i', new RegExp('Entity', 'ig'), entityname, `src/${entityname}/${newfilename}`);
     });
-    console.log("Adding CE Entity done");
+    console.log("Adding D365 Entity done");
 };
