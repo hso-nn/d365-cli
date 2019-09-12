@@ -21,7 +21,7 @@ module.exports = {
 };
 
 const create = async (projectname) => {
-    console.log(`Initializing CE Project ${projectname}...`);
+    console.log(`Initializing D365 Project ${projectname}...`);
     shell.mkdir(projectname);
     shell.cd(projectname);
     shell.mkdir('Webresources');
@@ -53,7 +53,7 @@ const create = async (projectname) => {
     shell.cd('Webresources');
     console.log(`Installing npm packages. This may take a while...`);
     shell.exec('npm install');
-    console.log('Initializing CE Project done');
+    console.log('Initializing D365 Project done');
     console.log(`${colors.blue('ce generate Entity x')} in Webresources folder generates Entity x files and settings.`);
     console.log(`${colors.blue('npm run build:prod')} in Webresources folder creates the deployment package. See package.json#scripts for all options.`);
 };
