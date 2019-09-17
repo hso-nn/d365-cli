@@ -31,6 +31,7 @@ const create = async (projectname) => {
 
     const packageJsonFile = shell.ls('Webresources/package.json')[0];
     const webpackConfigFile = shell.ls('Webresources/webpack.config.js')[0];
+    const eslintignoreFile = shell.ls('Webresources/.eslintignore')[0];
     shell.sed('-i', 'PROJECTNAME', projectname.toLowerCase(), packageJsonFile);
     const answers = await inquirer.prompt([{
         type: 'input',
@@ -45,15 +46,16 @@ const create = async (projectname) => {
         name: 'projectabbr',
         message: 'Project abbreviation (3 chars a-z):'
     }]);
-
     shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.description, packageJsonFile);
     shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, webpackConfigFile);
     shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, packageJsonFile);
     shell.sed('-i', new RegExp('<%= projectabbr %>', 'ig'), answers.projectabbr, webpackConfigFile);
+    shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, eslintignoreFile);
     shell.cd('Webresources');
     console.log(`Installing npm packages. This may take a while...`);
     shell.exec('npm install');
     console.log('Initializing D365 Project done');
     console.log(`${colors.blue('ce generate Entity x')} in Webresources folder generates Entity x files and settings.`);
-    console.log(`${colors.blue('npm run build:prod')} in Webresources folder creates the deployment package. See package.json#scripts for all options.`);
+    console.log(`${colors.blue('npm run build:prod')} in Webresources folder creates the deployment package.`);
+    console.log(`See package.json#scripts for all options.`);
 };

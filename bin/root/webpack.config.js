@@ -1,10 +1,8 @@
 var path = require("path"),
-    publisher = "<%= publisher %>",
-    projectabbr = "<%= projectabbr %>",
     webpack = require("webpack"),
     DEBUG = process.env.NODE_ENV !== "production",
     mode = DEBUG ? "development" : "production",
-    dir_build = path.resolve(__dirname, `${publisher}_/${projectabbr}`),
+    dir_build = path.resolve(__dirname, "<%= publisher %>_/<%= projectabbr %>"),
     WebpackAutoInject = require("webpack-auto-inject-version"),
     CopyWebpackPlugin = require("copy-webpack-plugin"),
     MiniCssExtractPlugin = require("mini-css-extract-plugin");
@@ -32,14 +30,14 @@ module.exports = {
     output: {
         path: dir_build,
         filename: "[name]/[name].js",
-        library: [publisher, projectabbr, "[name]"],
+        library: ["<%= publisher %>", "<%= projectabbr %>", "[name]"],
         libraryTarget: "var",
     },
     resolve: {
         extensions: [".js", ".json", ".ts"]
     },
     devServer: {
-        contentBase: path.resolve(__dirname, `${publisher}_`),
+        contentBase: path.resolve(__dirname, `<%= publisher %>_`),
         hot: true,
         inline: true
     },
@@ -79,7 +77,7 @@ module.exports = {
             enforce: "pre",
             use: [
                 {
-                    loader: "tslint-loader",
+                    loader: "eslint-loader",
                     options: {
                         failOnWarning: false,
                         failOnError: true

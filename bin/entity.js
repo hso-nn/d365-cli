@@ -3,6 +3,7 @@ const shell = require("shelljs");
 const readline = require('readline');
 const colors = require('colors');
 const inquirer = require('inquirer');
+const variables = require("./variables");
 
 module.exports = {
     generateEntity(entityname) {
@@ -20,24 +21,28 @@ module.exports = {
 
 const generate = async (entityname) => {
     console.log(`Adding D365 Entity ${entityname}...`);
-    const webpackConfigFile = shell.ls('webpack.config.js')[0];
-    const answers = await inquirer.prompt([{
-        type: 'input',
-        name: 'entityLogicalName',
-        message: 'Entity LogicalName:'
-    }]);
+    variables.get(async ({publisher, projectabbr}) => {
+        const webpackConfigFile = shell.ls('webpack.config.js')[0];
+        const answers = await inquirer.prompt([{
+            type: 'input',
+            name: 'entityLogicalName',
+            message: 'Entity LogicalName:'
+        }]);
 
-    shell.sed('-i', 'entry: {', `entry: {\n        ${entityname}: [\n            path.resolve(__dirname, "src/${entityname}/${entityname}.ts")\n        ],`, webpackConfigFile);
-    shell.mkdir(`src/${entityname}`);
-    shell.ls(`${__dirname}/Entity/*.*`).forEach(function (file) {
-        const split = file.split('/');
-        const filename = split[split.length - 1];
-        const newfilename = filename.replace(/Entity/g, entityname);
-        shell.cp('-r', file, `src/${entityname}`);
-        shell.cp('-r', `src/${entityname}/${filename}`, `src/${entityname}/${newfilename}`);
-        shell.rm('-rf', `src/${entityname}/${filename}`);
-        shell.sed('-i', new RegExp('EntityLogicalName', 'ig'), answers.entityLogicalName, `src/${entityname}/${newfilename}`);
-        shell.sed('-i', new RegExp('Entity', 'ig'), entityname, `src/${entityname}/${newfilename}`);
+        shell.sed('-i', 'entry: {', `entry: {\n        ${entityname}: [\n            path.resolve(__dirname, "src/${entityname}/${entityname}.ts")\n        ],`, webpackConfigFile);
+        shell.mkdir(`src/${entityname}`);
+        shell.ls(`${__dirname}/Entity/*.*`).forEach(function (file) {
+            const split = file.split('/');
+            const filename = split[split.length - 1];
+            const newfilename = filename.replace(/Entity/g, entityname);
+            shell.cp('-r', file, `src/${entityname}`);
+            shell.cp('-r', `src/${entityname}/${filename}`, `src/${entityname}/${newfilename}`);
+            shell.rm('-rf', `src/${entityname}/${filename}`);
+            shell.sed('-i', new RegExp('EntityLogicalName', 'ig'), answers.entityLogicalName, `src/${entityname}/${newfilename}`);
+            shell.sed('-i', new RegExp('Entity', 'ig'), entityname, `src/${entityname}/${newfilename}`);
+            shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, `src/${entityname}/${newfilename}`);
+            shell.sed('-i', new RegExp('<%= projectabbr %>', 'ig'), projectabbr, `src/${entityname}/${newfilename}`);
+        });
+        console.log("Adding D365 Entity done");
     });
-    console.log("Adding D365 Entity done");
 };

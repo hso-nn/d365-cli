@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 const shell = require("shelljs");
 const colors = require('colors');
+const variables = require("./variables");
 
 module.exports = {
     generateWebresource(webresourcename) {
@@ -18,10 +19,10 @@ module.exports = {
 
 const generate = (webresourcename) => {
     console.log(`Adding D365 Webresource ${webresourcename}...`);
-    const webpackConfigFile = shell.ls('webpack.config.js')[0];
-    shell.sed('-i', 'entry: {', `entry: {\n        ${webresourcename}: [\n            path.resolve(__dirname, "src/${webresourcename}/${webresourcename}.ts")\n        ],`, webpackConfigFile);
-    shell.mkdir(`src/${webresourcename}`);
-    getVariables(({publisher, projectabbr}) => {
+    variables.get(({publisher, projectabbr}) => {
+        const webpackConfigFile = shell.ls('webpack.config.js')[0];
+        shell.sed('-i', 'entry: {', `entry: {\n        ${webresourcename}: [\n            path.resolve(__dirname, "src/${webresourcename}/${webresourcename}.ts")\n        ],`, webpackConfigFile);
+        shell.mkdir(`src/${webresourcename}`);
         shell.ls(`${__dirname}/Webresource/*.*`).forEach(function (file) {
             const split = file.split('/');
             const filename = split[split.length - 1];
@@ -34,26 +35,5 @@ const generate = (webresourcename) => {
             shell.sed('-i', new RegExp('PROJECTABBR', 'ig'), projectabbr, `src/${webresourcename}/${newfilename}`);
         });
         console.log("Adding D365 Webresource done");
-    });
-};
-
-const getVariables = (handler) =>  {
-    let publisher, projectabbr;
-    const lineReader = require('readline').createInterface({
-        input: require('fs').createReadStream(`webpack.config.js`)
-    });
-    lineReader.on('line', function (line) {
-        if (line.includes('dir_build =')) {
-            const split = line.split('"'),
-                publisherProjectabbr = split[1],
-                ppSplit = publisherProjectabbr.split("_/");
-            publisher = ppSplit[0];
-            projectabbr = ppSplit[1];
-            lineReader.close();
-            handler({
-                publisher: publisher,
-                projectabbr: projectabbr
-            });
-        }
     });
 };

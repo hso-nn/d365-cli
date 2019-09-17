@@ -17,7 +17,7 @@ export class AnnotationService {
         };
     }
 
-    public static async upsertRecord(annotationModel: AnnotationModel): Promise<{entityType: string, id: string}> {
+    public static async upsertRecord(annotationModel: AnnotationModel): Promise<{entityType: string; id: string}> {
         const {id, logicalName} = annotationModel.objectid,
             annotations: AnnotationModel[] = await WebApi.retrieveMultipleRecords('annotation', {
                 select: ['annotationid', 'objectid'],
@@ -42,12 +42,14 @@ export class AnnotationService {
         return WebApi.upsertRecord('annotation', annotationModel);
     }
 
-    private static async getBinding(name: string, value: any, targetEntity: string): Promise<any> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private static async getBinding(name: string, value: string, targetEntity: string): Promise<any> {
         // objectid_msdyn_customerasset@odata.bind
         const entityMetadata = await Xrm.Utility.getEntityMetadata(targetEntity),
             entitySetName = entityMetadata.EntitySetName,
             annotationMetadata = await Xrm.Utility.getEntityMetadata('annotation', [name]),
             manyToOneMetadata = await WebApi.getManyToOneMetadata(name, annotationMetadata, targetEntity),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data: any = {};
         const {ReferencingEntityNavigationPropertyName: navigationPropertyName} = manyToOneMetadata;
         data[`${navigationPropertyName}@odata.bind`] = `/${entitySetName}(${value})`;

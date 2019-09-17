@@ -1,4 +1,6 @@
+import {Model} from './Model';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 interface Expand {
     attribute: string;
     select: string[];
@@ -36,7 +38,7 @@ export interface MultipleSystemQueryOptions extends SystemQueryOptions {
 
 type Method = 'GET' | 'POST' | 'DELETE';
 
-const dateReviver = (key: string, value: any) => {
+const dateReviver = (key: string, value: any): any => {
     if (typeof value === 'string') {
         const d = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?::(\d*))?Z$/.exec(value);
         if (d) {
@@ -54,30 +56,30 @@ export class WebApi {
         return `${clientUrl}/api/data/v${version}/`;
     }
 
-    public static async retrieveMultipleRecords(entityLogicalName: string, options: MultipleSystemQueryOptions, maxPageSize?: number): Promise<any[]> {
+    public static async retrieveMultipleRecords(entityLogicalName: string, options: MultipleSystemQueryOptions, maxPageSize?: number): Promise<Model[]> {
         const systemQueryOptions = await WebApi.getSystemQueryOptions(entityLogicalName, options),
             result = await Xrm.WebApi.retrieveMultipleRecords(entityLogicalName, systemQueryOptions, maxPageSize);
         return WebApi.parseModels(result.entities, options);
     }
 
-    public static async retrieveRecord(entityLogicalName: string, id: string, options: SystemQueryOptions): Promise<any> {
+    public static async retrieveRecord(entityLogicalName: string, id: string, options: SystemQueryOptions): Promise<Model> {
         const systemQueryOptions = await WebApi.getSystemQueryOptions(entityLogicalName, options),
             entity = await Xrm.WebApi.retrieveRecord(entityLogicalName, id, systemQueryOptions);
         return WebApi.parseModel(entity, options);
     }
 
-    public static async updateRecord(entityLogicalName: string, id: string, model: any): Promise<{entityType: string, id: string}> {
+    public static async updateRecord(entityLogicalName: string, id: string, model: Model): Promise<{entityType: string; id: string}> {
         const attributes = Object.keys(model),
             metadata = await Xrm.Utility.getEntityMetadata(entityLogicalName, attributes),
-            requestData = await WebApi.populateBindings(model, metadata);
+            requestData: any = await WebApi.populateBindings(model, metadata);
         if (!id) {
             id = requestData[metadata.PrimaryIdAttribute];
         }
         delete requestData[metadata.PrimaryIdAttribute];
         for (const attribute of attributes) {
-            const attributeMetadata = metadata.Attributes.get(attribute);
-            // @ts-ignore
-            if (attributeMetadata && attributeMetadata.AttributeType === 6) { // Lookup
+            const attributeMetadata: any = metadata.Attributes.get(attribute),
+                attributeType = attributeMetadata && attributeMetadata.AttributeType;
+            if (attributeType === 6) { // Lookup
                 const bindingId = requestData[attribute];
                 if (!bindingId) {
                     await WebApi.disassociateEntity(entityLogicalName, id, attribute);
@@ -91,7 +93,7 @@ export class WebApi {
         return Xrm.WebApi.updateRecord(entityLogicalName, id, requestData);
     }
 
-    public static async createRecord(entityLogicalName: string, model: any): Promise<{entityType: string, id: string}> {
+    public static async createRecord(entityLogicalName: string, model: Model | any): Promise<{entityType: string; id: string}> {
         const attributes = Object.keys(model),
             metadata = await Xrm.Utility.getEntityMetadata(entityLogicalName, attributes),
             requestData = await WebApi.populateBindings(model, metadata);
@@ -101,16 +103,16 @@ export class WebApi {
                 delete requestData[attribute];
             }
         }*/
-        return Xrm.WebApi.createRecord(entityLogicalName, requestData).then((result: any) => {
-            model[metadata.PrimaryIdAttribute] = result.id;
-            return result;
-        });
+        const result = await Xrm.WebApi.createRecord(entityLogicalName, requestData);
+        model[metadata.PrimaryIdAttribute] = result.id;
+        return result;
     }
 
-    public static async upsertRecord(entityLogicalName: string, model: any): Promise<{entityType: string, id: string}> {
+    public static async upsertRecord(entityLogicalName: string, model: Model | any): Promise<{entityType: string; id: string}> {
         const metadata = await Xrm.Utility.getEntityMetadata(entityLogicalName);
-        if (model.hasOwnProperty(metadata.PrimaryIdAttribute) && model[metadata.PrimaryIdAttribute]) {
-            return this.updateRecord(entityLogicalName, model[metadata.PrimaryIdAttribute], model);
+        const primaryId = model[metadata.PrimaryIdAttribute];
+        if (model.hasOwnProperty(metadata.PrimaryIdAttribute) && primaryId) {
+            return this.updateRecord(entityLogicalName, primaryId, model);
         } else {
             return this.createRecord(entityLogicalName, model);
         }
@@ -133,7 +135,7 @@ export class WebApi {
     }
 
     // https://docs.microsoft.com/en-us/dynamics365/customer-engagement/developer/webapi/associate-disassociate-entities-using-web-api
-    public static async disassociateEntity(entityLogicalName: string, id: string, relAttribute: string, relId?: string) {
+    public static async disassociateEntity(entityLogicalName: string, id: string, relAttribute: string, relId?: string): Promise<XMLHttpRequest> {
         const metadata = await Xrm.Utility.getEntityMetadata(entityLogicalName),
             entitySetName = metadata.EntitySetName,
             relMetadata = await WebApi.getManyToOneMetadata(relAttribute, metadata),
@@ -147,7 +149,7 @@ export class WebApi {
         return WebApi.request('DELETE', uri);
     }
 
-    public static async executeAction(actionName: string, data?: any, entityLogicalName?: string, id?: string): Promise<any> {
+    public static async executeAction(actionName: string, data?: any, entityLogicalName?: string, id?: string): Promise<JSON> {
         if (entityLogicalName) {
             return this.executeBoundAction(actionName, data, entityLogicalName, id);
         } else {
@@ -155,25 +157,25 @@ export class WebApi {
         }
     }
 
-    private static async executeBoundAction(actionName: string, data: any, entityLogicalName: string, id: string): Promise<any> {
+    private static async executeBoundAction(actionName: string, data: any, entityLogicalName: string, id: string): Promise<JSON> {
         const metadata = await Xrm.Utility.getEntityMetadata(entityLogicalName),
             xmlHttpRequest = await WebApi.request('POST', `${metadata.EntitySetName}(${id})/Microsoft.Dynamics.CRM.${actionName}`, data);
         return xmlHttpRequest.response && JSON.parse(xmlHttpRequest.response, dateReviver);
     }
 
-    private static async executeUnboundAction(actionName: string, data?: any): Promise<any> {
+    private static async executeUnboundAction(actionName: string, data?: any): Promise<JSON> {
         const method: Method = data ? 'POST' : 'GET',
             xmlHttpRequest = await WebApi.request(method, `${actionName}`, data);
         return xmlHttpRequest.response && JSON.parse(xmlHttpRequest.response, dateReviver);
     }
 
-    private static async populateBindings(model: any, metadata: Xrm.Metadata.EntityMetadata): Promise<any> {
+    private static async populateBindings(model: Model, metadata: Xrm.Metadata.EntityMetadata): Promise<Model> {
         const attributes = Object.keys(model),
-            requestData = {...model};
+            requestData: any = {...model};
         for (const attribute of attributes) {
-            const attributeMetadata = metadata.Attributes.get(attribute);
-            // @ts-ignore
-            if (attributeMetadata && attributeMetadata.AttributeType === 6) { // Lookup
+            const attributeMetadata: any = metadata.Attributes.get(attribute),
+                attributeType = attributeMetadata && attributeMetadata.AttributeType;
+            if (attributeType === 6) { // Lookup
                 const bindingId = requestData[attribute];
                 if (bindingId) {
                     const binding = await WebApi.getBinding(attribute, bindingId, metadata);
@@ -192,12 +194,17 @@ export class WebApi {
             referencedEntitySetName = referencedMetadata.EntitySetName,
             key = `${referencingEntityNavigationPropertyName}@odata.bind`,
             cleanId = id.replace('{', '').replace('}', ''),
-            binding = <any>{};
+            binding: any = {};
         binding[key] = `/${referencedEntitySetName}(${cleanId})`;
         return binding;
     }
 
-    private static defaultHeaders: any = {
+    private static defaultHeaders: {
+        'OData-MaxVersion': string;
+        'OData-Version': string;
+        'Accept': string;
+        'Content-Type': string;
+    } | any = {
         'OData-MaxVersion': '4.0',
         'OData-Version': '4.0',
         'Accept': 'application/json',
@@ -205,7 +212,7 @@ export class WebApi {
     };
 
     private static request(method: Method, uri: string, data?: any): Promise<XMLHttpRequest> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, reject): void => {
             const request = new XMLHttpRequest(),
                 url = `${this.apiUrl}${uri}`,
                 requestData = data && JSON.stringify(data);
@@ -215,7 +222,7 @@ export class WebApi {
                     request.setRequestHeader(header, WebApi.defaultHeaders[header]);
                 }
             }
-            request.onreadystatechange = function () {
+            request.onreadystatechange = function (): void {
                 if (this.readyState === 4) {
                     request.onreadystatechange = null;
                     if ([200, 201, 204].includes(this.status)) {
@@ -229,38 +236,38 @@ export class WebApi {
         });
     }
 
-    private static parseModels(entities: any, options: SystemQueryOptions): any[] {
-        for (const entity of entities) {
-            WebApi.parseModel(entity, options);
+    private static parseModels(models: Model[], options: SystemQueryOptions): Model[] {
+        for (const model of models) {
+            WebApi.parseModel(model, options);
         }
-        return entities;
+        return models;
     }
 
-    private static parseModel(entity: any, options: SystemQueryOptions): any {
+    private static parseModel(model: Model | any, options: SystemQueryOptions): Model {
         const {select, expands = []} = options;
-        WebApi.parseValues(entity, select);
+        WebApi.parseValues(model, select);
         for (const expand of expands) {
-            WebApi.parseValues(entity[expand.attribute], expand.select);
+            WebApi.parseValues(model[expand.attribute], expand.select);
         }
-        return entity;
+        return model;
     }
 
-    private static parseValues(entity: any, select: string[] = []): any {
-        if (!entity) {
-            return entity;
+    private static parseValues(model: Model | any, select: string[] = []): Model {
+        if (!model) {
+            return model;
         }
         for (const attribute of select) {
-            if (entity.hasOwnProperty(`_${attribute}_value`)) {
-                entity[attribute] = entity[`_${attribute}_value`];
+            if (model.hasOwnProperty(`_${attribute}_value`)) {
+                model[attribute] = model[`_${attribute}_value`];
             }
-            if (entity.hasOwnProperty(`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname`)) {
-                entity[`${attribute}_LogicalName`] = entity[`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname`];
+            if (model.hasOwnProperty(`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname`)) {
+                model[`${attribute}_LogicalName`] = model[`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname`];
             }
-            if (entity.hasOwnProperty(`_${attribute}_value@OData.Community.Display.V1.FormattedValue`)) {
-                entity[`${attribute}_FormattedValue`] = entity[`_${attribute}_value@OData.Community.Display.V1.FormattedValue`];
+            if (model.hasOwnProperty(`_${attribute}_value@OData.Community.Display.V1.FormattedValue`)) {
+                model[`${attribute}_FormattedValue`] = model[`_${attribute}_value@OData.Community.Display.V1.FormattedValue`];
             }
         }
-        return entity;
+        return model;
     }
 
     private static async getSystemQueryOptions(entityLogicalName: string, options: MultipleSystemQueryOptions): Promise<string> {
@@ -292,7 +299,7 @@ export class WebApi {
     }
 
     private static async generateSelect(attributes: string[] = [], metadata: Xrm.Metadata.EntityMetadata): Promise<string> {
-        const selectAttributes = [];
+        const selectAttributes: string[] = [];
         if (attributes.length > 0) {
             for (const attribute of attributes) {
                 selectAttributes.push(await WebApi.getOptionsName(attribute, metadata));
@@ -302,7 +309,7 @@ export class WebApi {
     }
 
     private static async generateFilter(filters: Filter[] = [],  metadata: Xrm.Metadata.EntityMetadata): Promise<string> {
-        const filterAttributes = [];
+        const filterAttributes: string[] = [];
         if (filters.length > 0) {
             for (const filter of filters) {
                 filterAttributes.push(await WebApi.parseFilter(filter, metadata));
@@ -313,13 +320,12 @@ export class WebApi {
 
     private static async parseFilter(filter: Filter, metadata: Xrm.Metadata.EntityMetadata): Promise<string> {
         const {type = 'and', conditions} = filter,
-            filterParts = [];
+            filterParts: string[] = [];
         for (const condition of conditions) {
             const {attribute, operator = 'eq', value} = condition,
                 optionsName = await WebApi.getOptionsName(attribute, metadata),
                 attributeMetadata = metadata.Attributes.get(attribute),
-                // @ts-ignore
-                attributeType = attributeMetadata && attributeMetadata.AttributeType;
+                attributeType = attributeMetadata && (attributeMetadata as any).AttributeType;
             let filterStr = `${optionsName} ${operator}`;
             filterStr += attributeType === 14 ? ` '${value}'` : ` ${value}`; // String
             filterParts.push(filterStr);
@@ -328,7 +334,7 @@ export class WebApi {
     }
 
     private static async generateExpand(expands: Expand[] = [], metadata: Xrm.Metadata.EntityMetadata): Promise<string> {
-        const expandAttributes = [];
+        const expandAttributes: string[] = [];
         if (expands.length > 0) {
             for (const expand of expands) {
                 const {attribute, select} = expand;
@@ -337,7 +343,7 @@ export class WebApi {
                     const manyToOneMetadata = await WebApi.getManyToOneMetadata(attribute, metadata);
                     const {ReferencedEntity} = manyToOneMetadata,
                         referencedMetadata = await Xrm.Utility.getEntityMetadata(ReferencedEntity, select),
-                        selectOptionNames = [];
+                        selectOptionNames: string[] = [];
                     for (const selectName of select) {
                         const optionName = await WebApi.getOptionsName(selectName, referencedMetadata);
                         selectOptionNames.push(optionName);
@@ -351,7 +357,7 @@ export class WebApi {
     }
 
     private static async generateOrderby(orders: OrderBy[] = [], metadata: Xrm.Metadata.EntityMetadata): Promise<string> {
-        const orderParts = [];
+        const orderParts: string[] = [];
         for (const {attribute, order} of orders) {
             const optionsName = await WebApi.getOptionsName(attribute, metadata);
             orderParts.push(`${optionsName} ${order || 'asc'}`);
@@ -360,15 +366,13 @@ export class WebApi {
     }
 
     private static async getOptionsName(attribute: string, metadata: Xrm.Metadata.EntityMetadata): Promise<string> {
-        const isLookupAttribute = await WebApi.isLookupAttribute(attribute, metadata);
+        const isLookupAttribute: boolean = await WebApi.isLookupAttribute(attribute, metadata);
         return isLookupAttribute ? `_${attribute}_value` : attribute;
     }
 
-    private static async isLookupAttribute(attribute: string, metadata: Xrm.Metadata.EntityMetadata): Promise<boolean> {
-        // @ts-ignore
+    private static async isLookupAttribute(attribute: string, metadata: Xrm.Metadata.EntityMetadata | any): Promise<boolean> {
         if (metadata.ManyToOneRelationships) {
             const attributeMetadata = metadata.Attributes.get(attribute),
-                // @ts-ignore
                 attributeType = attributeMetadata && attributeMetadata.AttributeType;
             return [1, 6].includes(attributeType); // 1: Customer, 6: Lookup
         } else {
@@ -392,10 +396,8 @@ export class WebApi {
         return relationMetadata ? relationMetadata : null;
     }
 
-    private static async getManyToOneMetadatas(metadata: Xrm.Metadata.EntityMetadata): Promise<any> {
-        // @ts-ignore
+    private static async getManyToOneMetadatas(metadata: Xrm.Metadata.EntityMetadata | any): Promise<any> {
         if (metadata.ManyToOneRelationships) {
-            // @ts-ignore
             return metadata.ManyToOneRelationships.getAll();
         } else {
             const uri = `EntityDefinitions(LogicalName='${metadata.LogicalName}')/ManyToOneRelationships`;
@@ -422,3 +424,4 @@ export class WebApi {
         return metadataAttributes;
     }
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */

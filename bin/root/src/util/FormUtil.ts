@@ -1,19 +1,20 @@
 
 export class FormUtil {
-    static async addCustomView(attributeName: string, executionContext: any, filterXML: string) {
+    static async addCustomView(attributeName: string, executionContext: Xrm.Events.EventContext, filterXML: string): Promise<void> {
         const formContext = executionContext ? executionContext.getFormContext() : null;
         if (formContext) {
-            const control = formContext.getControl(attributeName),
+            const control: Xrm.Controls.LookupControl = formContext.getControl(attributeName),
                 viewId = control.getDefaultView(),
                 parser = new DOMParser(),
-                defaultView = await (<any>window).Xrm.WebApi.retrieveRecord('savedquery', viewId),
-                xmlDoc = parser.parseFromString(defaultView.fetchxml, 'text/xml');
+                defaultView = await Xrm.WebApi.retrieveRecord('savedquery', viewId),
+                xmlDoc: Document = parser.parseFromString(defaultView.fetchxml, 'text/xml');
             if (xmlDoc.getElementsByTagName('filter').length === 0) {
                 xmlDoc.getElementsByTagName('entity')[0].appendChild(parser.parseFromString(filterXML, 'text/xml').firstChild);
             } else {
                 xmlDoc.getElementsByTagName('filter')[0].replaceWith(parser.parseFromString(filterXML, 'text/xml').firstChild);
             }
-            control.addCustomView(viewId, defaultView.returnedtypecode, defaultView.name, (<any>xmlDoc.firstChild).outerHTML, defaultView.layoutxml, true);
+            const firstChild = xmlDoc.firstChild as Element;
+            control.addCustomView(viewId, defaultView.returnedtypecode, defaultView.name, firstChild.outerHTML, defaultView.layoutxml, true);
         }
     }
 }
