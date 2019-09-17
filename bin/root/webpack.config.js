@@ -5,7 +5,8 @@ var path = require("path"),
     dir_build = path.resolve(__dirname, "<%= publisher %>_/<%= projectabbr %>"),
     WebpackAutoInject = require("webpack-auto-inject-version"),
     CopyWebpackPlugin = require("copy-webpack-plugin"),
-    MiniCssExtractPlugin = require("mini-css-extract-plugin");
+    MiniCssExtractPlugin = require("mini-css-extract-plugin"),
+    UglifyJSPlugin = require("uglifyjs-webpack-plugin");
 
 const postcssLoader = {
         loader: "postcss-loader",
@@ -134,6 +135,17 @@ module.exports = {
     ]),
     stats: {
         colors: true
+    },
+    optimization: {
+        minimizer: [
+            new UglifyJSPlugin({
+                uglifyOptions: {
+                    compress: {
+                        drop_console: mode !== "development",
+                    }
+                }
+            })
+        ]
     },
     devtool: mode === "development" ? "source-map" : false
 };

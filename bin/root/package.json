@@ -59,6 +59,7 @@
     "style-loader": "^0.18.2",
     "ts-loader": "^5.3.3",
     "typescript": "^3.3.3333",
+    "uglifyjs-webpack-plugin": "^2.2.0",
     "webpack": "^4.29.6",
     "webpack-auto-inject-version": "^0.5.3",
     "webpack-cli": "^3.1.2",
