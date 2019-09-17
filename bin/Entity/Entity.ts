@@ -1,15 +1,16 @@
 import {EntityForm} from './Entity.form';
 
-export namespace Form {
-    export function onLoad(executionContext: Xrm.Events.EventContext): void {
+export const Form = {
+    // In D365 Form specify Form onLoad function: <%= publisher %>.<%= projectabbr %>.Entity.Form.onLoad
+    onLoad: (executionContext: Xrm.Events.EventContext): void => {
         EntityForm.onLoad(executionContext);
     }
-}
+};
 
-export namespace Ribbon {
+export const Ribbon = {
+    // In Ribbon WorkBench specify function: <%= publisher %>.<%= projectabbr %>.Entity.Ribbon.myRibbonMethod
     // In Ribbon WorkBench specify Xrm Parameter 'Primary Control', which is formContext
-    // In Ribbon WorkBench specify function: <publisher abbreviation>.<project abbreviation>.Entity.Ribbon.myRibbonMethod
-    export function myRibbonMethod(formContext: Xrm.FormContext): void {
+    myRibbonMethod: (formContext: Xrm.FormContext): void => {
         // EntityForm.myFormMethod(formContext);
     }
-}
+};

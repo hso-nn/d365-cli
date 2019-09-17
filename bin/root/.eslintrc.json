@@ -1,5 +1,13 @@
 {
-  "extends": "eslint:recommended",
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint"
+  ],
   "parserOptions": {
     "ecmaVersion": 8,
     "sourceType": "module"
@@ -18,7 +26,7 @@
     ],
     "quotes": [
       "error",
-      "double",
+      "single",
       {
         "allowTemplateLiterals": true
       }
@@ -28,7 +36,7 @@
       "always"
     ],
     "brace-style": ["error", "1tbs"],
-    "max-lines-per-function": ["error", 35],
+    "max-lines-per-function": ["error", 30],
     "no-underscore-dangle": "error",
     "no-plusplus": "error",
     "no-useless-escape": "error",

@@ -5,7 +5,10 @@ export interface AnnotationModel {
     filename?: string;
     mimetype?: string;
     notetext?: string;
-    objectid?: any;
+    objectid?: {
+        id: string;
+        logicalName: string;
+    };
     subject?: string;
     versionnumber?: string;
 }
