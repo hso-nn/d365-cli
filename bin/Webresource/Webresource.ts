@@ -1,10 +1,11 @@
 import './Webresource.scss';
 
 class Webresource {
-    public static onLoad(executionContext: Xrm.Events.EventContext): void {
+    public static onLoad(globalContext: Xrm.GlobalContext): void {
     }
 }
 
-export function onLoad(executionContext: Xrm.Events.EventContext): void {
-    Webresource.onLoad(executionContext);
+export function onLoad(): void {
+    const globalContext = Xrm.Utility.getGlobalContext();
+    Webresource.onLoad(globalContext);
 }
