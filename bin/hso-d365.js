@@ -3,6 +3,7 @@
 'use strict';
 
 const create = require('./create');
+const update = require('./update');
 const generator = require('./generate');
 const program = require('commander');
 
@@ -19,6 +20,17 @@ program
     })
     .on('--help', () => {
         create.showCreateHelp();
+    });
+
+program
+    .command('update')
+    .alias('u')
+    .description('Updates existing workspace and Webresource setup')
+    .action(project => {
+        update.updateProject();
+    })
+    .on('--help', () => {
+        update.showUpdateHelp();
     });
 
 program
