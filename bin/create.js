@@ -32,6 +32,7 @@ const create = async (projectname) => {
     const packageJsonFile = shell.ls('Webresources/package.json')[0];
     const webpackConfigFile = shell.ls('Webresources/webpack.config.js')[0];
     const eslintignoreFile = shell.ls('Webresources/.eslintignore')[0];
+    const gitignoreFile = shell.ls('Webresources/.gitignore')[0];
     shell.sed('-i', 'PROJECTNAME', projectname.toLowerCase(), packageJsonFile);
     const answers = await inquirer.prompt([{
         type: 'input',
@@ -51,6 +52,7 @@ const create = async (projectname) => {
     shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, packageJsonFile);
     shell.sed('-i', new RegExp('<%= projectabbr %>', 'ig'), answers.projectabbr, webpackConfigFile);
     shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, eslintignoreFile);
+    shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, gitignoreFile);
     shell.cd('Webresources');
     console.log(`Installing npm packages. This may take a while...`);
     shell.exec('npm install');
