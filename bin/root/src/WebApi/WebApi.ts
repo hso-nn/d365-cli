@@ -14,7 +14,7 @@ interface Condition {
 }
 
 type FilterType = 'and' | 'or' | 'not';
-interface Filter {
+export interface Filter {
     type?: FilterType;
     conditions: Condition[];
 }
@@ -118,7 +118,7 @@ export class WebApi {
         }
     }
 
-    public static async count(entityLogicalName: string, filters: Filter[]): Promise<number> {
+    public static async count(entityLogicalName: string, filters?: Filter[]): Promise<number> {
         const attributes = WebApi.getMetadataAttributes([], filters),
             metadata = await Xrm.Utility.getEntityMetadata(entityLogicalName, attributes),
             entitySetName = metadata.EntitySetName,
