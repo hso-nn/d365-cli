@@ -2,4 +2,5 @@ webpack.config.js
 karma.conf.js
 i18next-scanner.config.js
 test-main.js
+msbuild-formatter.js
 <%= publisher %>_
