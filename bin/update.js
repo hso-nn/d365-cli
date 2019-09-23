@@ -58,6 +58,10 @@ const update = async () => {
         const webpackConfigFile = shell.ls('webpack.config.js')[0];
         shell.sed('-i', `loader: "tslint-loader",`, `loader: "eslint-loader",`, webpackConfigFile);
 
+        console.log(`Updating tsconfig.json...`);
+        const tsconfigJsonFile = shell.ls('src/tsconfig.json')[0];
+        shell.sed('-i', '"compilerOptions": {', '"compilerOptions": {\n    "alwaysStrict": true,', tsconfigJsonFile);
+
         console.log(`Updating D365 Project done`);
     });
 };
