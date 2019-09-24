@@ -37,6 +37,9 @@ const update = async () => {
         shell.cp('-R', `${__dirname}/root/src/WebApi`, './src');
         shell.exec('git add src/WebApi/Model.ts');
 
+        console.log(`Updating Translation...`);
+        shell.cp('-R', `${__dirname}/root/src/translation`, './src');
+
         console.log(`Updating package.json...`);
         const packageJsonFile = shell.ls('package.json')[0];
         shell.sed('-i', '"scripts": {', `"scripts": {\n    "lint": "eslint ./ --ext .js,.ts",`, packageJsonFile);
