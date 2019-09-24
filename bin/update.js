@@ -57,6 +57,21 @@ const update = async () => {
             console.log(`Modified ${filepath}`);
         });
 
+        console.log('Updating Entity files');
+        shell.ls(`src/**/*.ts*`).forEach(function (filepath) {
+            const split = filepath.split('/'),
+                entityname = split[1],
+                file = shell.ls(filepath)[0];
+            if (`${entityname}.ts` === split[2]) {
+                shell.sed('-i', `export namespace Form`, `export const Form =`, file);
+                shell.sed('-i', `export namespace Ribbon`, `export const Ribbon =`, file);
+                shell.sed('-i', `export function onLoad(executionContext: Xrm.Events.EventContext) {`, `onLoad: (executionContext: Xrm.Events.EventContext): void => {`, file);
+                shell.sed('-i', `\\(formContext: Xrm.FormContext\\) {`, `: (formContext: Xrm.FormContext): void => {`, file);
+                // shell.sed('-i', `export function `, ``, file); too much
+                console.log(`Modified ${split[1]}.ts ${split[2]}`);
+            }
+        });
+
         console.log(`Updating webpack.config.js...`);
         const webpackConfigFile = shell.ls('webpack.config.js')[0];
         shell.sed('-i', `loader: "tslint-loader",`, `loader: "eslint-loader",`, webpackConfigFile);
