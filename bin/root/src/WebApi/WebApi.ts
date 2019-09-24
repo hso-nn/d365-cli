@@ -38,6 +38,17 @@ export interface MultipleSystemQueryOptions extends SystemQueryOptions {
 
 type Method = 'GET' | 'POST' | 'DELETE';
 
+interface HttpHeaders {
+    [index: string]: string;
+}
+
+interface JsonHttpHeaders extends HttpHeaders {
+    'OData-MaxVersion': string;
+    'OData-Version': string;
+    'Accept': string;
+    'Content-Type': string;
+}
+
 const dateReviver = (key: string, value: any): any => {
     if (typeof value === 'string') {
         const d = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?::(\d*))?Z$/.exec(value);
@@ -129,7 +140,7 @@ export class WebApi {
             optionParts.push($filter);
         }
         const uri = `${entitySetName}?${optionParts.join('&')}`,
-            request = await WebApi.request('GET', uri),
+            request = await WebApi.request('GET', uri, null, WebApi.jsonHeaders),
             data = JSON.parse(request.response);
         return data['@odata.count'];
     }
@@ -146,7 +157,7 @@ export class WebApi {
                 relEntitySetName = relEntityMetadata.EntitySetName;
             uri += `?$id=${this.apiUrl}${relEntitySetName}(${relId})`;
         }
-        return WebApi.request('DELETE', uri);
+        return WebApi.request('DELETE', uri, null, WebApi.jsonHeaders);
     }
 
     public static async executeAction(actionName: string, data?: any, entityLogicalName?: string, id?: string): Promise<JSON> {
@@ -159,13 +170,13 @@ export class WebApi {
 
     private static async executeBoundAction(actionName: string, data: any, entityLogicalName: string, id: string): Promise<JSON> {
         const metadata = await Xrm.Utility.getEntityMetadata(entityLogicalName),
-            xmlHttpRequest = await WebApi.request('POST', `${metadata.EntitySetName}(${id})/Microsoft.Dynamics.CRM.${actionName}`, data);
+            xmlHttpRequest = await WebApi.request('POST', `${metadata.EntitySetName}(${id})/Microsoft.Dynamics.CRM.${actionName}`, data, WebApi.jsonHeaders);
         return xmlHttpRequest.response && JSON.parse(xmlHttpRequest.response, dateReviver);
     }
 
     private static async executeUnboundAction(actionName: string, data?: any): Promise<JSON> {
         const method: Method = data ? 'POST' : 'GET',
-            xmlHttpRequest = await WebApi.request(method, `${actionName}`, data);
+            xmlHttpRequest = await WebApi.request(method, `${actionName}`, data, WebApi.jsonHeaders);
         return xmlHttpRequest.response && JSON.parse(xmlHttpRequest.response, dateReviver);
     }
 
@@ -199,27 +210,22 @@ export class WebApi {
         return binding;
     }
 
-    private static defaultHeaders: {
-        'OData-MaxVersion': string;
-        'OData-Version': string;
-        'Accept': string;
-        'Content-Type': string;
-    } | any = {
+    public static jsonHeaders: JsonHttpHeaders = {
         'OData-MaxVersion': '4.0',
         'OData-Version': '4.0',
         'Accept': 'application/json',
         'Content-Type': 'application/json; charset=utf-8'
     };
 
-    private static request(method: Method, uri: string, data?: any): Promise<XMLHttpRequest> {
+    public static request(method: Method, uri: string, data?: any, httpHeaders: HttpHeaders = {}): Promise<XMLHttpRequest> {
         return new Promise((resolve, reject): void => {
             const request = new XMLHttpRequest(),
                 url = `${this.apiUrl}${uri}`,
                 requestData = data && JSON.stringify(data);
             request.open(method, encodeURI(url), true);
-            for (const header in WebApi.defaultHeaders) {
-                if (WebApi.defaultHeaders.hasOwnProperty(header)) {
-                    request.setRequestHeader(header, WebApi.defaultHeaders[header]);
+            for (const header in httpHeaders) {
+                if (httpHeaders.hasOwnProperty(header)) {
+                    request.setRequestHeader(header, httpHeaders[header]);
                 }
             }
             request.onreadystatechange = function (): void {
@@ -401,7 +407,7 @@ export class WebApi {
             return metadata.ManyToOneRelationships.getAll();
         } else {
             const uri = `EntityDefinitions(LogicalName='${metadata.LogicalName}')/ManyToOneRelationships`;
-            const request = await WebApi.request('GET', uri);
+            const request = await WebApi.request('GET', uri, null, WebApi.jsonHeaders);
             const {value: manyToOneMetadatas} = JSON.parse(request.response);
             return manyToOneMetadatas;
         }

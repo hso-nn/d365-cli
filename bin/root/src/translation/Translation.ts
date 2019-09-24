@@ -1,4 +1,3 @@
-// @ts-ignore
 import i18next from 'i18next';
 import {WebApi} from '../WebApi/WebApi';
 
@@ -38,7 +37,7 @@ export class Translation {
     }
 
     private static async getTranslation(languageId: string, options: Options): Promise<{translation: {}}> {
-        const fileJson = await WebApi.request('GET', `${options.relativePath}/${languageId}.json`);
+        const fileJson = await WebApi.request('GET', `${options.relativePath}/${languageId}.json`, null, WebApi.jsonHeaders);
         if (fileJson) {
             const resource = JSON.parse(fileJson.response);
             return {translation: resource};
