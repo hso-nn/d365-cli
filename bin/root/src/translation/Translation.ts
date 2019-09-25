@@ -61,7 +61,7 @@ export class Translation {
     }
 
     private static async requestTranslationFile(languageId: string, options: Options): Promise<JSON> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve): void => {
             const globalContext = Xrm.Utility.getGlobalContext(),
                 clientUrl = globalContext.getClientUrl(),
                 uri = `${clientUrl}/webresources/${options.relativePath}/${languageId}.json`,
