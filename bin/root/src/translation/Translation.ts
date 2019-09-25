@@ -1,5 +1,5 @@
+// @ts-ignore
 import i18next from 'i18next';
-import {WebApi} from '../WebApi/WebApi';
 
 declare interface Resources {
     [index: string]: {translation: {[index: string]: string}};
@@ -37,9 +37,9 @@ export class Translation {
     }
 
     private static async getTranslation(languageId: string, options: Options): Promise<{translation: {}}> {
-        const fileJson = await WebApi.request('GET', `${options.relativePath}/${languageId}.json`, null, WebApi.jsonHeaders);
-        if (fileJson) {
-            const resource = JSON.parse(fileJson.response);
+        debugger;
+        const resource = await Translation.requestTranslationFile(languageId, options);
+        if (resource) {
             return {translation: resource};
         }
     }
@@ -58,5 +58,31 @@ export class Translation {
         } else {
             return [i18next.t(text, options)];
         }
+    }
+
+    private static async requestTranslationFile(languageId: string, options: Options): Promise<JSON> {
+        return new Promise((resolve, reject) => {
+            const globalContext = Xrm.Utility.getGlobalContext(),
+                clientUrl = globalContext.getClientUrl(),
+                uri = `${clientUrl}/webresources/${options.relativePath}/${languageId}.json`,
+                request = new XMLHttpRequest();
+            request.open('GET', encodeURI(uri), true);
+            /*for (const header in WebApi.defaultHeaders) {
+                if (WebApi.defaultHeaders.hasOwnProperty(header)) {
+                    request.setRequestHeader(header, WebApi.defaultHeaders[header]);
+                }
+            }*/
+            request.onreadystatechange = function () {
+                if (this.readyState === 4) {
+                    request.onreadystatechange = null;
+                    if ([200, 201, 204].includes(this.status)) {
+                        resolve(JSON.parse(request.response));
+                    } else {
+                        resolve();
+                    }
+                }
+            };
+            request.send();
+        });
     }
 }
