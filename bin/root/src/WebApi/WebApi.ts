@@ -210,14 +210,14 @@ export class WebApi {
         return binding;
     }
 
-    public static jsonHeaders: JsonHttpHeaders = {
+    private static jsonHeaders: JsonHttpHeaders = {
         'OData-MaxVersion': '4.0',
         'OData-Version': '4.0',
         'Accept': 'application/json',
         'Content-Type': 'application/json; charset=utf-8'
     };
 
-    public static request(method: Method, uri: string, data?: any, httpHeaders: HttpHeaders = {}): Promise<XMLHttpRequest> {
+    private static request(method: Method, uri: string, data?: any, httpHeaders: HttpHeaders = {}): Promise<XMLHttpRequest> {
         return new Promise((resolve, reject): void => {
             const request = new XMLHttpRequest(),
                 url = `${this.apiUrl}${uri}`,
