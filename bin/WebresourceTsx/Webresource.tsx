@@ -18,15 +18,7 @@ class Webresource extends App<WebresourceProps, WebresourceState> {
 }
 
 export function onLoad(): void {
-    // const globalContext = Xrm.Utility.getGlobalContext();
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
-    const globalContext = {
-        userSettings: {
-            languageId: '1033'
-        }
-    } as Xrm.GlobalContext;
-    const rootDiv = document.getElementById('Webresource');
+    const globalContext = Xrm.Utility.getGlobalContext(),
+        rootDiv = document.getElementById('Webresource');
     ReactDom.render(<Webresource globalContext={globalContext} />, rootDiv);
 }
