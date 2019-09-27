@@ -40,12 +40,19 @@ const update = async () => {
         console.log(`Updating Translation...`);
         shell.cp('-R', `${__dirname}/root/src/translation`, './src');
 
+        console.log(`Updating txs...`);
+        shell.cp('-R', `${__dirname}/root/src/tsx`, './src');
+
         console.log(`Updating package.json...`);
         const packageJsonFile = shell.ls('package.json')[0];
         shell.sed('-i', '"scripts": {', `"scripts": {\n    "lint": "eslint ./ --ext .js,.ts",`, packageJsonFile);
         console.log(`Installing npm packages. This may take a while...`);
         shell.exec('npm install --save-dev @typescript-eslint/eslint-plugin');
         shell.exec('npm install --save-dev @typescript-eslint/parser');
+        shell.exec('npm install --save-dev @types/react');
+        shell.exec('npm install --save-dev @types/react-dom');
+        shell.exec('npm install --save-dev react');
+        shell.exec('npm install --save-dev react-dom');
 
         console.log(`Updating Model files`);
         shell.ls(`src/**/*.model.ts*`).forEach(function (filepath) {
@@ -75,10 +82,12 @@ const update = async () => {
         console.log(`Updating webpack.config.js...`);
         const webpackConfigFile = shell.ls('webpack.config.js')[0];
         shell.sed('-i', `loader: "tslint-loader",`, `loader: "eslint-loader",`, webpackConfigFile);
+        shell.sed('-i', `extensions: [".js", ".json", ".ts"`, `extensions: [".js", ".json", ".ts", ".tsx"`, webpackConfigFile);
+        shell.sed('-i', `test: /\\.ts$/,`, `test: /\\.tsx?$/,`, webpackConfigFile);
 
         console.log(`Updating tsconfig.json...`);
         const tsconfigJsonFile = shell.ls('src/tsconfig.json')[0];
-        shell.sed('-i', '"compilerOptions": {', '"compilerOptions": {\n    "alwaysStrict": true,', tsconfigJsonFile);
+        shell.sed('-i', '"compilerOptions": {', '"compilerOptions": {\n    "jsx": "react",\n    "alwaysStrict": true,\n    "esModuleInterop": true,', tsconfigJsonFile);
 
         console.log(`Updating D365 Project done`);
     });

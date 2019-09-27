@@ -35,7 +35,7 @@ module.exports = {
         libraryTarget: "var",
     },
     resolve: {
-        extensions: [".js", ".json", ".ts"]
+        extensions: [".js", ".json", ".ts", ".tsx"]
     },
     devServer: {
         contentBase: path.resolve(__dirname, `<%= publisher %>_`),
@@ -74,7 +74,7 @@ module.exports = {
         }, {
             test: /\.css$/, loader: cssLoaders
         }, {
-            test: /\.ts$/,
+            test: /\.tsx?$/,
             enforce: "pre",
             use: [
                 {

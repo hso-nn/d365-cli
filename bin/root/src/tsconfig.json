@@ -4,9 +4,11 @@
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "moduleResolution": "node",
+    "esModuleInterop": true,
     "target": "es5",
     "allowJs": true,
     "sourceMap": true,
+    "jsx": "react",
     "alwaysStrict": true,
     "lib": [
       "esnext",
