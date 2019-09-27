@@ -12,8 +12,8 @@
     "watch": "webpack --watch",
     "start": "webpack-dev-server",
     "starthttps": "webpack-dev-server --https",
-    "lint": "eslint ./ --ext .js,.ts",
-    "i18next-scanner": "i18next-scanner --config i18next-scanner.config.js src/**/*.{js,ts}"
+    "lint": "eslint ./ --ext .js,.ts,.tsx",
+    "i18next-scanner": "i18next-scanner --config i18next-scanner.config.js src/**/*.{js,ts,tsx}"
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",
