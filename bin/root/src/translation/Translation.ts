@@ -72,7 +72,7 @@ export class Translation {
                     request.setRequestHeader(header, WebApi.defaultHeaders[header]);
                 }
             }*/
-            request.onreadystatechange = function () {
+            request.onreadystatechange = function (): void {
                 if (this.readyState === 4) {
                     request.onreadystatechange = null;
                     if ([200, 201, 204].includes(this.status)) {
