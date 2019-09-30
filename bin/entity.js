@@ -7,9 +7,10 @@ const variables = require("./variables");
 
 module.exports = {
     generateEntity(entityname) {
+        const check = shell.grep(`${entityname}:`, 'webpack.config.js');
         if(!new RegExp("[A-Z]").test(entityname[0])) {
             console.log(colors.red(`Entity name must be UpperCamelCase!`));
-        } else if (shell.test('-e', `src/${entityname}`)) {
+        } else if (check.stdout !== '\n') {
             console.log(colors.red(`Entity ${entityname} already exists!`));
         } else if (process.argv[5]) {
             console.log(colors.red(`No spaces allowed!`));
