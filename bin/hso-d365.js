@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 'use strict';
-
+const shell = require("shelljs");
 const create = require('./create');
 const update = require('./update');
 const generator = require('./generate');
@@ -42,6 +42,19 @@ program
     })
     .on('--help', () => {
         generator.showGenerateHelp();
+    });
+
+program
+    .command('xi18n')
+    .alias('i18n')
+    .description('Extracts i18n messages from source code.')
+    .action((cmd) => {
+        shell.exec('npm run i18next-scanner');
+    })
+    .on('--help', () => {
+        console.log(`In translation folder a folder 'locales' will be generated having a translation file per language.`);
+        console.log(`The translation files to be generated can be found in your project 'i18next-scanner.config.js file`);
+        console.log(`You have to add the translations after the generation`);
     });
 
 program
