@@ -51,6 +51,7 @@ const create = async (projectname) => {
     shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, webpackConfigFile);
     shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, packageJsonFile);
     shell.sed('-i', new RegExp('<%= projectabbr %>', 'ig'), answers.projectabbr, webpackConfigFile);
+    shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.projectabbr, webpackConfigFile);
     shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, eslintignoreFile);
     shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, gitignoreFile);
     shell.cd('Webresources');
