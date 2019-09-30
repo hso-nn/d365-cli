@@ -58,6 +58,17 @@ program
     });
 
 program
+    .command('lint')
+    .alias('l')
+    .description('Runs linting tools on project code')
+    .action((cmd) => {
+        shell.exec('npm run lint');
+    })
+    .on('--help', () => {
+        console.log(`Runs linting tools on project code using the configuration as specified in your projects '.eslintrc.json' file`)
+    });
+
+program
     .arguments('<command>')
     .action((cmd) => {
         program.outputHelp();
