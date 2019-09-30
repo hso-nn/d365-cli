@@ -2,12 +2,12 @@
 const shell = require("shelljs");
 const entity = require('./entity');
 const webresource = require('./webresource');
-const license = require('./license');
+const licenseValidator = require('./licenseValidator');
 const colors = require('colors');
 
 module.exports = {
     generate(schematic, name) {
-        const supportedSchematics = ['entity', 'webresource', 'license'];
+        const supportedSchematics = ['entity', 'webresource', 'licensevalidator'];
         if (!shell.test('-e', 'src')) {
             console.log(colors.red(`You are not inside the project Webresources folder!`));
         } else if (!schematic) {
@@ -18,14 +18,14 @@ module.exports = {
             entity.generateEntity(name);
         } else if (schematic.toLowerCase() === 'webresource') {
             webresource.generateWebresource(name);
-        } else if (schematic.toLowerCase(name) === 'license') {
-            license.generateLicense(name);
+        } else if (schematic.toLowerCase(name) === 'licensevalidator') {
+            licenseValidator.generateLicenseValidator(name);
         }
     },
     showGenerateHelp() {
         console.log(`Arguments:`);
         console.log(`   ${colors.blue('schematic')}`);
         console.log(`     The schematic or collection:schematic to generate.`);
-        console.log(`     Example: Entity, Webresource or License.`);
+        console.log(`     Example: Entity, Webresource or LicenseValidator.`);
     }
 };
