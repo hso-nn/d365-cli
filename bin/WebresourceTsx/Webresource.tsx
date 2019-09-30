@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDom from 'react-dom';
 import './Webresource.scss';
 import {App, AppProps, AppState} from '../tsx/App';
+import {Translation} from '../translation/Translation';
 
 interface WebresourceState extends AppState {}
 
@@ -13,7 +14,7 @@ class Webresource extends App<WebresourceProps, WebresourceState> {
     public state: WebresourceState = {};
 
     public render(): JSX.Element {
-        return <p>Language: {this.globalContext.userSettings.languageId}</p>;
+        return <p>{Translation.translate('Language')}: {this.globalContext.userSettings.languageId}</p>;
     }
 }
 
