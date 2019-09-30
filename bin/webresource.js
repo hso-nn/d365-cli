@@ -6,9 +6,10 @@ const inquirer = require('inquirer');
 
 module.exports = {
     generateWebresource(webresourcename) {
+        const check = shell.grep(`${webresourcename}:`, 'webpack.config.js');
         if(!new RegExp("[A-Z]").test(webresourcename[0])) {
             console.log(colors.red(`Webresource name must be UpperCamelCase!`));
-        } else if (shell.test('-e', `src/${webresourcename}`)) {
+        } else if (check.stdout !== '\n') {
             console.log(colors.red(`echo Webresource ${webresourcename} already exists!`));
         } else if (process.argv[5]) {
             console.log(colors.red(`echo No spaces allowed!`));

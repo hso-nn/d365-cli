@@ -5,7 +5,8 @@ const variables = require("./variables");
 
 module.exports = {
     generateLicenseValidator(licensename) {
-        if (shell.test('-e', `src/License`)) {
+        const check = shell.grep(`LicenseValidator:`, 'webpack.config.js');
+        if (check.stdout !== '\n') {
             console.log(colors.red(`src/License already exists!`));
         } else if (process.argv[5]) {
             console.log(colors.red(`No spaces allowed!`));
