@@ -22,14 +22,12 @@ module.exports = {
 const generate = async (entityname) => {
     console.log(`Adding D365 Entity ${entityname}...`);
     variables.get(async ({publisher, projectabbr}) => {
-        const webpackConfigFile = shell.ls('webpack.config.js')[0];
+
         const answers = await inquirer.prompt([{
             type: 'input',
             name: 'entityLogicalName',
             message: 'Entity LogicalName:'
         }]);
-
-        shell.sed('-i', 'entry: {', `entry: {\n        ${entityname}: [\n            path.resolve(__dirname, "src/${entityname}/${entityname}.ts")\n        ],`, webpackConfigFile);
         shell.mkdir(`src/${entityname}`);
         shell.ls(`${__dirname}/Entity/*.*`).forEach(function (file) {
             const split = file.split('/');
@@ -43,6 +41,8 @@ const generate = async (entityname) => {
             shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, `src/${entityname}/${newfilename}`);
             shell.sed('-i', new RegExp('<%= projectabbr %>', 'ig'), projectabbr, `src/${entityname}/${newfilename}`);
         });
+        const webpackConfigFile = shell.ls('webpack.config.js')[0];
+        shell.sed('-i', 'entry: {', `entry: {\n        ${entityname}: [\n            path.resolve(__dirname, "src/${entityname}/${entityname}.ts")\n        ],`, webpackConfigFile);
         console.log("Adding D365 Entity done");
     });
 };
