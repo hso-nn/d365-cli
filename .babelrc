@@ -1,0 +1,21 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "useBuiltIns": "usage"
+      }
+    ]
+  ],
+  "plugins": [
+    [
+      "istanbul",
+      {
+        "exclude": [
+          "**/*.spec.js",
+          "**/*.spec.ts"
+        ]
+      }
+    ]
+  ]
+}
