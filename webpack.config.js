@@ -99,7 +99,7 @@ module.exports = {
             }
         }),
         new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-        new webpack.BannerPlugin("Advanced Field Service [AIV]{version}[/AIV] | (c) HSO Innovation"),
+        new webpack.BannerPlugin("HSO D365 CLI [AIV]{version}[/AIV] | (c) HSO Innovation"),
         new MiniCssExtractPlugin({
             // Options similar to the same options in webpackOptions.output
             // both options are optional

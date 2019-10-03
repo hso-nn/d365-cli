@@ -25,19 +25,21 @@ const create = async (projectname) => {
     shell.mkdir(projectname);
     shell.cd(projectname);
     shell.mkdir('Webresources');
-    shell.cp('-R', `${__dirname}/root/*.*`, 'Webresources');
+    shell.cp('-R', `${__dirname}/root/*`, 'Webresources');
     shell.cp('-R', `${__dirname}/root/.*`, 'Webresources');
-    shell.cp('-R', `${__dirname}/root/src`, 'Webresources');
 
-    const packageJsonFile = shell.ls('Webresources/package.json')[0];
-    const webpackConfigFile = shell.ls('Webresources/webpack.config.js')[0];
-    const eslintignoreFile = shell.ls('Webresources/.eslintignore')[0];
-    const gitignoreFile = shell.ls('Webresources/.gitignore')[0];
-    shell.sed('-i', 'PROJECTNAME', projectname.toLowerCase(), packageJsonFile);
     const answers = await inquirer.prompt([{
         type: 'input',
         name: 'description',
         message: 'Project description:'
+    }, {
+        type: 'input',
+        name: 'solution',
+        message: 'Solution name (should match D365 environment):'
+    }, {
+        type: 'input',
+        name: 'environment',
+        message: 'The environment url (eg. https://yourproject.crm4.dynamics.com):'
     }, {
         type: 'input',
         name: 'publisher',
@@ -47,13 +49,28 @@ const create = async (projectname) => {
         name: 'projectabbr',
         message: 'Project abbreviation (3 chars a-z):'
     }]);
+
+    const crmJsonFile = shell.ls('Webresources/deploy/crm.json')[0];
+    shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, crmJsonFile);
+    shell.sed('-i', new RegExp('<%= solution %>', 'ig'), answers.solution, crmJsonFile);
+    shell.sed('-i', new RegExp('<%= environment %>', 'ig'), answers.environment, crmJsonFile);
+
+    const packageJsonFile = shell.ls('Webresources/package.json')[0];
+    shell.sed('-i', '<%= projectname %>', projectname.toLowerCase(), packageJsonFile);
     shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.description, packageJsonFile);
-    shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, webpackConfigFile);
     shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, packageJsonFile);
+
+    const webpackConfigFile = shell.ls('Webresources/webpack.config.js')[0];
+    shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, webpackConfigFile);
     shell.sed('-i', new RegExp('<%= projectabbr %>', 'ig'), answers.projectabbr, webpackConfigFile);
     shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.projectabbr, webpackConfigFile);
+
+    const eslintignoreFile = shell.ls('Webresources/.eslintignore')[0];
     shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, eslintignoreFile);
+
+    const gitignoreFile = shell.ls('Webresources/.gitignore')[0];
     shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, gitignoreFile);
+
     shell.cd('Webresources');
     console.log(`Installing npm packages. This may take a while...`);
     shell.exec('npm install');

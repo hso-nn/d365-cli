@@ -51,11 +51,8 @@ class App {
             portSplit = redirectUriSplit[redirectUriSplit.length -2].split(':'),
             port = parseInt(portSplit[1]),
             openUrl = redirectUriSplit.slice(0, redirectUriSplit.length - 1).join('/') + '/auth';
-        console.log(port);
-        console.log(openUrl);
-
         this.express.listen(port, (): void => {
-            opn('http://localhost:3000/auth');
+            opn(openUrl);
             return console.log(`server is listening on ${port}`);
         });
     }
@@ -148,9 +145,9 @@ class App {
     }
 
     private async deploy(messenger: Function): Promise<void> {
-        messenger('Deploying...<br/>');
-        const publisherPrefix = this.settings.crm.publisher_prefix;
-        await this.deployDirectory(`${publisherPrefix}_`, messenger);
+        const {publisher_prefix, url} = this.settings.crm;
+        messenger(`Deploying to ${url}...<br/>`);
+        await this.deployDirectory(`${publisher_prefix}_`, messenger);
         messenger('Deploy finished');
     }
 
@@ -178,7 +175,6 @@ class App {
     private async deployFile(path: string, messenger: Function): Promise<void> {
         return new Promise((resolve): void => {
             fs.readFile(path, async (err: Error, data: Buffer) => {
-                debugger;
                 const webresource = await this.getWebresource(path);
                 messenger(`${path}`);
                 if (webresource) {

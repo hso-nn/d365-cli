@@ -1,5 +1,5 @@
 {
-  "name": "PROJECTNAME",
+  "name": "<%= projectname %>",
   "version": "1.0.0",
   "author": "HSO Innovation <innovation@hso.com> (http://www.hso.com)",
   "description": "<%= description %>",
@@ -7,7 +7,7 @@
     "get-credentials": "vsts-npm-auth -config .npmrc",
     "build": "npm run clean && webpack",
     "build:prod": "npm run clean && cross-env NODE_ENV=production webpack --bail --progress",
-    "deploy": "npm run clean && npm run build:prod && node deploy/deploy.js",
+    "deploy": "node deploy/deploy.js",
     "clean": "IF exist <%= publisher %>_ (rmdir /s /q <%= publisher %>_)",
     "watch": "webpack --watch",
     "start": "webpack-dev-server",

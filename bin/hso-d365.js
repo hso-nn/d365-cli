@@ -23,17 +23,6 @@ program
     });
 
 program
-    .command('update')
-    .alias('u')
-    .description('Updates existing workspace and Webresource setup')
-    .action(project => {
-        update.updateProject();
-    })
-    .on('--help', () => {
-        update.showUpdateHelp();
-    });
-
-program
     .command('generate <schematic> <name>')
     .alias('g')
     .description('Generates and/or modifies files bases on a schematic.')
@@ -65,7 +54,40 @@ program
         shell.exec('npm run lint');
     })
     .on('--help', () => {
-        console.log(`Runs linting tools on project code using the configuration as specified in your projects '.eslintrc.json' file`)
+        console.log(`Runs linting tools on project code using the configuration as specified in your projects '.eslintrc.json' file`);
+    });
+
+program
+    .command('build')
+    .alias('b')
+    .description('Compiles project into an output directory named dist')
+    .action((cmd) => {
+        shell.exec('npm run build:prod');
+    })
+    .on('--help', () => {
+        console.log(`The command can be used to build the project to be distributed to the D365 environment using the 'deploy' command`);
+    });
+
+program
+    .command('deploy')
+    .alias('d')
+    .description('Invokes the deploy builder')
+    .action((cmd) => {
+        shell.exec('npm run deploy');
+    })
+    .on('--help', () => {
+        console.log(`Distributes the project to the D365 environment. You need to run the 'build' command first`);
+    });
+
+program
+    .command('update')
+    .alias('u')
+    .description('Updates existing workspace and Webresource setup')
+    .action(project => {
+        update.updateProject();
+    })
+    .on('--help', () => {
+        update.showUpdateHelp();
     });
 
 program
