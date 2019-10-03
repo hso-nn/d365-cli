@@ -7,7 +7,7 @@ const variables = require("./variables");
 
 module.exports = {
     generateEntity(entityname) {
-        const check = shell.grep(`${entityname}:`, 'webpack.config.js');
+        const check = shell.grep(` ${entityname}:`, 'webpack.config.js');
         if(!new RegExp("[A-Z]").test(entityname[0])) {
             console.log(colors.red(`Entity name must be UpperCamelCase!`));
         } else if (check.stdout !== '\n') {
