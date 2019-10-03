@@ -2,7 +2,7 @@ const path = require("path"),
     webpack = require("webpack"),
     DEBUG = process.env.NODE_ENV !== "production",
     mode = DEBUG ? "development" : "production",
-    dir_build = path.resolve(__dirname, "bin"),
+    dir_build = path.resolve(__dirname, "bin/root"),
     WebpackAutoInject = require("webpack-auto-inject-version"),
     CopyWebpackPlugin = require("copy-webpack-plugin"),
     MiniCssExtractPlugin = require("mini-css-extract-plugin"),
@@ -30,7 +30,7 @@ module.exports = {
     target: "node",
     externals: [nodeExternals()],
     entry: {
-        Deploy: [
+        deploy: [
             path.resolve(__dirname, "src/Deploy/App.ts")
         ]
     },
@@ -117,6 +117,10 @@ module.exports = {
             context: "src"
         }, {
             from: "./**/**.html",
+            to: dir_build,
+            context: "src"
+        }, {
+            from: "./deploy/**.json",
             to: dir_build,
             context: "src"
         }, {
