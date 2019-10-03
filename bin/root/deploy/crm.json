@@ -1,0 +1,14 @@
+{
+  "crm": {
+    "version": "9.1",
+    "publisher_prefix": "<%= publisher %>",
+    "solution_name": "<%= solution %>",
+    "url": "<%= environment %>"
+  },
+  "adal": {
+    "clientId": "3d14ef79-de44-4358-bb18-75b54d1c4e4e",
+    "clientSecret": "peatZrUOWHDG93INhYhIFHKixubzS87Pp50VPAeWd2k=",
+    "tenant": "hso.com",
+    "redirectUri": "http://localhost:3000/getAToken"
+  }
+}
