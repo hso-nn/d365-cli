@@ -5,7 +5,7 @@ const variables = require("./variables");
 
 module.exports = {
     generateLicenseValidator(licensename) {
-        const check = shell.grep(`LicenseValidator:`, 'webpack.config.js');
+        const check = shell.grep(` LicenseValidator:`, 'webpack.config.js');
         if (check.stdout !== '\n') {
             console.log(colors.red(`src/License already exists!`));
         } else if (process.argv[5]) {
