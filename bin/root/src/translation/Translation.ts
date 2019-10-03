@@ -37,7 +37,6 @@ export class Translation {
     }
 
     private static async getTranslation(languageId: string, options: Options): Promise<{translation: {}}> {
-        debugger;
         const resource = await Translation.requestTranslationFile(languageId, options);
         if (resource) {
             return {translation: resource};
