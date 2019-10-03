@@ -1,6 +1,6 @@
 {
   "name": "<%= projectname %>",
-  "version": "1.0.0",
+  "version": "<%= version %>",
   "author": "HSO Innovation <innovation@hso.com> (http://www.hso.com)",
   "description": "<%= description %>",
   "scripts": {
@@ -8,7 +8,7 @@
     "build": "npm run clean && webpack",
     "build:prod": "npm run clean && cross-env NODE_ENV=production webpack --bail --progress",
     "deploy": "node deploy/deploy.js",
-    "clean": "IF exist <%= publisher %>_ (rmdir /s /q <%= publisher %>_)",
+    "clean": "IF exist dist (rmdir /s /q dist)",
     "watch": "webpack --watch",
     "start": "webpack-dev-server",
     "starthttps": "webpack-dev-server --https",
