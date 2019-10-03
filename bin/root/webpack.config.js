@@ -6,7 +6,8 @@ var path = require("path"),
     WebpackAutoInject = require("webpack-auto-inject-version"),
     CopyWebpackPlugin = require("copy-webpack-plugin"),
     MiniCssExtractPlugin = require("mini-css-extract-plugin"),
-    UglifyJSPlugin = require("uglifyjs-webpack-plugin");
+    UglifyJSPlugin = require("uglifyjs-webpack-plugin"),
+    ReplaceInFileWebpackPlugin = require("replace-in-file-webpack-plugin");
 
 const postcssLoader = {
         loader: "postcss-loader",
@@ -107,7 +108,19 @@ module.exports = {
             // both options are optional
             filename: "[name]/[name].css",
             // chunkFilename: "[id].css",
-        })
+        }),
+        // Fix Microsoft CE Validation tool
+        new ReplaceInFileWebpackPlugin([{
+            dir: dir_build,
+            test: /\.js$/,
+            rules: [{
+                search: /"==typeof/g,
+                replace: '"===typeof'
+            },{
+                search: /"!=typeof/g,
+                replace: '"!==typeof'
+            }]
+        }])
     ].concat(DEBUG ? [
         new CopyWebpackPlugin([{
             from: "./**/**.html",
