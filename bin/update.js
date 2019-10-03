@@ -35,7 +35,6 @@ const update = async () => {
         console.log(`Updating deploy...`);
         shell.cp('-R', `${__dirname}/root/deploy/deploy.js`, './deploy');
         const check = shell.grep(`clientUrl`, './deploy/crm.json');
-        console.log(check.stdout);
         if (check.stdout !== '\n') {
             shell.cp('-R', `${__dirname}/root/deploy/crm.json`, './deploy');
             const crmJsonFile = shell.ls('./deploy/crm.json')[0];
