@@ -30,6 +30,7 @@ const generate = async (licensename) => {
         });
         const webpackConfigFile = shell.ls('webpack.config.js')[0];
         shell.sed('-i', 'entry: {', `entry: {\n        LicenseValidator: [\n            path.resolve(__dirname, "src/License/Validator.ts")\n        ],`, webpackConfigFile);
+        shell.exec('npm install --save dlf-core@latest');
         console.log("Adding D365 License Validator done");
     });
 };
