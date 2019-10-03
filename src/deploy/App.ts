@@ -147,7 +147,7 @@ class App {
     private async deploy(messenger: Function): Promise<void> {
         const {publisher_prefix, url} = this.settings.crm;
         messenger(`Deploying to ${url}...<br/>`);
-        await this.deployDirectory(`${publisher_prefix}_`, messenger);
+        await this.deployDirectory(`dist/${publisher_prefix}_`, messenger);
         messenger('Deploy finished');
     }
 
@@ -171,16 +171,16 @@ class App {
         });
     }
 
-    // https://docs.microsoft.com/en-us/dynamics365/customer-engagement/web-api/webresource?view=dynamics-ce-odata-9
     private async deployFile(path: string, messenger: Function): Promise<void> {
         return new Promise((resolve): void => {
             fs.readFile(path, async (err: Error, data: Buffer) => {
-                const webresource = await this.getWebresource(path);
-                messenger(`${path}`);
+                const crmPath = path.substr(5),
+                    webresource = await this.getWebresource(crmPath);
+                messenger(`${crmPath}`);
                 if (webresource) {
                     await this.updateWebresource(webresource, data, messenger);
                 } else {
-                    await this.insertWebresource(data, path, messenger);
+                    await this.insertWebresource(data, crmPath, messenger);
                 }
                 resolve();
             });

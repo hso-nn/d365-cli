@@ -65,12 +65,6 @@ const create = async (projectname) => {
     shell.sed('-i', new RegExp('<%= projectabbr %>', 'ig'), answers.projectabbr, webpackConfigFile);
     shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.projectabbr, webpackConfigFile);
 
-    const eslintignoreFile = shell.ls('Webresources/.eslintignore')[0];
-    shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, eslintignoreFile);
-
-    const gitignoreFile = shell.ls('Webresources/.gitignore')[0];
-    shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, gitignoreFile);
-
     shell.cd('Webresources');
     console.log(`Installing npm packages. This may take a while...`);
     shell.exec('npm install');

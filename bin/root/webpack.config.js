@@ -2,7 +2,7 @@ var path = require("path"),
     webpack = require("webpack"),
     DEBUG = process.env.NODE_ENV !== "production",
     mode = DEBUG ? "development" : "production",
-    dir_build = path.resolve(__dirname, "<%= publisher %>_/<%= projectabbr %>"),
+    dir_build = path.resolve(__dirname, "dist/<%= publisher %>_/<%= projectabbr %>"),
     WebpackAutoInject = require("webpack-auto-inject-version"),
     CopyWebpackPlugin = require("copy-webpack-plugin"),
     MiniCssExtractPlugin = require("mini-css-extract-plugin"),
@@ -38,7 +38,7 @@ module.exports = {
         extensions: [".js", ".json", ".ts", ".tsx"]
     },
     devServer: {
-        contentBase: path.resolve(__dirname, `<%= publisher %>_`),
+        contentBase: path.resolve(__dirname, `dist/<%= publisher %>_`),
         hot: true,
         inline: true
     },

@@ -3,4 +3,4 @@ karma.conf.js
 i18next-scanner.config.js
 test-main.js
 msbuild-formatter.js
-<%= publisher %>_
+dist
