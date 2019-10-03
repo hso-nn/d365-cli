@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
 import i18next from 'i18next';
 

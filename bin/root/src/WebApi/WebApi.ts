@@ -79,7 +79,7 @@ export class WebApi {
         return WebApi.parseModel(entity, options);
     }
 
-    public static async updateRecord(entityLogicalName: string, id: string, model: Model): Promise<{entityType: string; id: string}> {
+    public static async updateRecord(entityLogicalName: string, id: string, model: Model): Promise<Model> {
         const attributes = Object.keys(model),
             metadata = await Xrm.Utility.getEntityMetadata(entityLogicalName, attributes),
             requestData: any = await WebApi.populateBindings(model, metadata);
@@ -101,10 +101,11 @@ export class WebApi {
                 delete requestData[attribute];
             }
         }
-        return Xrm.WebApi.updateRecord(entityLogicalName, id, requestData);
+        await Xrm.WebApi.updateRecord(entityLogicalName, id, requestData);
+        return model;
     }
 
-    public static async createRecord(entityLogicalName: string, model: Model | any): Promise<{entityType: string; id: string}> {
+    public static async createRecord(entityLogicalName: string, model: Model | any): Promise<Model> {
         const attributes = Object.keys(model),
             metadata = await Xrm.Utility.getEntityMetadata(entityLogicalName, attributes),
             requestData = await WebApi.populateBindings(model, metadata);
@@ -115,14 +116,15 @@ export class WebApi {
             }
         }*/
         const result = await Xrm.WebApi.createRecord(entityLogicalName, requestData);
+        // eslint-disable-next-line require-atomic-updates
         model[metadata.PrimaryIdAttribute] = result.id;
-        return result;
+        return model;
     }
 
-    public static async upsertRecord(entityLogicalName: string, model: Model | any): Promise<{entityType: string; id: string}> {
+    public static async upsertRecord(entityLogicalName: string, model: Model | any): Promise<Model> {
         const metadata = await Xrm.Utility.getEntityMetadata(entityLogicalName);
         const primaryId = model[metadata.PrimaryIdAttribute];
-        if (model.hasOwnProperty(metadata.PrimaryIdAttribute) && primaryId) {
+        if (Object.keys(model).includes(metadata.PrimaryIdAttribute) && primaryId) {
             return this.updateRecord(entityLogicalName, primaryId, model);
         } else {
             return this.createRecord(entityLogicalName, model);
@@ -221,12 +223,11 @@ export class WebApi {
         return new Promise((resolve, reject): void => {
             const request = new XMLHttpRequest(),
                 url = `${this.apiUrl}${uri}`,
-                requestData = data && JSON.stringify(data);
+                requestData = data && JSON.stringify(data),
+                headerKeys = Object.keys(httpHeaders);
             request.open(method, encodeURI(url), true);
-            for (const header in httpHeaders) {
-                if (httpHeaders.hasOwnProperty(header)) {
-                    request.setRequestHeader(header, httpHeaders[header]);
-                }
+            for (const key of headerKeys) {
+                request.setRequestHeader(key, httpHeaders[key]);
             }
             request.onreadystatechange = function (): void {
                 if (this.readyState === 4) {
@@ -262,14 +263,15 @@ export class WebApi {
         if (!model) {
             return model;
         }
+        const modelKeys = Object.keys(model);
         for (const attribute of select) {
-            if (model.hasOwnProperty(`_${attribute}_value`)) {
+            if (modelKeys.includes(`_${attribute}_value`)) {
                 model[attribute] = model[`_${attribute}_value`];
             }
-            if (model.hasOwnProperty(`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname`)) {
+            if (modelKeys.includes(`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname`)) {
                 model[`${attribute}_LogicalName`] = model[`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname`];
             }
-            if (model.hasOwnProperty(`_${attribute}_value@OData.Community.Display.V1.FormattedValue`)) {
+            if (modelKeys.includes(`_${attribute}_value@OData.Community.Display.V1.FormattedValue`)) {
                 model[`${attribute}_FormattedValue`] = model[`_${attribute}_value@OData.Community.Display.V1.FormattedValue`];
             }
         }
