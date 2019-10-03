@@ -54,14 +54,14 @@ const update = async () => {
         shell.cp('-R', `${__dirname}/root/src/tsx`, './src');
 
         console.log(`Updating package.json...`);
-        const dlfCoreCheck = shell.grep(`export namespace`, filepath);
+        const dlfCoreCheck = shell.grep(`dlf-core`, 'package.json');
         shell.cp('-R', `${__dirname}/root/package.json`, '.');
         const packageJsonFile = shell.ls('package.json')[0];
         shell.sed('-i', new RegExp('<%= projectname %>', 'ig'), projectname, packageJsonFile);
         shell.sed('-i', new RegExp('<%= description %>', 'ig'), description, packageJsonFile);
         shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, packageJsonFile);
         shell.sed('-i', new RegExp('<%= version %>', 'ig'), version, packageJsonFile);
-        if (dlfCoreCheck.stdout === '\n') {
+        if (dlfCoreCheck.stdout !== '\n') {
             shell.exec('npm install --save dlf-core@latest');
         }
 
