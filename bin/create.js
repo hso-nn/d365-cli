@@ -38,6 +38,10 @@ const create = async (projectname) => {
         message: 'Solution name (should match D365 environment):'
     }, {
         type: 'input',
+        name: 'version',
+        message: 'Solution version:'
+    }, {
+        type: 'input',
         name: 'environment',
         message: 'The environment url (eg. https://yourproject.crm4.dynamics.com):'
     }, {
@@ -59,6 +63,7 @@ const create = async (projectname) => {
     shell.sed('-i', '<%= projectname %>', projectname.toLowerCase(), packageJsonFile);
     shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.description, packageJsonFile);
     shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, packageJsonFile);
+    shell.sed('-i', new RegExp('<%= version %>', 'ig'), answers.publisher, packageJsonFile);
 
     const webpackConfigFile = shell.ls('Webresources/webpack.config.js')[0];
     shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, webpackConfigFile);
