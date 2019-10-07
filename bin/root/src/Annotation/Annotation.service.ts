@@ -17,7 +17,7 @@ export class AnnotationService {
         };
     }
 
-    public static async upsertRecord(annotationModel: AnnotationModel): Promise<{entityType: string; id: string}> {
+    public static async upsertRecord(annotationModel: AnnotationModel): Promise<AnnotationModel> {
         const {id, logicalName} = annotationModel.objectid,
             annotations: AnnotationModel[] = await WebApi.retrieveMultipleRecords('annotation', {
                 select: ['annotationid', 'objectid'],
