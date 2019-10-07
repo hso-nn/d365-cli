@@ -9,21 +9,8 @@ var path = require("path"),
     UglifyJSPlugin = require("uglifyjs-webpack-plugin"),
     ReplaceInFileWebpackPlugin = require("replace-in-file-webpack-plugin");
 
-const postcssLoader = {
-        loader: "postcss-loader",
-        options: {
-            plugins: function () {
-                return [
-                    require("autoprefixer")({
-                        browsers: ["Android > 0","last 3 versions", "> 1%"]
-                    }),
-                    require("cssnano")({zindex: false})
-                ];
-            }
-        }
-    },
-    scssLoaders = [MiniCssExtractPlugin.loader, "css-loader", postcssLoader, "sass-loader"],
-    cssLoaders = [MiniCssExtractPlugin.loader, "css-loader", postcssLoader];
+const scssLoaders = [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader", "sass-loader"],
+    cssLoaders = [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"];
 
 module.exports = {
     mode: mode,

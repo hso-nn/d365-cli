@@ -29,6 +29,9 @@ const update = async () => {
         console.log(`Updating .eslintrc.json...`);
         shell.cp('-R', `${__dirname}/root/.eslintrc.json`, '.');
 
+        console.log(`Updating postcss.config.js`);
+        shell.cp('-R', `${__dirname}/root/postcss.config.js`, '.');
+
         console.log(`Updating tsconfig.json...`);
         shell.cp('-R', `${__dirname}/root/src/tsconfig.json`, './src');
 
