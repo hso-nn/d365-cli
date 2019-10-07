@@ -47,6 +47,9 @@ const update = async () => {
         shell.cp('-R', `${__dirname}/root/src/WebApi`, './src');
         shell.exec('git add src/WebApi/Model.ts');
 
+        console.log(`Updating Annotation...`);
+        shell.cp('-R', `${__dirname}/root/src/Annotation`, './src');
+
         console.log(`Updating Translation...`);
         shell.cp('-R', `${__dirname}/root/src/translation`, './src');
 
