@@ -107,8 +107,10 @@ const update = async () => {
         shell.sed('-i', new RegExp(`loader: "tslint-loader",`, 'ig'), `loader: "eslint-loader",`, webpackConfigFile);
         shell.sed('-i', new RegExp(`\\[".js", ".json", ".ts"\\]`, 'ig'), `[".js", ".json", ".ts", ".tsx"]`, webpackConfigFile);
         shell.sed('-i', new RegExp(`ts\\$/,`, 'ig'), `tsx?$/,`, webpackConfigFile);
-        shell.sed('-i', new RegExp(`${publisher}_`, 'ig'), `dist/${publisher}_`, webpackConfigFile);
-
+        const distCheck = shell.grep(`dist`, 'webpack.config.js');
+        if (distCheck.stdout === '\n') {
+            shell.sed('-i', new RegExp(`${publisher}_`, 'ig'), `dist/${publisher}_`, webpackConfigFile);
+        }
         console.log(`Updating D365 Project done`);
     });
 };
