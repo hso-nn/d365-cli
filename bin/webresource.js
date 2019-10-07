@@ -45,8 +45,9 @@ const generate = async (webresourcename) => {
             shell.sed('-i', new RegExp('PUBLISHER', 'ig'), publisher, `src/${webresourcename}/${newfilename}`);
             shell.sed('-i', new RegExp('PROJECTABBR', 'ig'), projectabbr, `src/${webresourcename}/${newfilename}`);
         });
-        const webpackConfigFile = shell.ls('webpack.config.js')[0];
-        shell.sed('-i', 'entry: {', `entry: {\n        ${webresourcename}: [\n            path.resolve(__dirname, "src/${webresourcename}/${webresourcename}.ts")\n        ],`, webpackConfigFile);
+        const webpackConfigFile = shell.ls('webpack.config.js')[0],
+            extension = template === 'React' ? 'tsx' : 'ts';
+        shell.sed('-i', 'entry: {', `entry: {\n        ${webresourcename}: [\n            path.resolve(__dirname, "src/${webresourcename}/${webresourcename}.${extension}")\n        ],`, webpackConfigFile);
         console.log("Adding D365 Webresource done");
     });
 };
