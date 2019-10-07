@@ -33,6 +33,7 @@ export class AnnotationService {
             }),
             annotation = annotations[0];
         if (annotation) {
+            // eslint-disable-next-line require-atomic-updates
             annotationModel.annotationid = annotation.annotationid;
         } else {
             const binding = await AnnotationService.getBinding('objectid', id, logicalName);
