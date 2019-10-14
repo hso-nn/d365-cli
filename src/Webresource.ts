@@ -1,37 +1,35 @@
-#! /usr/bin/env node
-const shell = require("shelljs");
-const colors = require('colors');
-const variables = require("./variables");
-const inquirer = require('inquirer');
+import * as colors from 'colors';
+import * as shell from 'shelljs';
+import * as inquirer from 'inquirer';
+import {Variables} from './Variables';
 
-module.exports = {
-    generateWebresource(webresourcename) {
+export class Webresource {
+    public static generateWebresource(webresourcename: string): Promise<void> {
         const check = shell.grep(` ${webresourcename}:`, 'webpack.config.js');
-        if(!new RegExp("[A-Z]").test(webresourcename[0])) {
+        if(!new RegExp('[A-Z]').test(webresourcename[0])) {
             console.log(colors.red(`Webresource name must be UpperCamelCase!`));
         } else if (check.stdout !== '\n') {
             console.log(colors.red(`echo Webresource ${webresourcename} already exists!`));
         } else if (process.argv[5]) {
             console.log(colors.red(`echo No spaces allowed!`));
         } else {
-            generate(webresourcename);
+            return Webresource.generate(webresourcename);
         }
     }
-};
 
-const generate = async (webresourcename) => {
-    console.log(`Adding D365 Webresource ${webresourcename}...abc`);
-    const answers = await inquirer.prompt([{
-            type: 'list',
-            name: 'template',
-            message: 'Which template do you want?',
-            choices: [
-                'HTML',
-                'React'
-            ]
-        }]),
-        template = answers.template;
-    variables.get(({publisher, projectabbr}) => {
+    private static async generate(webresourcename: string): Promise<void> {
+        console.log(`Adding D365 Webresource ${webresourcename}...abc`);
+        const answers = await inquirer.prompt([{
+                type: 'list',
+                name: 'template',
+                message: 'Which template do you want?',
+                choices: [
+                    'HTML',
+                    'React'
+                ]
+            }]),
+            template = answers.template;
+        const {publisher, projectabbr} = await Variables.get();
         shell.mkdir(`src/${webresourcename}`);
         const srcDir = `${__dirname}/Webresource${template === 'React' ? 'Tsx' : ''}/*.*`;
         shell.ls(srcDir).forEach(function (file) {
@@ -48,6 +46,6 @@ const generate = async (webresourcename) => {
         const webpackConfigFile = shell.ls('webpack.config.js')[0],
             extension = template === 'React' ? 'tsx' : 'ts';
         shell.sed('-i', 'entry: {', `entry: {\n        ${webresourcename}: [\n            path.resolve(__dirname, "src/${webresourcename}/${webresourcename}.${extension}")\n        ],`, webpackConfigFile);
-        console.log("Adding D365 Webresource done");
-    });
-};
+        console.log('Adding D365 Webresource done');
+    }
+}

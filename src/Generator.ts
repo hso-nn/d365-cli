@@ -1,12 +1,11 @@
-#! /usr/bin/env node
-const shell = require("shelljs");
-const entity = require('./entity');
-const webresource = require('./webresource');
-const licenseValidator = require('./licenseValidator');
-const colors = require('colors');
+import * as colors from 'colors';
+import * as shell from 'shelljs';
+import {Entity} from './Entity';
+import {Webresource} from './Webresource';
+import {LicenseValidator} from './LicenseValidator';
 
-module.exports = {
-    generate(schematic, name) {
+export class Generator {
+    public static generate(schematic: string, name: string): Promise<void> {
         const supportedSchematics = ['entity', 'webresource', 'licensevalidator'];
         if (!shell.test('-e', 'src')) {
             console.log(colors.red(`You are not inside the project Webresources folder!`));
@@ -15,17 +14,18 @@ module.exports = {
         } else if (!supportedSchematics.includes(schematic.toLowerCase())) {
             console.log(colors.red(`Schematic ${schematic} not supported!`));
         } else if (schematic.toLowerCase() === 'entity') {
-            entity.generateEntity(name);
+            return Entity.generateEntity(name);
         } else if (schematic.toLowerCase() === 'webresource') {
-            webresource.generateWebresource(name);
-        } else if (schematic.toLowerCase(name) === 'licensevalidator') {
-            licenseValidator.generateLicenseValidator(name);
+            return Webresource.generateWebresource(name);
+        } else if (schematic.toLowerCase() === 'licensevalidator') {
+            return LicenseValidator.generateLicenseValidator(name);
         }
-    },
-    showGenerateHelp() {
+    }
+
+    public static showGenerateHelp(): void {
         console.log(`Arguments:`);
         console.log(`   ${colors.blue('schematic')}`);
         console.log(`     The schematic or collection:schematic to generate.`);
         console.log(`     Example: Entity, Webresource or LicenseValidator.`);
     }
-};
+}

@@ -1,5 +1,5 @@
-import {Filter, MultipleSystemQueryOptions} from '../../../bin/root/src/WebApi/WebApi';
-import {Model} from '../../../bin/root/src/WebApi/Model';
+import {Filter, MultipleSystemQueryOptions} from '../../../../bin/root/src/WebApi/WebApi';
+import {Model} from '../../../../bin/root/src/WebApi/Model';
 import * as fs from 'fs';
 import * as https from 'https';
 import { IncomingMessage } from 'http';
