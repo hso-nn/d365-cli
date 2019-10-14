@@ -1,24 +1,22 @@
-#! /usr/bin/env node
-const shell = require("shelljs");
-const colors = require('colors');
-const variables = require("./variables");
+import * as colors from 'colors';
+import * as shell from 'shelljs';
+import {Variables} from './Variables';
 
-module.exports = {
-    generateLicenseValidator(licensename) {
+export class LicenseValidator {
+    public static async generateLicenseValidator(licensename: string): Promise<void> {
         const check = shell.grep(` LicenseValidator:`, 'webpack.config.js');
         if (check.stdout !== '\n') {
             console.log(colors.red(`src/License already exists!`));
         } else if (process.argv[5]) {
             console.log(colors.red(`No spaces allowed!`));
         } else {
-            generate(licensename);
+            LicenseValidator.generate(licensename);
         }
     }
-};
 
-const generate = async (licensename) => {
-    console.log(`Adding D365 License Validator for ${licensename}...`);
-    variables.get(async ({publisher, projectabbr}) => {
+    private static async generate(licensename: string): Promise<void> {
+        console.log(`Adding D365 License Validator for ${licensename}...`);
+        const {publisher, projectabbr} = await Variables.get();
         shell.mkdir(`src/License`);
         shell.ls(`${__dirname}/License/*.*`).forEach(function (file) {
             const split = file.split('/');
@@ -31,6 +29,6 @@ const generate = async (licensename) => {
         const webpackConfigFile = shell.ls('webpack.config.js')[0];
         shell.sed('-i', 'entry: {', `entry: {\n        LicenseValidator: [\n            path.resolve(__dirname, "src/License/Validator.ts")\n        ],`, webpackConfigFile);
         shell.exec('npm install --save dlf-core@latest');
-        console.log("Adding D365 License Validator done");
-    });
-};
+        console.log('Adding D365 License Validator done');
+    }
+}

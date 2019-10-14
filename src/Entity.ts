@@ -1,34 +1,30 @@
-#! /usr/bin/env node
-const shell = require("shelljs");
-const readline = require('readline');
-const colors = require('colors');
-const inquirer = require('inquirer');
-const variables = require("./variables");
+import * as colors from 'colors';
+import * as shell from 'shelljs';
+import * as inquirer from 'inquirer';
+import {Variables} from './Variables';
 
-module.exports = {
-    generateEntity(entityname) {
+export class Entity {
+    public static generateEntity(entityname: string): Promise<void> {
         const check = shell.grep(` ${entityname}:`, 'webpack.config.js');
-        if(!new RegExp("[A-Z]").test(entityname[0])) {
+        if(!new RegExp('[A-Z]').test(entityname[0])) {
             console.log(colors.red(`Entity name must be UpperCamelCase!`));
         } else if (check.stdout !== '\n') {
             console.log(colors.red(`Entity ${entityname} already exists!`));
         } else if (process.argv[5]) {
             console.log(colors.red(`No spaces allowed!`));
         } else {
-            generate(entityname);
+            return Entity.generate(entityname);
         }
     }
-};
 
-const generate = async (entityname) => {
-    console.log(`Adding D365 Entity ${entityname}...`);
-    variables.get(async ({publisher, projectabbr}) => {
-
-        const answers = await inquirer.prompt([{
-            type: 'input',
-            name: 'entityLogicalName',
-            message: 'Entity LogicalName:'
-        }]);
+    private static async generate(entityname: string): Promise<void> {
+        console.log(`Adding D365 Entity ${entityname}...`);
+        const {publisher, projectabbr} = await Variables.get(),
+            answers = await inquirer.prompt([{
+                type: 'input',
+                name: 'entityLogicalName',
+                message: 'Entity LogicalName:'
+            }]);
         shell.mkdir(`src/${entityname}`);
         shell.ls(`${__dirname}/Entity/*.*`).forEach(function (file) {
             const split = file.split('/');
@@ -44,6 +40,6 @@ const generate = async (entityname) => {
         });
         const webpackConfigFile = shell.ls('webpack.config.js')[0];
         shell.sed('-i', 'entry: {', `entry: {\n        ${entityname}: [\n            path.resolve(__dirname, "src/${entityname}/${entityname}.ts")\n        ],`, webpackConfigFile);
-        console.log("Adding D365 Entity done");
-    });
-};
+        console.log('Adding D365 Entity done');
+    }
+}

@@ -1,25 +1,34 @@
-#! /usr/bin/env node
-const shell = require("shelljs");
-const colors = require('colors');
-const inquirer = require('inquirer');
-const variables = require("./variables");
+import * as colors from 'colors';
+import * as shell from 'shelljs';
+import {AllVariables, Variables} from './Variables';
 
-module.exports = {
-    updateProject() {
+export class Update {
+    public static updateProject(): Promise<void> {
         if (process.argv[3]) {
             console.log(colors.red(`No spaces allowed after update command!`));
         } else {
-            update();
+            return Update.update();
         }
-    },
-    showUpdateHelp() {
+    }
+
+    public static showUpdateHelp(): void {
         console.log(`Arguments:`);
     }
-};
 
-const update = async () => {
-    console.log(`Updating D365 Project...`);
-    variables.get(({publisher, projectabbr, description, projectname, version, solution, environment}) => {
+    private static async update(): Promise<void> {
+        console.log(`Updating D365 Project...`);
+        const variables = await Variables.get();
+        Update.updateProjectRootFolder();
+        Update.updateDeploy(variables);
+        Update.updateSrcFolder();
+        Update.updatePackageJson(variables);
+        Update.updateModelFiles();
+        Update.updateEntityFiles();
+        Update.updateWebpackConfig(variables);
+        console.log(`Updating D365 Project done`);
+    }
+
+    private static updateProjectRootFolder(): void {
         console.log(`Updating .eslintignore...`);
         shell.cp('-R', `${__dirname}/root/.eslintignore`, '.');
 
@@ -31,20 +40,13 @@ const update = async () => {
 
         console.log(`Updating postcss.config.js`);
         shell.cp('-R', `${__dirname}/root/postcss.config.js`, '.');
+        shell.exec('git add postcss.config.js');
 
+    }
+
+    private static updateSrcFolder(): void {
         console.log(`Updating tsconfig.json...`);
         shell.cp('-R', `${__dirname}/root/src/tsconfig.json`, './src');
-
-        console.log(`Updating deploy...`);
-        shell.cp('-R', `${__dirname}/root/deploy/deploy.js`, './deploy');
-        const check = shell.grep(`clientUrl`, './deploy/crm.json');
-        if (check.stdout !== '\n') {
-            shell.cp('-R', `${__dirname}/root/deploy/crm.json`, './deploy');
-            const crmJsonFile = shell.ls('./deploy/crm.json')[0];
-            shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, crmJsonFile);
-            shell.sed('-i', new RegExp('<%= solution %>', 'ig'), solution, crmJsonFile);
-            shell.sed('-i', new RegExp('<%= environment %>', 'ig'), environment, crmJsonFile);
-        }
 
         console.log(`Updating WebApi...`);
         shell.cp('-R', `${__dirname}/root/src/WebApi`, './src');
@@ -58,22 +60,44 @@ const update = async () => {
 
         console.log(`Updating txs...`);
         shell.cp('-R', `${__dirname}/root/src/tsx`, './src');
+    }
 
+    private static updateDeploy(variables: AllVariables): void {
+        console.log(`Updating deploy...`);
+        shell.cp('-R', `${__dirname}/root/deploy/deploy.js`, './deploy');
+        const check = shell.grep(`clientUrl`, './deploy/crm.json'),
+            {publisher, solution, environment} = variables;
+        if (check.stdout !== '\n') {
+            shell.cp('-R', `${__dirname}/root/deploy/crm.json`, './deploy');
+            const crmJsonFile = shell.ls('./deploy/crm.json')[0];
+            shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, crmJsonFile);
+            shell.sed('-i', new RegExp('<%= solution %>', 'ig'), solution, crmJsonFile);
+            shell.sed('-i', new RegExp('<%= environment %>', 'ig'), environment, crmJsonFile);
+        }
+    }
+
+    private static updatePackageJson(variables: AllVariables): void {
         console.log(`Updating package.json...`);
-        const dlfCoreCheck = shell.grep(`dlf-core`, 'package.json');
+        let dlfCoreCheck = shell.grep(`dlf-core`, 'package.json');
+        const {projectname, description, publisher, version} = variables;
+        if (dlfCoreCheck.stdout !== '\n') {
+            shell.exec('npm install --save dlf-core@latest');
+            dlfCoreCheck = shell.grep(`dlf-core`, 'package.json');
+        }
         shell.cp('-R', `${__dirname}/root/package.json`, '.');
         const packageJsonFile = shell.ls('package.json')[0];
+        if (dlfCoreCheck.stdout !== '\n') {
+            shell.sed('-i', '"dependencies": {', `"dependencies": {\n${dlfCoreCheck.stdout}`, packageJsonFile);
+        }
         shell.sed('-i', new RegExp('<%= projectname %>', 'ig'), projectname, packageJsonFile);
         shell.sed('-i', new RegExp('<%= description %>', 'ig'), description, packageJsonFile);
         shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, packageJsonFile);
         shell.sed('-i', new RegExp('<%= version %>', 'ig'), version, packageJsonFile);
-        if (dlfCoreCheck.stdout !== '\n') {
-            shell.exec('npm install --save dlf-core@latest');
-        }
-
         console.log(`Removing old npm packages. This may take a while...`);
         shell.exec('npm prune');
+    }
 
+    private static updateModelFiles(): void {
         console.log(`Updating Model files`);
         shell.ls(`src/**/*.model.ts*`).forEach(function (filepath) {
             const check = shell.grep(`import {Model}`, filepath);
@@ -86,7 +110,9 @@ const update = async () => {
                 console.log(`Modified ${filepath}`);
             }
         });
+    }
 
+    private static updateEntityFiles(): void {
         console.log('Updating Entity files');
         shell.ls(`src/**/*.ts*`).forEach(function (filepath) {
             const split = filepath.split('/'),
@@ -104,9 +130,12 @@ const update = async () => {
                 }
             }
         });
+    }
 
+    private static updateWebpackConfig(variables: AllVariables): void {
         console.log(`Updating webpack.config.js...`);
-        const webpackConfigFile = shell.ls('webpack.config.js')[0];
+        const webpackConfigFile = shell.ls('webpack.config.js')[0],
+            publisher = variables.publisher;
         shell.sed('-i', new RegExp(`loader: "tslint-loader",`, 'ig'), `loader: "eslint-loader",`, webpackConfigFile);
         shell.sed('-i', new RegExp(`\\[".js", ".json", ".ts"\\]`, 'ig'), `[".js", ".json", ".ts", ".tsx"]`, webpackConfigFile);
         shell.sed('-i', new RegExp(`ts\\$/,`, 'ig'), `tsx?$/,`, webpackConfigFile);
@@ -114,6 +143,5 @@ const update = async () => {
         if (distCheck.stdout === '\n') {
             shell.sed('-i', new RegExp(`${publisher}_`, 'ig'), `dist/${publisher}_`, webpackConfigFile);
         }
-        console.log(`Updating D365 Project done`);
-    });
-};
+    }
+}

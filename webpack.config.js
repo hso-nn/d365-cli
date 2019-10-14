@@ -2,7 +2,7 @@ const path = require("path"),
     webpack = require("webpack"),
     DEBUG = process.env.NODE_ENV !== "production",
     mode = DEBUG ? "development" : "production",
-    dir_build = path.resolve(__dirname, "bin/root"),
+    dir_build = path.resolve(__dirname, "bin"),
     WebpackAutoInject = require("webpack-auto-inject-version"),
     CopyWebpackPlugin = require("copy-webpack-plugin"),
     MiniCssExtractPlugin = require("mini-css-extract-plugin"),
@@ -28,15 +28,22 @@ const postcssLoader = {
 module.exports = {
     mode: mode,
     target: "node",
+    node: {
+        __dirname: false,
+        __filename: false
+    },
     externals: [nodeExternals()],
     entry: {
-        deploy: [
-            path.resolve(__dirname, "src/Deploy/App.ts")
+        "root/deploy/deploy": [
+            path.resolve(__dirname, "src/root/Deploy/App.ts")
+        ],
+        "hso-d365": [
+            path.resolve(__dirname, "src/hso-d365.ts")
         ]
     },
     output: {
         path: dir_build,
-        filename: "[name]/[name].js"
+        filename: "[name].js"
     },
     resolve: {
         extensions: [".js", ".json", ".ts"]
@@ -67,7 +74,7 @@ module.exports = {
                 path.resolve(__dirname, "./src/libs")
             ]
         }, {
-            test: /\.json$/, loader: "json"
+            test: /\.json$/, loader: "json-loader"
         }, {
             test: /\.scss$/, loader: scssLoaders
         }, {
@@ -120,7 +127,7 @@ module.exports = {
             to: dir_build,
             context: "src"
         }, {
-            from: "./deploy/**.json",
+            from: "./root/**/**.json",
             to: dir_build,
             context: "src"
         }, {
@@ -137,7 +144,7 @@ module.exports = {
             new UglifyJSPlugin({
                 uglifyOptions: {
                     compress: {
-                        drop_console: true,
+                        drop_console: false,
                     }
                 }
             })
