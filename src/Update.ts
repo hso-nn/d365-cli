@@ -141,6 +141,7 @@ export class Update {
         shell.sed('-i', new RegExp(`ts\\$/,`, 'ig'), `tsx?$/,`, webpackConfigFile);
         const distCheck = shell.grep(`dist`, 'webpack.config.js');
         if (distCheck.stdout === '\n') {
+            shell.rm('-rf', `./${publisher}_`);
             shell.sed('-i', new RegExp(`${publisher}_`, 'ig'), `dist/${publisher}_`, webpackConfigFile);
         }
     }
