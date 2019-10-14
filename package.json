@@ -1,15 +1,29 @@
 {
   "name": "@hso/ce-cli",
   "version": "1.0.0",
+  "author": "HSO Innovation <innovation@hso.com> (http://www.hso.com)",
   "description": "HSO D365 CLI",
+  "repository": {
+    "type": "npm",
+    "url": "https://dys-ax.pkgs.visualstudio.com/_packaging/CodePlex/npm/registry/"
+  },
+  "keywords": [
+    "cli",
+    "ce",
+    "d365",
+    "hso",
+    "dynamics"
+  ],
+  "files": [
+    "bin/"
+  ],
+  "license": "MIT",
   "scripts": {
     "get-credentials": "vsts-npm-auth -config .npmrc",
     "build": "npm run clean && webpack",
     "build:prod": "npm run clean && cross-env NODE_ENV=production webpack --bail --progress",
     "clean": "IF exist bin\\root\\deploy (rmdir /s /q bin\\root\\deploy)"
   },
-  "author": "HSO Innovation",
-  "license": "ISC",
   "bin": {
     "hso-d365": "bin/hso-d365.js"
   },
