@@ -1,5 +1,5 @@
 {
-  "name": "@hso/ce-cli",
+  "name": "@hso/d365-cli",
   "version": "1.0.0",
   "author": "HSO Innovation <innovation@hso.com> (http://www.hso.com)",
   "description": "HSO D365 CLI",
