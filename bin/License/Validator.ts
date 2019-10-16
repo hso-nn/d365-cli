@@ -1,4 +1,4 @@
-import {DLFCore, ValidateLicenseResult} from 'dlf-core/dist/DLF-core';
+import {DLFCore, ValidateLicenseResult} from 'dlf-core';
 // import {WebApi} from '../WebApi/WebApi';
 
 export interface ValidateLicenseResult extends JSON {
