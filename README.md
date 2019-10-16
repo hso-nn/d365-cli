@@ -4,13 +4,30 @@ A [Command-line interface](https://en.wikipedia.org/wiki/Command-line_interface)
 # Getting Started
 
 ## Prerequisites
-Please have [Node](https://nodejs.org/en/) installed
-  
+* Please have [Node](https://nodejs.org/en/) installed
+* Please have [Visual Studio Code](https://code.visualstudio.com/download) installed
+    * Please install Visual Studio Code [ESLint plugin](https://github.com/microsoft/vscode-eslint)
+    * In Visual Studio Code extensions list right-click ESLint extension and click 'Configure Extension Settings'
+     * Add following configuration:
+     ```json
+     "eslint.validate":[
+         "javascript",
+         "javascriptreact",
+         "typescript",
+         "typescriptreact"
+     ],
+     ```
+     
 Recommended for debugging: [Fiddler](https://www.telerik.com/fiddler)
 
 ## Installation process
-Since this package is not deployed yet, you need to install it locally.
-  * Checkout this Repository
+```powershell
+  npm install -g @hso/d365-cli
+```
+
+### For Beta testers only
+If you can/have checked out the source code, you need to install it locally.
+  * Checkout this [Repository](https://dys-ax.visualstudio.com/P030-CES/_git/P030-CE-CLI)
   * Open PowerShell/cmd and run 'npm link'
   * Now you can close the Repository
 
