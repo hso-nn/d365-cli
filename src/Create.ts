@@ -6,16 +6,15 @@ interface CreateAnswers {
     publisher?: string;
     solution?: string;
     environment?: string;
-    description?: string;
-    projectabbr?: string;
+    namespace?: string;
 }
 
 export class Create {
     public static createProject(projectname: string): Promise<void> {
         if (process.argv[4]) {
             console.log(colors.red(`No spaces allowed!`));
-        } else if (shell.test('-e', projectname)) {
-            console.log(colors.red(`Project ${projectname} already exists!`));
+        } else if (shell.test('-e', `${projectname}/Webresources`)) {
+            console.log(colors.red(`Project ${projectname}/Webresources already exists!`));
         } else {
             return Create.create(projectname);
         }
@@ -44,14 +43,13 @@ export class Create {
 
         const packageJsonFile = shell.ls('Webresources/package.json')[0];
         shell.sed('-i', '<%= projectname %>', projectname.toLowerCase(), packageJsonFile);
-        shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.description, packageJsonFile);
+        shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.solution, packageJsonFile);
         shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, packageJsonFile);
-        shell.sed('-i', new RegExp('<%= version %>', 'ig'), answers.publisher, packageJsonFile);
 
         const webpackConfigFile = shell.ls('Webresources/webpack.config.js')[0];
         shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, webpackConfigFile);
-        shell.sed('-i', new RegExp('<%= projectabbr %>', 'ig'), answers.projectabbr, webpackConfigFile);
-        shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.projectabbr, webpackConfigFile);
+        shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), answers.namespace, webpackConfigFile);
+        shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.namespace, webpackConfigFile);
 
         shell.cd('Webresources');
         console.log(`Installing npm packages. This may take a while...`);
@@ -65,28 +63,20 @@ export class Create {
     private static inquirer(): Promise<CreateAnswers> {
         return inquirer.prompt([{
             type: 'input',
-            name: 'description',
-            message: 'Project description:'
+            name: 'environment',
+            message: 'D365 environment url (eg. https://yourproject.crm4.dynamics.com):'
         }, {
             type: 'input',
             name: 'solution',
-            message: 'Solution name (should match D365 environment):'
-        }, {
-            type: 'input',
-            name: 'version',
-            message: 'Solution version:'
-        }, {
-            type: 'input',
-            name: 'environment',
-            message: 'The environment url (eg. https://yourproject.crm4.dynamics.com):'
+            message: 'D365 Solution name:'
         }, {
             type: 'input',
             name: 'publisher',
-            message: 'Publisher abbreviation (3 chars a-z):'
+            message: 'D365 Publisher Prefix (3 chars a-z):'
         }, {
             type: 'input',
-            name: 'projectabbr',
-            message: 'Project abbreviation (3 chars a-z):'
+            name: 'namespace',
+            message: 'Namespace (eg. Customer or Product name):'
         }]);
     }
 }
