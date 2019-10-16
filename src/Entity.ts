@@ -6,7 +6,9 @@ import {Variables} from './Variables';
 export class Entity {
     public static generateEntity(entityname: string): Promise<void> {
         const check = shell.grep(` ${entityname}:`, 'webpack.config.js');
-        if(!new RegExp('[A-Z]').test(entityname[0])) {
+        if (!entityname) {
+            console.log(colors.red('Entity name missing'));
+        } else if(!new RegExp('[A-Z]').test(entityname[0])) {
             console.log(colors.red(`Entity name must be UpperCamelCase!`));
         } else if (check.stdout !== '\n') {
             console.log(colors.red(`Entity ${entityname} already exists!`));

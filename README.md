@@ -4,13 +4,30 @@ A [Command-line interface](https://en.wikipedia.org/wiki/Command-line_interface)
 # Getting Started
 
 ## Prerequisites
-Please have [Node](https://nodejs.org/en/) installed
-  
+* Please have [Node](https://nodejs.org/en/) installed
+* Please have [Visual Studio Code](https://code.visualstudio.com/download) installed
+    * Please install Visual Studio Code [ESLint plugin](https://github.com/microsoft/vscode-eslint)
+    * In Visual Studio Code extensions list right-click ESLint extension and click 'Configure Extension Settings'
+     * Add following configuration:
+     ```json
+     "eslint.validate":[
+         "javascript",
+         "javascriptreact",
+         "typescript",
+         "typescriptreact"
+     ],
+     ```
+     
 Recommended for debugging: [Fiddler](https://www.telerik.com/fiddler)
 
 ## Installation process
-Since this package is not deployed yet, you need to install it locally.
-  * Checkout this Repository
+```powershell
+  npm install -g @hso/d365-cli
+```
+
+### For Beta testers only
+If you can/have checked out the source code, you need to install it locally.
+  * Checkout this [Repository](https://dys-ax.visualstudio.com/P030-CES/_git/P030-CE-CLI)
   * Open PowerShell/cmd and run 'npm link'
   * Now you can close the Repository
 
@@ -34,11 +51,23 @@ This will ask a couple of questions to setup the project:
 
 ```powershell
   Initializing D365 Project my-first-project
-  What is the project description? My First Project
-  What is the Publisher abbreviation (3 chars a-z)? mfp
-  What is the Project abbreviation (3 chars a-z)? prj
+  D365 environment url (eg. https://yourproject.crm4.dynamics.com):? https://yourproject.crm4.dynamics.com
+  D365 Solution name:? CoreEssentials
+  D365 Publisher Prefix (3 chars a-z):? hso
+  Namespace (eg. Customer or Product name):? afs
   Installing npm packages. This may take a while...
   Initializing D365 Project done
+```
+
+# Update Project
+When updating the CLI, you can update the project as well and get latest features/best-practices
+* Update CLI: 
+```powershell
+npm install -g @hso/d365-cli@latest
+```
+* Update Project:
+```powershell
+hso-d365 update
 ```
 
 # Entity

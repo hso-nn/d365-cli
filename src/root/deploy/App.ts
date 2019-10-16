@@ -2,7 +2,7 @@ import * as express from 'express';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
 import * as adalNode from 'adal-node';
-
+import * as http from 'http';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
 import * as opn from 'opn';
@@ -11,6 +11,8 @@ import {WebresourceService} from './Webresource/Webresource.service';
 import {WebresourceModel} from './Webresource/Webresource.model';
 import {TokenResponse} from 'adal-node';
 import {Request, Response} from 'express-serve-static-core';
+import {Socket} from 'net';
+
 
 export interface CrmJson {
     crm: {
@@ -29,6 +31,8 @@ export interface CrmJson {
 
 class App {
     public express: Express;
+    private httpServer: http.Server;
+    private sockets: Socket[] = [];
     private settings: CrmJson = JSON.parse(fs.readFileSync('deploy/crm.json', 'utf8'));
     private adal = {
         authorityHostUrl : 'https://login.microsoftonline.com',
@@ -51,9 +55,12 @@ class App {
             portSplit = redirectUriSplit[redirectUriSplit.length -2].split(':'),
             port = parseInt(portSplit[1]),
             openUrl = redirectUriSplit.slice(0, redirectUriSplit.length - 1).join('/') + '/auth';
-        this.express.listen(port, (): void => {
+        this.httpServer = this.express.listen(port, (): void => {
             opn(openUrl);
             return console.log(`server is listening on ${port}`);
+        });
+        this.httpServer.on('connection', (socket: Socket) => {
+            this.sockets.push(socket);
         });
     }
 
@@ -149,6 +156,14 @@ class App {
         messenger(`Deploying to ${url}...<br/>`);
         await this.deployDirectory(`dist/${publisher_prefix}_`, messenger);
         messenger('Deploy finished');
+        setTimeout(() => {
+            this.httpServer.close((): void => {
+                return console.log(`server stopped listening`);
+            });
+            for (const socket of this.sockets) {
+                socket.destroy();
+            }
+        }, 100);
     }
 
     private async deployDirectory(directory: string, messenger: Function): Promise<void> {
