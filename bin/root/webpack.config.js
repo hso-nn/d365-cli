@@ -2,7 +2,7 @@ var path = require("path"),
     webpack = require("webpack"),
     DEBUG = process.env.NODE_ENV !== "production",
     mode = DEBUG ? "development" : "production",
-    dir_build = path.resolve(__dirname, "dist/<%= publisher %>_/<%= projectabbr %>"),
+    dir_build = path.resolve(__dirname, "dist/<%= publisher %>_/<%= namespace %>"),
     WebpackAutoInject = require("webpack-auto-inject-version"),
     CopyWebpackPlugin = require("copy-webpack-plugin"),
     MiniCssExtractPlugin = require("mini-css-extract-plugin"),
@@ -19,7 +19,7 @@ module.exports = {
     output: {
         path: dir_build,
         filename: "[name]/[name].js",
-        library: ["<%= publisher %>", "<%= projectabbr %>", "[name]"],
+        library: ["<%= publisher %>", "<%= namespace %>", "[name]"],
         libraryTarget: "var",
     },
     resolve: {
