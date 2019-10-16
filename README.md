@@ -51,11 +51,23 @@ This will ask a couple of questions to setup the project:
 
 ```powershell
   Initializing D365 Project my-first-project
-  What is the project description? My First Project
-  What is the Publisher abbreviation (3 chars a-z)? mfp
-  What is the Project abbreviation (3 chars a-z)? prj
+  D365 environment url (eg. https://yourproject.crm4.dynamics.com):? https://yourproject.crm4.dynamics.com
+  D365 Solution name:? CoreEssentials
+  D365 Publisher Prefix (3 chars a-z):? hso
+  Namespace (eg. Customer or Product name):? afs
   Installing npm packages. This may take a while...
   Initializing D365 Project done
+```
+
+# Update Project
+When updating the CLI, you can update the project as well and get latest features/best-practices
+* Update CLI: 
+```powershell
+npm install -g @hso/d365-cli@latest
+```
+* Update Project:
+```powershell
+hso-d365 update
 ```
 
 # Entity
