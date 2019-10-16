@@ -20,7 +20,7 @@ program
     });
 
 program
-    .command('generate <schematic> <name>')
+    .command('generate <schematic> [name]')
     .alias('g')
     .description('Generates and/or modifies files bases on a schematic.')
     .action((schematic, name) => {

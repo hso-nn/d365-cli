@@ -5,7 +5,9 @@ import {Variables} from './Variables';
 export class LicenseValidator {
     public static async generateLicenseValidator(licensename: string): Promise<void> {
         const check = shell.grep(` LicenseValidator:`, 'webpack.config.js');
-        if (check.stdout !== '\n') {
+        if (!licensename) {
+            console.log(colors.red('Module name missing'));
+        } else if (check.stdout !== '\n') {
             console.log(colors.red(`src/License already exists!`));
         } else if (process.argv[5]) {
             console.log(colors.red(`No spaces allowed!`));
@@ -16,6 +18,7 @@ export class LicenseValidator {
 
     private static async generate(licensename: string): Promise<void> {
         console.log(`Adding D365 License Validator for ${licensename}...`);
+        shell.exec('npm install --save dlf-core@latest');
         const {publisher, projectabbr} = await Variables.get();
         shell.mkdir(`src/License`);
         shell.ls(`${__dirname}/License/*.*`).forEach(function (file) {
@@ -28,7 +31,6 @@ export class LicenseValidator {
         });
         const webpackConfigFile = shell.ls('webpack.config.js')[0];
         shell.sed('-i', 'entry: {', `entry: {\n        LicenseValidator: [\n            path.resolve(__dirname, "src/License/Validator.ts")\n        ],`, webpackConfigFile);
-        shell.exec('npm install --save dlf-core@latest');
         console.log('Adding D365 License Validator done');
     }
 }

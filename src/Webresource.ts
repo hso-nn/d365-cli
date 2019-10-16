@@ -6,7 +6,9 @@ import {Variables} from './Variables';
 export class Webresource {
     public static generateWebresource(webresourcename: string): Promise<void> {
         const check = shell.grep(` ${webresourcename}:`, 'webpack.config.js');
-        if(!new RegExp('[A-Z]').test(webresourcename[0])) {
+        if (!webresourcename) {
+            console.log(colors.red('Webresource name missing'));
+        } else if(!new RegExp('[A-Z]').test(webresourcename[0])) {
             console.log(colors.red(`Webresource name must be UpperCamelCase!`));
         } else if (check.stdout !== '\n') {
             console.log(colors.red(`echo Webresource ${webresourcename} already exists!`));
