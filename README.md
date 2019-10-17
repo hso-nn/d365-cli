@@ -95,6 +95,10 @@ To add an Webresource to the project use following commands:
 ```
 
 # Deploy
+To be able to do a deploy, you need to set two environment variables on your pc. Please contact your Azure AD admin for the right values.
+* HSO_D365_CLI_ClientId
+* HSO_D365_CLI_ClientSecret
+
 To build and deploy changes made to the Entity and Webresource use following command:
 
 ```powershell
