@@ -20,7 +20,7 @@ export class Webresource {
     }
 
     private static async generate(webresourcename: string): Promise<void> {
-        console.log(`Adding D365 Webresource ${webresourcename}...abc`);
+        console.log(`Adding D365 Webresource ${webresourcename}...`);
         const answers = await inquirer.prompt([{
                 type: 'list',
                 name: 'template',
