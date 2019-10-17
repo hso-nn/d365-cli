@@ -36,8 +36,8 @@ class App {
     private settings: CrmJson = JSON.parse(fs.readFileSync('deploy/crm.json', 'utf8'));
     private adal = {
         authorityHostUrl : 'https://login.microsoftonline.com',
-        clientId : this.settings.adal.clientId,
-        clientSecret: this.settings.adal.clientSecret,
+        clientId : process.env.HSO_D365_CLI_ClientId,
+        clientSecret: process.env.HSO_D365_CLI_ClientSecret,
         redirectUri: this.settings.adal.redirectUri,
         tenant: this.settings.adal.tenant
     };
