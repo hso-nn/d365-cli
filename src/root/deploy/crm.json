@@ -6,9 +6,7 @@
     "url": "<%= environment %>"
   },
   "adal": {
-    "clientId": "<Add environment variable HSO_D365_CLI_ClientId>",
-    "clientSecret": "<Add environment variable HSO_D365_CLI_ClientSecret>",
-    "tenant": "hso.com",
-    "redirectUri": "http://localhost:3000/getAToken"
+    "clientId": "3d14ef79-de44-4358-bb18-75b54d1c4e4e",
+    "redirectUri": "http://localhost:3000/auth"
   }
 }
