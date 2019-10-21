@@ -1,7 +1,6 @@
 import * as express from 'express';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
-import * as adalNode from 'adal-node';
 import * as http from 'http';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
@@ -9,7 +8,6 @@ import * as opn from 'opn';
 import {Express, Router} from 'express';
 import {WebresourceService} from './Webresource/Webresource.service';
 import {WebresourceModel} from './Webresource/Webresource.model';
-import {TokenResponse} from 'adal-node';
 import {Request, Response} from 'express-serve-static-core';
 import {Socket} from 'net';
 
@@ -23,8 +21,6 @@ export interface CrmJson {
     };
     adal: {
         clientId: string;
-        clientSecret: string;
-        tenant: string;
         redirectUri: string;
     };
 }
@@ -34,18 +30,12 @@ class App {
     private httpServer: http.Server;
     private sockets: Socket[] = [];
     private settings: CrmJson = JSON.parse(fs.readFileSync('deploy/crm.json', 'utf8'));
-    private adal = {
-        authorityHostUrl : 'https://login.microsoftonline.com',
-        clientId : process.env.HSO_D365_CLI_ClientId,
-        clientSecret: process.env.HSO_D365_CLI_ClientSecret,
-        redirectUri: this.settings.adal.redirectUri,
-        tenant: this.settings.adal.tenant
-    };
-    private md5 = (contents: string): string => crypto.createHash('md5').update(contents).digest('hex');
     private bearer: string;
+    private md5 = (contents: string): string => crypto.createHash('md5').update(contents).digest('hex');
 
     constructor() {
         this.express = express();
+        this.express.use(express.static('node_modules/adal-angular/dist'));
         this.mountRoutes();
         this.startListen();
     }
@@ -54,7 +44,7 @@ class App {
         const redirectUriSplit = this.settings.adal.redirectUri.split('/'),
             portSplit = redirectUriSplit[redirectUriSplit.length -2].split(':'),
             port = parseInt(portSplit[1]),
-            openUrl = redirectUriSplit.slice(0, redirectUriSplit.length - 1).join('/') + '/auth';
+            openUrl = redirectUriSplit.slice(0, redirectUriSplit.length - 1).join('/');
         this.httpServer = this.express.listen(port, (): void => {
             opn(openUrl);
             return console.log(`server is listening on ${port}`);
@@ -67,71 +57,55 @@ class App {
     private mountRoutes(): void {
         const router = express.Router();
         App.mountDefaultRoute(router);
-        App.mountLoginRoute(router);
         this.mountAuthRoute(router);
-        this.mountRedirectRoute(router);
+        this.mountTokenRoute(router);
         this.mountDeployRoute(router);
         this.express.use('/', router);
     }
 
     private static mountDefaultRoute(router: Router): void {
         router.get('/', (req: Request, res: Response) => {
-            res.redirect('login');
-        });
-    }
-
-    private static mountLoginRoute(router: Router): void {
-        router.get('/login', (req: Request, res: Response) => {
-            res.cookie('acookie', 'this is a cookie');
-            res.send(`<head><title>test</title></head><body><a href="./auth">Login</a></body>`);
+            res.redirect('/auth');
         });
     }
 
     private mountAuthRoute(router: Router): void {
         router.get('/auth', (req: Request, res: Response) => {
-            crypto.randomBytes(48, (e: Error, buffer: Buffer) => {
-                const token = buffer.toString('base64').replace(/\//g, '_').replace(/\+/g, '-');
-                res.cookie('authstate', token);
-                res.redirect(this.createAuthorizationUrl(token));
-            });
+            res.send(`
+                <head>
+                    <title>test</title>
+                </head>
+                <body>
+                    <script src="adal.min.js"></script>
+                    <script>
+                        var config = {
+                            clientId: "${this.settings.adal.clientId}",
+                            popUp: true,
+                            callback: function (errorDesc, token, error, tokenType) {
+                                authContext.acquireToken('${this.settings.crm.url}', function (errorDesc, token, error) {
+                                    if (!error) {
+                                        window.location.href = "/token/" + token;
+                                    }
+                                });
+                            }
+                        }
+                        var authContext = new AuthenticationContext(config);
+                        if (authContext.isCallback(window.location.hash)) {
+                            authContext.handleWindowCallback();
+                        } else {
+                            authContext.login();
+                        }
+                    </script>
+                </body>`
+            );
         });
     }
 
-    private createAuthorizationUrl(state: string): string {
-        const {authorityHostUrl, clientId, redirectUri, tenant} = this.adal,
-            clientUrl = this.settings.crm.url;
-        const templateAuthzUrl = `${authorityHostUrl}/${tenant}/oauth2/authorize?response_type=code&client_id=<client_id>&redirect_uri=<redirect_uri>&state=<state>&resource=<resource>`;
-        let authorizationUrl = templateAuthzUrl.replace('<client_id>', clientId);
-        authorizationUrl = authorizationUrl.replace('<redirect_uri>', redirectUri);
-        authorizationUrl = authorizationUrl.replace('<state>', state);
-        authorizationUrl = authorizationUrl.replace('<resource>', clientUrl);
-        return authorizationUrl;
-    }
-
-    private mountRedirectRoute(router: Router): void {
-        const redirectUriSplit = this.settings.adal.redirectUri.split('/'),
-            redirectPath = `/${redirectUriSplit[redirectUriSplit.length -1]}`;
-        router.get(redirectPath, (req: Request, res: Response) => {
-            const {authorityHostUrl, clientId, clientSecret, redirectUri, tenant} = this.adal,
-                clientUrl = this.settings.crm.url,
-                authenticationContext = new adalNode.AuthenticationContext(`${authorityHostUrl}/${tenant}`);
-            authenticationContext.acquireTokenWithAuthorizationCode(req.query.code, redirectUri, clientUrl, clientId, clientSecret, (err: Error, response: TokenResponse) => {
-                let message = err ? 'error: ' + err.message + '\n' : '';
-                message += 'response: ' + JSON.stringify(response);
-                if (err) {
-                    res.send(message);
-                    return;
-                }
-                // Later, if the access token is expired it can be refreshed.
-                authenticationContext.acquireTokenWithRefreshToken(response.refreshToken, clientId, clientSecret, clientUrl, (refreshErr: Error, refreshResponse: TokenResponse) => {
-                    if (refreshErr) {
-                        message += 'refreshError: ' + refreshErr.message + '\n';
-                    }
-                    message += 'refreshResponse: ' + JSON.stringify(refreshResponse);
-                    this.bearer = refreshResponse.accessToken;
-                    res.redirect('/deploy');
-                });
-            });
+    private mountTokenRoute(router: Router): void {
+        router.get('/token/:token', (req: Request, res: Response): void => {
+            this.bearer = req.params.token;
+            console.log(`Bearer: ${this.bearer}`);
+            res.redirect('/deploy');
         });
     }
 
@@ -189,6 +163,7 @@ class App {
     private async deployFile(path: string, messenger: Function): Promise<void> {
         return new Promise((resolve): void => {
             fs.readFile(path, async (err: Error, data: Buffer) => {
+                console.log(`Using Bearer: ${this.bearer}`);
                 const crmPath = path.substr(5),
                     webresource = await this.getWebresource(crmPath);
                 messenger(`${crmPath}`);

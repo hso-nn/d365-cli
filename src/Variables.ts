@@ -88,6 +88,10 @@ export class Variables {
                     const split = line.split('"');
                     solution = split[3];
                 }
+                if (line.includes('"url":')) {
+                    const split = line.split('"');
+                    environment = split[3];
+                }
                 if (line.includes('"clientUrl":')) {
                     const split = line.split('"');
                     environment = split[3];

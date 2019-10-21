@@ -52,8 +52,14 @@ export class Update {
         shell.cp('-R', `${__dirname}/root/src/WebApi`, './src');
         shell.exec('git add src/WebApi/Model.ts');
 
+        console.log(`Updating util...`);
+        shell.cp('-R', `${__dirname}/root/src/util`, './src');
+        shell.exec('git add src/util/Base64.ts');
+
         console.log(`Updating Annotation...`);
         shell.cp('-R', `${__dirname}/root/src/Annotation`, './src');
+        shell.exec('git add src/Annotation/Annotation.model.ts');
+        shell.exec('git add src/Annotation/Annotation.service.ts');
 
         console.log(`Updating Translation...`);
         shell.cp('-R', `${__dirname}/root/src/translation`, './src');
@@ -65,7 +71,7 @@ export class Update {
     private static updateDeploy(variables: AllVariables): void {
         console.log(`Updating deploy...`);
         shell.cp('-R', `${__dirname}/root/deploy/deploy.js`, './deploy');
-        const check = shell.grep(`clientUrl`, './deploy/crm.json'),
+        const check = shell.grep(`clientSecret`, './deploy/crm.json'),
             {publisher, solution, environment} = variables;
         if (check.stdout !== '\n') {
             shell.cp('-R', `${__dirname}/root/deploy/crm.json`, './deploy');
@@ -95,6 +101,7 @@ export class Update {
         shell.sed('-i', new RegExp('<%= version %>', 'ig'), version, packageJsonFile);
         console.log(`Removing old npm packages. This may take a while...`);
         shell.exec('npm prune');
+        shell.exec('npm install');
     }
 
     private static updateModelFiles(): void {
