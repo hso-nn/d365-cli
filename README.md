@@ -95,10 +95,6 @@ To add an Webresource to the project use following commands:
 ```
 
 # Deploy
-To be able to do a deploy, you need to set two environment variables on your pc. Please contact your Azure AD admin for the right values.
-* HSO_D365_CLI_ClientId
-* HSO_D365_CLI_ClientSecret
-
 To build and deploy changes made to the Entity and Webresource use following command:
 
 ```powershell
@@ -106,6 +102,11 @@ To build and deploy changes made to the Entity and Webresource use following com
 ```
 Now the folder Webresources/mfp_ contains the bundled and uglified files to be deployed.
 It's recommended to deploy in the same folder structure to D365.
+
+Use following command to deploy
+```powershell
+  npm run deploy
+```
 
 # Debug
 To build a debug version use following command:

@@ -42,7 +42,7 @@
     "@types/xrm": "^9.0.14",
     "@typescript-eslint/eslint-plugin": "^2.3.0",
     "@typescript-eslint/parser": "^2.3.0",
-    "adal-node": "^0.1.28",
+    "adal-angular": "^1.0.17",
     "babel-loader": "^8.0.4",
     "babel-plugin-istanbul": "^5.1.0",
     "connect-logger": "0.0.1",
