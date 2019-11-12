@@ -102,6 +102,13 @@ Use following command to deploy
   npm run deploy
 ```
 
+## Deploy Note
+You may need to create your own Application registration
+  * In Azure Active Directory create Application registration
+  * Copy client Id and put in deploy/crm.json (adal/clientId)
+  * In Api Permissions assign Dynamics CRM (user_imporsonate)
+  * Set Redirect url equal to deploy/crm.json/adal/redirectUri
+
 # Debug
 To build a debug version use following command:
 
