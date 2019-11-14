@@ -1,11 +1,11 @@
 import {DLFCore, ValidateLicenseResult} from 'dlf-core';
 // import {WebApi} from '../WebApi/WebApi';
 
-export interface ValidateLicenseResult extends JSON {
+/*export interface ValidateLicenseResult extends JSON {
     LicenseWarningText: string;
     LicenseErrorText: string;
     valid: boolean;
-}
+}*/
 
 class Validator {
     static async onLoad(executionContext: Xrm.Events.EventContext): Promise<ValidateLicenseResult> {
