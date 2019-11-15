@@ -48,6 +48,9 @@ export class Update {
         console.log(`Updating tsconfig.json...`);
         shell.cp('-R', `${__dirname}/root/src/tsconfig.json`, './src');
 
+        console.log(`Removing tslint.json...`);
+        shell.rm('-R', `./src/tslint.json`);
+
         console.log(`Updating WebApi...`);
         shell.cp('-R', `${__dirname}/root/src/WebApi`, './src');
         shell.exec('git add src/WebApi/Model.ts');
