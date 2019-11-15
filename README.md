@@ -25,12 +25,6 @@ Recommended for debugging: [Fiddler](https://www.telerik.com/fiddler)
   npm install -g @hso/d365-cli
 ```
 
-### For Beta testers only
-If you can/have checked out the source code, you need to install it locally.
-  * Checkout this [Repository](https://dys-ax.visualstudio.com/P030-CES/_git/P030-CE-CLI)
-  * Open PowerShell/cmd and run 'npm link'
-  * Now you can close the Repository
-
 ## CLI Introduction
 Invoke the tool on the command line through the hso-d365 executable. Online help is avaliable on the command line.
 Enter the following to list commands or options for a given command (such as generate) with a short description.
@@ -107,6 +101,13 @@ Use following command to deploy
 ```powershell
   npm run deploy
 ```
+
+## Deploy Note
+You may need to create your own Application registration
+  * In Azure Active Directory create Application registration
+  * Copy client Id and put in deploy/crm.json (adal/clientId)
+  * In Api Permissions assign Dynamics CRM (user_imporsonate)
+  * Set Redirect url equal to deploy/crm.json/adal/redirectUri
 
 # Debug
 To build a debug version use following command:

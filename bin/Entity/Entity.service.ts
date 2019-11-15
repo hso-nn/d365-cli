@@ -12,6 +12,10 @@ export class EntityService {
         return WebApi.retrieveRecord(EntityService.logicalName, id, systemQueryOptions);
     }
 
+    public static async updateRecord(id: string, entityModel: EntityModel): Promise<EntityModel> {
+        return WebApi.updateRecord(EntityService.logicalName, id, entityModel);
+    }
+
     public static async count(filters?: Filter[]): Promise<number> {
         return WebApi.count(EntityService.logicalName, filters);
     }

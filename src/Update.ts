@@ -48,6 +48,9 @@ export class Update {
         console.log(`Updating tsconfig.json...`);
         shell.cp('-R', `${__dirname}/root/src/tsconfig.json`, './src');
 
+        console.log(`Removing tslint.json...`);
+        shell.rm('-R', `./src/tslint.json`);
+
         console.log(`Updating WebApi...`);
         shell.cp('-R', `${__dirname}/root/src/WebApi`, './src');
         shell.exec('git add src/WebApi/Model.ts');
@@ -64,8 +67,8 @@ export class Update {
         console.log(`Updating Translation...`);
         shell.cp('-R', `${__dirname}/root/src/translation`, './src');
 
-        console.log(`Updating txs...`);
-        shell.cp('-R', `${__dirname}/root/src/tsx`, './src');
+        console.log(`Removing txs...`);
+        shell.rm('-R', './src/tsx');
     }
 
     private static updateDeploy(variables: AllVariables): void {
