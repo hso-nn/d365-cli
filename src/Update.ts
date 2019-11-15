@@ -67,8 +67,8 @@ export class Update {
         console.log(`Updating Translation...`);
         shell.cp('-R', `${__dirname}/root/src/translation`, './src');
 
-        console.log(`Updating txs...`);
-        shell.cp('-R', `${__dirname}/root/src/tsx`, './src');
+        console.log(`Removing txs...`);
+        shell.rm('-R', './src/tsx');
     }
 
     private static updateDeploy(variables: AllVariables): void {
