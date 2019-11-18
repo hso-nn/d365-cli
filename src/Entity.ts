@@ -40,6 +40,7 @@ export class Entity {
             shell.sed('-i', new RegExp('entity', 'g'), entityname.charAt(0).toLowerCase() + entityname.slice(1), `src/${entityname}/${newfilename}`);
             shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, `src/${entityname}/${newfilename}`);
             shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), namespace, `src/${entityname}/${newfilename}`);
+            shell.exec(`git add src/${entityname}/${newfilename}`);
         });
         const webpackConfigFile = shell.ls('webpack.config.js')[0];
         shell.sed('-i', 'entry: {', `entry: {\n        ${entityname}: [\n            path.resolve(__dirname, "src/${entityname}/${entityname}.ts")\n        ],`, webpackConfigFile);
