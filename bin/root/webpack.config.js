@@ -14,8 +14,7 @@ const scssLoaders = [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"
 
 module.exports = {
     mode: mode,
-    entry: {
-    },
+    entry: {},
     output: {
         path: dir_build,
         filename: "[name]/[name].js",
@@ -26,7 +25,7 @@ module.exports = {
         extensions: [".js", ".json", ".ts", ".tsx"]
     },
     devServer: {
-        contentBase: path.resolve(__dirname, `dist/<%= publisher %>_`),
+        contentBase: path.resolve(__dirname, "dist/<%= publisher %>_"),
         hot: true,
         inline: true
     },
@@ -113,7 +112,7 @@ module.exports = {
             from: "./**/**.html",
             to: dir_build,
             context: "src"
-        }])
+        }]),
     ] : [
         new CopyWebpackPlugin([{
             from: "./**/**.png",
