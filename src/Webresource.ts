@@ -44,6 +44,7 @@ export class Webresource {
             shell.sed('-i', new RegExp('Webresource', 'ig'), webresourcename, `src/${webresourcename}/${newfilename}`);
             shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, `src/${webresourcename}/${newfilename}`);
             shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), namespace, `src/${webresourcename}/${newfilename}`);
+            shell.exec(`git add src/${webresourcename}/${newfilename}`);
         });
         const webpackConfigFile = shell.ls('webpack.config.js')[0],
             extension = template === 'React' ? 'tsx' : 'ts';
