@@ -144,15 +144,17 @@ export class Update {
 
     private static updateWebpackConfig(variables: AllVariables): void {
         console.log(`Updating webpack.config.js...`);
-        const webpackConfigFile = shell.ls('webpack.config.js')[0],
-            publisher = variables.publisher;
-        shell.sed('-i', new RegExp(`loader: "tslint-loader",`, 'ig'), `loader: "eslint-loader",`, webpackConfigFile);
-        shell.sed('-i', new RegExp(`\\[".js", ".json", ".ts"\\]`, 'ig'), `[".js", ".json", ".ts", ".tsx"]`, webpackConfigFile);
-        shell.sed('-i', new RegExp(`ts\\$/,`, 'ig'), `tsx?$/,`, webpackConfigFile);
-        const distCheck = shell.grep(`dist`, 'webpack.config.js');
-        if (distCheck.stdout === '\n') {
-            shell.rm('-rf', `./${publisher}_`);
-            shell.sed('-i', new RegExp(`${publisher}_`, 'ig'), `dist/${publisher}_`, webpackConfigFile);
-        }
+        const origWebpackConfigFile = shell.cat('webpack.config.js'),
+            content = origWebpackConfigFile.stdout,
+            start = content.indexOf('entry:'),
+            end = content.indexOf('output:'),
+            entryPart = content.substr(start, end - start),
+            cutEntry = entryPart.replace('\r\n    },', '');
+        shell.cp('-R', `${__dirname}/root/webpack.config.js`, '.');
+        const webpackConfigFile = shell.ls('webpack.config.js')[0];
+        shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), variables.publisher, webpackConfigFile);
+        shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), variables.namespace, webpackConfigFile);
+        shell.sed('-i', new RegExp('<%= description %>', 'ig'), variables.description, webpackConfigFile);
+        shell.sed('-i', new RegExp('entry: {', 'ig'), cutEntry, webpackConfigFile);
     }
 }
