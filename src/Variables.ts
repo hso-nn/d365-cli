@@ -34,10 +34,10 @@ export class Variables {
             lineReader.on('line', (line: string) => {
                 if (line.includes('dir_build =')) {
                     const split = line.split('"'),
-                        publisherProjectabbr = split[1],
-                        ppSplit = publisherProjectabbr.split('_/');
-                    publisher = ppSplit[0].replace('dist/', '');
-                    namespace = ppSplit[1];
+                        publisherNamespace = split[1],
+                        pnSplit = publisherNamespace.split('_/');
+                    publisher = pnSplit[0].replace('dist/', '');
+                    namespace = pnSplit[1];
                     lineReader.close();
                     resolve({
                         publisher: publisher,
