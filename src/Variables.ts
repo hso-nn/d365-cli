@@ -1,7 +1,7 @@
 
 export type WebpackConfigVariables = {
     publisher?: string;
-    projectabbr?: string;
+    namespace?: string;
 }
 
 export type PackageJsonVariables = {
@@ -27,7 +27,7 @@ export class Variables {
 
     private static readWebpackConfig(): Promise<WebpackConfigVariables> {
         return new Promise((resolve): void => {
-            let publisher, projectabbr;
+            let publisher, namespace;
             const lineReader = require('readline').createInterface({
                 input: require('fs').createReadStream(`webpack.config.js`)
             });
@@ -37,11 +37,11 @@ export class Variables {
                         publisherProjectabbr = split[1],
                         ppSplit = publisherProjectabbr.split('_/');
                     publisher = ppSplit[0].replace('dist/', '');
-                    projectabbr = ppSplit[1];
+                    namespace = ppSplit[1];
                     lineReader.close();
                     resolve({
                         publisher: publisher,
-                        projectabbr: projectabbr
+                        namespace: namespace
                     });
                 }
             });
