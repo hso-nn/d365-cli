@@ -32,7 +32,7 @@ class Validator {
     // }
 }
 
-// In D365 Form specify Validator onLoad function: <%= publisher %>.<%= projectabbr %>.LicenseValidator.onLoad
+// In D365 Form specify Validator onLoad function: <%= publisher %>.<%= namespace %>.LicenseValidator.onLoad
 export function onLoad(executionContext: Xrm.Events.EventContext): Promise<ValidateLicenseResult> {
     return Validator.onLoad(executionContext);
 }
