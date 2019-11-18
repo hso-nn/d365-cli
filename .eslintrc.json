@@ -38,6 +38,7 @@
     ],
     "brace-style": ["error", "1tbs"],
     "max-lines-per-function": ["error", 35],
+    "max-len": ["error", 170],
     "no-underscore-dangle": "error",
     "no-plusplus": "error",
     "no-useless-escape": "error",
