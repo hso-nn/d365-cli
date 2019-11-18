@@ -10,7 +10,7 @@ interface WebresourceProps {}
 const Webresource: React.FC<WebresourceProps> = (props: WebresourceProps): JSX.Element => {
     const [translationInitialized, setTranslationInitialized] = useState(false);
     Translation.init({
-        relativePath: '<%= publisher %>_/<%= projectabbr %>/locales'
+        relativePath: '<%= publisher %>_/<%= namespace %>/locales'
     }).then(() => {
         setTranslationInitialized(true);
     });

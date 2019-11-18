@@ -11,7 +11,7 @@
         "use strict";
         window.Xrm = parent.Xrm;
         window.addEventListener("load", function() {
-            PUBLISHER.PROJECTABBR.Webresource.onLoad();
+            <%= publisher %>.<%= namespace %>.Webresource.onLoad();
         });
     </script>
 </body>
