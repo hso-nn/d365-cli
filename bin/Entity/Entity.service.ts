@@ -16,6 +16,14 @@ export class EntityService {
         return WebApi.updateRecord(EntityService.logicalName, id, entityModel);
     }
 
+    public static async createRecord(entityModel: EntityModel): Promise<EntityModel> {
+        return WebApi.createRecord(EntityService.logicalName, entityModel);
+    }
+
+    public static async upsertRecord(entityModel: EntityModel): Promise<EntityModel> {
+        return WebApi.upsertRecord(EntityService.logicalName, entityModel);
+    }
+
     public static async count(filters?: Filter[]): Promise<number> {
         return WebApi.count(EntityService.logicalName, filters);
     }
