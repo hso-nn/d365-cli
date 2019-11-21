@@ -71,6 +71,7 @@ export class NodeApi {
     public static async getPicklistOptionSet(logicalName: string, attribute: string, bearer: string): Promise<OptionSetOption[]> {
         const {crm} = NodeApi.settings,
             {url, version} = crm,
+            // eslint-disable-next-line max-len
             uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${logicalName}')/Attributes(LogicalName='${attribute}')/Microsoft.Dynamics.CRM.PicklistAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=Options)`,
             result = await NodeApi.request('GET', uri, null, {
                 'Authorization': `Bearer ${bearer}`

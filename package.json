@@ -1,6 +1,6 @@
 {
   "name": "@hso/d365-cli",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": "HSO Innovation <innovation@hso.com> (http://www.hso.com)",
   "description": "HSO D365 CLI",
   "repository": {
@@ -19,7 +19,6 @@
   ],
   "license": "MIT",
   "scripts": {
-    "get-credentials": "vsts-npm-auth -config .npmrc",
     "build": "npm run clean && webpack",
     "build:prod": "npm run clean && cross-env NODE_ENV=production webpack --bail --progress",
     "clean": "IF exist bin\\root\\deploy (rmdir /s /q bin\\root\\deploy)"

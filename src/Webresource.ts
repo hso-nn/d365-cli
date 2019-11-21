@@ -31,7 +31,7 @@ export class Webresource {
                 ]
             }]),
             template = answers.template;
-        const {publisher, projectabbr} = await Variables.get();
+        const {publisher, namespace} = await Variables.get();
         shell.mkdir(`src/${webresourcename}`);
         const srcDir = `${__dirname}/Webresource${template === 'React' ? 'Tsx' : ''}/*.*`;
         shell.ls(srcDir).forEach(function (file) {
@@ -42,11 +42,13 @@ export class Webresource {
             shell.cp('-r', `src/${webresourcename}/${filename}`, `src/${webresourcename}/${newfilename}`);
             shell.rm('-rf', `src/${webresourcename}/${filename}`);
             shell.sed('-i', new RegExp('Webresource', 'ig'), webresourcename, `src/${webresourcename}/${newfilename}`);
-            shell.sed('-i', new RegExp('PUBLISHER', 'ig'), publisher, `src/${webresourcename}/${newfilename}`);
-            shell.sed('-i', new RegExp('PROJECTABBR', 'ig'), projectabbr, `src/${webresourcename}/${newfilename}`);
+            shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, `src/${webresourcename}/${newfilename}`);
+            shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), namespace, `src/${webresourcename}/${newfilename}`);
+            shell.exec(`git add src/${webresourcename}/${newfilename}`);
         });
         const webpackConfigFile = shell.ls('webpack.config.js')[0],
             extension = template === 'React' ? 'tsx' : 'ts';
+        // eslint-disable-next-line max-len
         shell.sed('-i', 'entry: {', `entry: {\n        ${webresourcename}: [\n            path.resolve(__dirname, "src/${webresourcename}/${webresourcename}.${extension}")\n        ],`, webpackConfigFile);
         console.log('Adding D365 Webresource done');
     }

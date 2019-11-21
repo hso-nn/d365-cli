@@ -21,7 +21,7 @@ export class Entity {
 
     private static async generate(entityname: string): Promise<void> {
         console.log(`Adding D365 Entity ${entityname}...`);
-        const {publisher, projectabbr} = await Variables.get(),
+        const {publisher, namespace} = await Variables.get(),
             answers = await inquirer.prompt([{
                 type: 'input',
                 name: 'entityLogicalName',
@@ -39,9 +39,11 @@ export class Entity {
             shell.sed('-i', new RegExp('Entity', 'g'), entityname, `src/${entityname}/${newfilename}`);
             shell.sed('-i', new RegExp('entity', 'g'), entityname.charAt(0).toLowerCase() + entityname.slice(1), `src/${entityname}/${newfilename}`);
             shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, `src/${entityname}/${newfilename}`);
-            shell.sed('-i', new RegExp('<%= projectabbr %>', 'ig'), projectabbr, `src/${entityname}/${newfilename}`);
+            shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), namespace, `src/${entityname}/${newfilename}`);
+            shell.exec(`git add src/${entityname}/${newfilename}`);
         });
         const webpackConfigFile = shell.ls('webpack.config.js')[0];
+        // eslint-disable-next-line max-len
         shell.sed('-i', 'entry: {', `entry: {\n        ${entityname}: [\n            path.resolve(__dirname, "src/${entityname}/${entityname}.ts")\n        ],`, webpackConfigFile);
         console.log('Adding D365 Entity done');
     }
