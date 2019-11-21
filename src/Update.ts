@@ -133,6 +133,7 @@ export class Update {
                 if (check.stdout === '\n') {
                     shell.sed('-i', `export namespace Form`, `export const Form =`, file);
                     shell.sed('-i', `export namespace Ribbon`, `export const Ribbon =`, file);
+                    // eslint-disable-next-line max-len
                     shell.sed('-i', `export function onLoad(executionContext: Xrm.Events.EventContext) {`, `onLoad: (executionContext: Xrm.Events.EventContext): void => {`, file);
                     shell.sed('-i', `\\(formContext: Xrm.FormContext\\) {`, `: (formContext: Xrm.FormContext): void => {`, file);
                     // shell.sed('-i', `export function `, ``, file); too much

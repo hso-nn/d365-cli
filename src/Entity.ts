@@ -43,6 +43,7 @@ export class Entity {
             shell.exec(`git add src/${entityname}/${newfilename}`);
         });
         const webpackConfigFile = shell.ls('webpack.config.js')[0];
+        // eslint-disable-next-line max-len
         shell.sed('-i', 'entry: {', `entry: {\n        ${entityname}: [\n            path.resolve(__dirname, "src/${entityname}/${entityname}.ts")\n        ],`, webpackConfigFile);
         console.log('Adding D365 Entity done');
     }
