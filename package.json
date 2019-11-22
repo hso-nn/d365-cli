@@ -4,8 +4,8 @@
   "author": "HSO Innovation <innovation@hso.com> (http://www.hso.com)",
   "description": "HSO D365 CLI",
   "repository": {
-    "type": "npm",
-    "url": "https://dys-ax.pkgs.visualstudio.com/_packaging/CodePlex/npm/registry/"
+    "type": "git",
+    "url": "https://dys-ax.visualstudio.com/P030-CES/_git/P030-CE-CLI.git"
   },
   "keywords": [
     "cli",
