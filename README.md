@@ -1,5 +1,10 @@
-# Introduction 
-A [Command-line interface](https://en.wikipedia.org/wiki/Command-line_interface) for D365 Frontend Development based on [HSO](https://www.hso.com/en-us) best practices. 
+# D365-CLI Forms/Webresources project automation
+[![npm](https://img.shields.io/npm/dm/@hso/d365-cli.svg)](https://www.npmjs.com/package/@hso/d365-cli)
+[![npm](https://img.shields.io/npm/dt/@hso/d365-cli.svg)](https://www.npmjs.com/package/@hso/d365-cli)
+[![npm](https://img.shields.io/npm/v/@hso/d365-cli.svg)](https://www.npmjs.com/package/@hso/d365-cli)
+
+# Introduction
+A [Command-line interface](https://en.wikipedia.org/wiki/Command-line_interface) for D365 Project (Forms/Webresources) Development based on [HSO](https://www.hso.com/en-us) best practices. 
 
 # Getting Started
 
