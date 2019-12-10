@@ -4,7 +4,6 @@
   "author": "HSO Innovation <innovation@hso.com> (http://www.hso.com)",
   "description": "<%= description %>",
   "scripts": {
-    "get-credentials": "vsts-npm-auth -config .npmrc",
     "build": "npm run clean && webpack",
     "build:prod": "npm run clean && cross-env NODE_ENV=production webpack --bail --progress",
     "deploy": "node deploy/deploy.js",
