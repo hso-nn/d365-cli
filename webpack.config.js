@@ -37,8 +37,8 @@ module.exports = {
         "root/deploy/deploy": [
             path.resolve(__dirname, "src/root/Deploy/App.ts")
         ],
-        "hso-d365": [
-            path.resolve(__dirname, "src/hso-d365.ts")
+        "main": [
+            path.resolve(__dirname, "src/main.ts")
         ]
     },
     output: {
