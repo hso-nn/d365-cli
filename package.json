@@ -1,16 +1,17 @@
 {
   "name": "@hso/d365-cli",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "author": "HSO Innovation <innovation@hso.com> (http://www.hso.com)",
   "description": "HSO D365 Command Line Interface",
   "repository": {
     "type": "git",
-    "url": "https://dys-ax.visualstudio.com/P030-CES/_git/P030-CE-CLI.git"
+    "url": "https://github.com/dys-solutions/d365-cli.git"
   },
   "keywords": [
-    "dynamics",
     "d365",
     "cli",
+    "dynamics",
+    "crm",
     "ce",
     "hso"
   ],
