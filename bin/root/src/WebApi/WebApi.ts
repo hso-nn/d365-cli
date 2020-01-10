@@ -232,7 +232,7 @@ export class WebApi {
             request.onreadystatechange = function (): void {
                 if (this.readyState === 4) {
                     request.onreadystatechange = null;
-                    if ([200, 201, 204].includes(this.status)) {
+                    if ([200, 201, 204, 304].includes(this.status)) {
                         resolve(request);
                     } else {
                         reject(request);
