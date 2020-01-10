@@ -235,7 +235,7 @@ export class WebApi {
                     if ([200, 201, 204].includes(this.status)) {
                         resolve(request);
                     } else {
-                        reject(new Error('Unexpected Error'));
+                        reject(request);
                     }
                 }
             };
