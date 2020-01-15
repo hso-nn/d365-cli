@@ -22,6 +22,7 @@ export class Update {
         Update.updateDeploy(variables);
         Update.updateSrcFolder();
         Update.updatePackageJson(variables);
+        Update.updateServiceFiles();
         Update.updateModelFiles();
         Update.updateEntityFiles();
         Update.updateWebpackConfig(variables);
@@ -58,6 +59,8 @@ export class Update {
         console.log(`Updating util...`);
         shell.cp('-R', `${__dirname}/root/src/util`, './src');
         shell.exec('git add src/util/Base64.ts');
+        shell.exec('git add src/util/ModelClone.ts');
+        shell.exec('git add src/util/ModelValidator.ts');
 
         console.log(`Updating Annotation...`);
         shell.cp('-R', `${__dirname}/root/src/Annotation`, './src');
@@ -105,6 +108,35 @@ export class Update {
         console.log(`Removing old npm packages. This may take a while...`);
         shell.exec('npm prune');
         shell.exec('npm install');
+    }
+
+    private static serviceFileSnippetCloneValidation = `public static async retrieveClone(id: string): Promise<EntityModel> {
+        return ModelClone.retrieveRecord(EntityService.logicalName, id);
+    }
+    
+    public static async validateRecord(entityModel: EntityModel): Promise<ModelValidation> {
+        return ModelValidator.validateRecord(EntityService.logicalName, entityModel);
+    }`;
+
+    private static updateServiceFiles(): void {
+        console.log(`Updating Service files`);
+        shell.ls(`src/**/*.service.ts*`).forEach(function (filepath) {
+            const check = shell.grep(`import {ModelClone}`, filepath);
+            if (check.stdout === '\n') {
+                const split = filepath.split('/'),
+                    entityname = split[1],
+                    entitynameCamelCase = entityname.charAt(0).toLowerCase() + entityname.slice(1),
+                    file = shell.ls(filepath)[0];
+                shell.sed('-i', `public static async count`,
+                    Update.serviceFileSnippetCloneValidation
+                        .replace(/EntityService/g, `${entityname}Service`)
+                        .replace(/EntityModel/g, `${entityname}Model`)
+                        .replace(/entityModel/g, `${entitynameCamelCase}Model`) + '\n\n\tpublic static async count', file);
+                shell.sed('-i', `export`,
+                    `import {ModelClone} from '../util/ModelClone';\nimport {ModelValidation, ModelValidator} from '../util/ModelValidator';\n\nexport`, file);
+                console.log(`Modified ${filepath}`);
+            }
+        });
     }
 
     private static updateModelFiles(): void {
