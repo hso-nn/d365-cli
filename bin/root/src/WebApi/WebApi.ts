@@ -184,7 +184,7 @@ export class WebApi {
 
     public static async populateBindings(model: Model, metadata: Xrm.Metadata.EntityMetadata): Promise<Model> {
         const attributes = Object.keys(model),
-            requestData = {...model};
+            requestData: any = {...model};
         for (const attribute of attributes) {
             const attributeMetadata = metadata.Attributes.get(attribute);
             if (attributeMetadata) {
@@ -192,6 +192,7 @@ export class WebApi {
                 if ([1, 6, 9].includes(attributeMetadata.AttributeType)) { // Customer, Lookup, Owner
                     const bindingId = requestData[attribute];
                     if (bindingId) {
+                        // @ts-ignore
                         const targetEntity = model[`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname`];
                         const binding = await WebApi.getBinding(attribute, bindingId, metadata, targetEntity);
                         Object.assign(requestData, binding);
