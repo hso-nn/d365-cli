@@ -1,9 +1,12 @@
 import {Model} from '../WebApi/Model';
 import {WebApi} from '../WebApi/WebApi';
 
+type ValidationCategory = 'Mandatory'
+
 export interface ModelValidation {
     valid: boolean;
     attribute?: string;
+    category?: ValidationCategory;
 }
 
 export class ModelValidator {
@@ -27,7 +30,8 @@ export class ModelValidator {
             if (!keys.includes(property) && !keys.includes(`${property}@odata.bind`) && !bindings.some(binding => keys.includes(binding))) {
                 return {
                     valid: false,
-                    attribute: name
+                    attribute: name,
+                    category: 'Mandatory'
                 };
             }
         }
