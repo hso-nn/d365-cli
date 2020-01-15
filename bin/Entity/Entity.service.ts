@@ -30,8 +30,8 @@ export class EntityService {
     }
 
     public static async retrieveClone(id: string): Promise<EntityModel> {
-        const origEntity = await Xrm.WebApi.retrieveRecord(EntityService.logicalName, id);
-        return Model.parseCreateModel(EntityService.logicalName, origEntity);
+        const origRecord = await Xrm.WebApi.retrieveRecord(EntityService.logicalName, id);
+        return Model.parseCreateModel(EntityService.logicalName, origRecord);
     }
 
     public static async validateRecord(entityModel: EntityModel): Promise<ModelValidation> {

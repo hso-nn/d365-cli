@@ -136,8 +136,8 @@ export class Update {
     }
 
     private static serviceFileSnippetCloneValidation = `public static async retrieveClone(id: string): Promise<EntityModel> {
-        const origEntity = await Xrm.WebApi.retrieveRecord(EntityService.logicalName, id);
-        return Model.parseCreateModel(EntityService.logicalName, origEntity);
+        const origRecord = await Xrm.WebApi.retrieveRecord(EntityService.logicalName, id);
+        return Model.parseCreateModel(EntityService.logicalName, origRecord);
     }
     
     public static async validateRecord(entityModel: EntityModel): Promise<ModelValidation> {
@@ -159,6 +159,8 @@ export class Update {
                     .replace(/entityModel/g, `${entitynameCamelCase}Model`) + '\n', file);
             shell.sed('-i', `import {Model}`,
                 `import {Model, ModelValidation}`, file);
+            shell.sed('-i', `export`,
+                `import {Model, ModelValidation} from '../WebApi/Model';\n\nexport`, file);
             console.log(`Modified ${filepath}`);
         }
     }
