@@ -186,14 +186,12 @@ export class WebApi {
         const attributes = Object.keys(model),
             requestData: any = {...model};
         for (const attribute of attributes) {
-            const attributeMetadata = metadata.Attributes.get(attribute);
+            const attributeMetadata: any = metadata.Attributes.get(attribute);
             if (attributeMetadata) {
-                // @ts-ignore
                 if ([1, 6, 9].includes(attributeMetadata.AttributeType)) { // Customer, Lookup, Owner
                     const bindingId = requestData[attribute];
                     if (bindingId) {
-                        // @ts-ignore
-                        const targetEntity = model[`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname`];
+                        const targetEntity = (model as any)[`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname`];
                         const binding = await WebApi.getBinding(attribute, bindingId, metadata, targetEntity);
                         Object.assign(requestData, binding);
                     }
