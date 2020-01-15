@@ -1,17 +1,34 @@
 import {Model} from '../WebApi/Model';
 import {WebApi} from '../WebApi/WebApi';
 
-type ValidationCategory = 'Mandatory'
+type ValidationCategory = 'Mandatory' | 'Invalid key';
 
 export interface ModelValidation {
-    valid: boolean;
+    isValid: boolean;
     attribute?: string;
     category?: ValidationCategory;
 }
 
 export class ModelValidator {
     public static async validateRecord(entityLogicalName: string, model: Model): Promise<ModelValidation> {
-        return ModelValidator.validateRequiredAttributes(entityLogicalName, model);
+        let validation = await ModelValidator.validateRequiredAttributes(entityLogicalName, model);
+        if (validation.isValid) {
+            validation = await ModelValidator.validateMesh(entityLogicalName, model);
+        }
+        return validation;
+    }
+
+    private static async validateMesh(entityLogicalName: string, model: Model): Promise<ModelValidation> {
+        const keys = Object.keys(model),
+            wrongKey = keys.find(key => key.startsWith('_') || key.endsWith('FormattedValue') || key.endsWith('LogicalName'));
+        if (wrongKey) {
+            return {
+                isValid: false,
+                attribute: wrongKey,
+                category: 'Invalid key'
+            };
+        }
+        return {isValid: true};
     }
 
     private static async validateRequiredAttributes(entityLogicalName: string, model: Model): Promise<ModelValidation> {
@@ -29,13 +46,13 @@ export class ModelValidator {
             }
             if (!keys.includes(property) && !keys.includes(`${property}@odata.bind`) && !bindings.some(binding => keys.includes(binding))) {
                 return {
-                    valid: false,
+                    isValid: false,
                     attribute: name,
                     category: 'Mandatory'
                 };
             }
         }
-        return {valid: true};
+        return {isValid: true};
     }
 
     private static getAttributeDescriptor(attribute: string, entityMetadata: Xrm.Metadata.EntityMetadata): {
