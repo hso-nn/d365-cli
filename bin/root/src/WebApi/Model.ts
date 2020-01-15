@@ -4,4 +4,5 @@ export interface Model {
     statecode?: number;
     statuscode?: number;
     versionnumber?: string;
+    ownerid?: string;
 }
