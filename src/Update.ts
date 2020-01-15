@@ -59,7 +59,6 @@ export class Update {
         console.log(`Updating util...`);
         shell.cp('-R', `${__dirname}/root/src/util`, './src');
         shell.exec('git add src/util/Base64.ts');
-        shell.exec('git add src/util/ModelClone.ts');
         shell.exec('git add src/util/ModelValidator.ts');
 
         console.log(`Updating Annotation...`);
@@ -137,16 +136,17 @@ export class Update {
     }
 
     private static serviceFileSnippetCloneValidation = `public static async retrieveClone(id: string): Promise<EntityModel> {
-        return ModelClone.retrieveRecord(EntityService.logicalName, id);
+        const origEntity = await Xrm.WebApi.retrieveRecord(EntityService.logicalName, id);
+        return Model.parseCreateModel(EntityService.logicalName, origEntity);
     }
     
     public static async validateRecord(entityModel: EntityModel): Promise<ModelValidation> {
-        return ModelValidator.validateRecord(EntityService.logicalName, entityModel);
+        return Model.validateRecord(EntityService.logicalName, entityModel);
     }`;
 
     private static updateServiceFileCloneValidation(filepath: string): void {
         console.log(`Updating Service files Clone and Validation code`);
-        const cloneCheck = shell.grep(`import {ModelClone}`, filepath);
+        const cloneCheck = shell.grep(`retrieveClone`, filepath);
         if (cloneCheck.stdout === '\n') {
             const split = filepath.split('/'),
                 entityname = split[1],
@@ -157,8 +157,8 @@ export class Update {
                     .replace(/EntityService/g, `${entityname}Service`)
                     .replace(/EntityModel/g, `${entityname}Model`)
                     .replace(/entityModel/g, `${entitynameCamelCase}Model`) + '\n', file);
-            shell.sed('-i', `export`,
-                `import {ModelClone} from '../util/ModelClone';\nimport {ModelValidation, ModelValidator} from '../util/ModelValidator';\n\nexport`, file);
+            shell.sed('-i', `import {Model}`,
+                `import {Model, ModelValidation}`, file);
             console.log(`Modified ${filepath}`);
         }
     }
