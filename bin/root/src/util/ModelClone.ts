@@ -8,27 +8,27 @@ interface CloneModel extends Model {
 export class ModelClone {
     public static async retrieveRecord(entityLogicalName: string, id: string): Promise<Model> {
         const origEntity = await Xrm.WebApi.retrieveRecord(entityLogicalName, id),
-            entity = ModelClone.parseCloneModel(origEntity),
+            entity = ModelClone.parseModel(origEntity),
             metadata = await Xrm.Utility.getEntityMetadata(entityLogicalName, Object.keys(entity));
         ModelClone.cleanCloneModel(entity, metadata);
         return WebApi.populateBindings(entity, metadata);
     }
 
-    private static cleanCloneModel(model: CloneModel, metadata: Xrm.Metadata.EntityMetadata): void {
-        delete model[metadata.PrimaryIdAttribute];
+    private static cleanCloneModel(model: Model, metadata: Xrm.Metadata.EntityMetadata): void {
+        delete (model as CloneModel)[metadata.PrimaryIdAttribute];
         delete model.statuscode;
         delete model.statecode;
 
         delete model.ownerid;
-        delete model['_ownerid_value@Microsoft.Dynamics.CRM.lookuplogicalname'];
+        delete (model as CloneModel)['_ownerid_value@Microsoft.Dynamics.CRM.lookuplogicalname'];
         // delete model.modifiedon;
         // delete model.createdon;
         // delete model.versionnumber;
     }
 
-    private static parseCloneModel(model: CloneModel): CloneModel {
+    private static parseModel(model: Model): Model {
         const keys = Object.keys(model),
-            cleanModel = {...model};
+            cleanModel: CloneModel = {...model};
         for (const key of keys) {
             if (cleanModel[key] === null) {
                 delete cleanModel[key];
