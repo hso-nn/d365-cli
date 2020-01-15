@@ -110,6 +110,32 @@ export class Update {
         shell.exec('npm install');
     }
 
+    private static updateServiceFiles(): void {
+        console.log(`Updating Service files`);
+        shell.ls(`src/**/*.service.ts*`).forEach(function (filepath) {
+            Update.updateServiceFileCount(filepath);
+            Update.updateServiceFileCloneValidation(filepath);
+        });
+    }
+
+    private static serviceFileSnippetCount = `public static async count(filters?: Filter[]): Promise<number> {
+        return WebApi.count(EntityService.logicalName, filters);
+    }`;
+
+    private static updateServiceFileCount(filepath: string): void {
+        console.log(`Updating Service files Count code`);
+        const check = shell.grep(`public static async count`, filepath);
+        if (check.stdout === '\n') {
+            const split = filepath.split('/'),
+                entityname = split[1],
+                file = shell.ls(filepath)[0];
+            shell.sed('-i', `public static async upsertRecord`,
+                Update.serviceFileSnippetCount
+                    .replace(/EntityService/g, `${entityname}Service`) + '\n\n    public static async upsertRecord', file);
+            console.log(`Modified ${filepath}`);
+        }
+    }
+
     private static serviceFileSnippetCloneValidation = `public static async retrieveClone(id: string): Promise<EntityModel> {
         return ModelClone.retrieveRecord(EntityService.logicalName, id);
     }
@@ -118,25 +144,23 @@ export class Update {
         return ModelValidator.validateRecord(EntityService.logicalName, entityModel);
     }`;
 
-    private static updateServiceFiles(): void {
-        console.log(`Updating Service files`);
-        shell.ls(`src/**/*.service.ts*`).forEach(function (filepath) {
-            const check = shell.grep(`import {ModelClone}`, filepath);
-            if (check.stdout === '\n') {
-                const split = filepath.split('/'),
-                    entityname = split[1],
-                    entitynameCamelCase = entityname.charAt(0).toLowerCase() + entityname.slice(1),
-                    file = shell.ls(filepath)[0];
-                shell.sed('-i', `public static async count`,
-                    Update.serviceFileSnippetCloneValidation
-                        .replace(/EntityService/g, `${entityname}Service`)
-                        .replace(/EntityModel/g, `${entityname}Model`)
-                        .replace(/entityModel/g, `${entitynameCamelCase}Model`) + '\n\n\tpublic static async count', file);
-                shell.sed('-i', `export`,
-                    `import {ModelClone} from '../util/ModelClone';\nimport {ModelValidation, ModelValidator} from '../util/ModelValidator';\n\nexport`, file);
-                console.log(`Modified ${filepath}`);
-            }
-        });
+    private static updateServiceFileCloneValidation(filepath: string): void {
+        console.log(`Updating Service files Clone and Validation code`);
+        const check = shell.grep(`import {ModelClone}`, filepath);
+        if (check.stdout === '\n') {
+            const split = filepath.split('/'),
+                entityname = split[1],
+                entitynameCamelCase = entityname.charAt(0).toLowerCase() + entityname.slice(1),
+                file = shell.ls(filepath)[0];
+            shell.sed('-i', `public static async count`,
+                Update.serviceFileSnippetCloneValidation
+                    .replace(/EntityService/g, `${entityname}Service`)
+                    .replace(/EntityModel/g, `${entityname}Model`)
+                    .replace(/entityModel/g, `${entitynameCamelCase}Model`) + '\n\n    public static async count', file);
+            shell.sed('-i', `export`,
+                `import {ModelClone} from '../util/ModelClone';\nimport {ModelValidation, ModelValidator} from '../util/ModelValidator';\n\nexport`, file);
+            console.log(`Modified ${filepath}`);
+        }
     }
 
     private static updateModelFiles(): void {
