@@ -5,7 +5,7 @@
   "description": "HSO D365 Command Line Interface",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dys-solutions/d365-cli.git"
+    "url": "https://github.com/hso-nn/d365-cli.git"
   },
   "keywords": [
     "d365",
