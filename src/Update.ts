@@ -56,6 +56,10 @@ export class Update {
         shell.cp('-R', `${__dirname}/root/src/WebApi`, './src');
         shell.exec('git add src/WebApi/Model.ts');
 
+        console.log(`Updating Http...`);
+        shell.cp('-R', `${__dirname}/root/src/Http`, './src');
+        shell.exec('git add src/Http/Http.ts');
+
         console.log(`Updating util...`);
         shell.cp('-R', `${__dirname}/root/src/util`, './src');
         shell.exec('git add src/util/Base64.ts');
