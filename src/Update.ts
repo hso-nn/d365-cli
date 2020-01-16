@@ -22,6 +22,7 @@ export class Update {
         Update.updateDeploy(variables);
         Update.updateSrcFolder();
         Update.updatePackageJson(variables);
+        Update.updateServiceFiles();
         Update.updateModelFiles();
         Update.updateEntityFiles();
         Update.updateWebpackConfig(variables);
@@ -58,6 +59,7 @@ export class Update {
         console.log(`Updating util...`);
         shell.cp('-R', `${__dirname}/root/src/util`, './src');
         shell.exec('git add src/util/Base64.ts');
+        shell.exec('git add src/util/ModelValidator.ts');
 
         console.log(`Updating Annotation...`);
         shell.cp('-R', `${__dirname}/root/src/Annotation`, './src');
@@ -105,6 +107,62 @@ export class Update {
         console.log(`Removing old npm packages. This may take a while...`);
         shell.exec('npm prune');
         shell.exec('npm install');
+    }
+
+    private static updateServiceFiles(): void {
+        console.log(`Updating Service files`);
+        shell.ls(`src/**/*.service.ts*`).forEach(function (filepath) {
+            Update.updateServiceFileCount(filepath);
+            Update.updateServiceFileCloneValidation(filepath);
+        });
+    }
+
+    private static serviceFileSnippetCount = `public static async count(filters?: Filter[]): Promise<number> {
+        return WebApi.count(EntityService.logicalName, filters);
+    }`;
+
+    private static updateServiceFileCount(filepath: string): void {
+        console.log(`Updating Service files Count code`);
+        const countCheck = shell.grep(`public static async count`, filepath);
+        if (countCheck.stdout === '\n') {
+            const split = filepath.split('/'),
+                entityname = split[1],
+                file = shell.ls(filepath)[0];
+            shell.sed('-i', `export class ${entityname}Service {`,
+                `export class ${entityname}Service {\n    ` + Update.serviceFileSnippetCount
+                    .replace(/EntityService/g, `${entityname}Service`) + '\n', file);
+            console.log(`Modified ${filepath}`);
+        }
+    }
+
+    private static serviceFileSnippetCloneValidation = `public static async retrieveClone(id: string): Promise<EntityModel> {
+        const origRecord = await Xrm.WebApi.retrieveRecord(EntityService.logicalName, id);
+        return Model.parseCreateModel(EntityService.logicalName, origRecord);
+    }
+    
+    public static async validateRecord(entityModel: EntityModel): Promise<ModelValidation> {
+        return Model.validateRecord(EntityService.logicalName, entityModel);
+    }`;
+
+    private static updateServiceFileCloneValidation(filepath: string): void {
+        console.log(`Updating Service files Clone and Validation code`);
+        const cloneCheck = shell.grep(`retrieveClone`, filepath);
+        if (cloneCheck.stdout === '\n') {
+            const split = filepath.split('/'),
+                entityname = split[1],
+                entitynameCamelCase = entityname.charAt(0).toLowerCase() + entityname.slice(1),
+                file = shell.ls(filepath)[0];
+            shell.sed('-i', `export class ${entityname}Service {`,
+                `export class ${entityname}Service {\n    ` + Update.serviceFileSnippetCloneValidation
+                    .replace(/EntityService/g, `${entityname}Service`)
+                    .replace(/EntityModel/g, `${entityname}Model`)
+                    .replace(/entityModel/g, `${entitynameCamelCase}Model`) + '\n', file);
+            shell.sed('-i', `import {Model}`,
+                `import {Model, ModelValidation}`, file);
+            shell.sed('-i', `export`,
+                `import {Model, ModelValidation} from '../WebApi/Model';\n\nexport`, file);
+            console.log(`Modified ${filepath}`);
+        }
     }
 
     private static updateModelFiles(): void {

@@ -8,11 +8,10 @@ declare interface Resources {
 
 declare interface Options {
     relativePath: string;
-    fileExtension?: string;
 }
 
 export class Translation {
-    public static async init(options: Options = {relativePath: null, fileExtension: null}): Promise<void> {
+    public static async init(options: Options = {relativePath: null}): Promise<void> {
         const globalContext = Xrm.Utility.getGlobalContext(),
             lng = globalContext.userSettings.languageId.toString(),
             resources = await Translation.getResources(options);

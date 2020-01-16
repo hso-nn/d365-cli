@@ -182,26 +182,29 @@ export class WebApi {
         return xmlHttpRequest.response && JSON.parse(xmlHttpRequest.response, dateReviver);
     }
 
-    private static async populateBindings(model: Model, metadata: Xrm.Metadata.EntityMetadata): Promise<Model> {
+    public static async populateBindings(model: Model, metadata: Xrm.Metadata.EntityMetadata): Promise<Model> {
         const attributes = Object.keys(model),
             requestData: any = {...model};
         for (const attribute of attributes) {
-            const attributeMetadata: any = metadata.Attributes.get(attribute),
-                attributeType = attributeMetadata && attributeMetadata.AttributeType;
-            if (attributeType === 6) { // Lookup
-                const bindingId = requestData[attribute];
-                if (bindingId) {
-                    const binding = await WebApi.getBinding(attribute, bindingId, metadata);
-                    Object.assign(requestData, binding);
+            const attributeMetadata: any = metadata.Attributes.get(attribute);
+            if (attributeMetadata) {
+                if ([1, 6, 9].includes(attributeMetadata.AttributeType)) { // Customer, Lookup, Owner
+                    const bindingId = requestData[attribute];
+                    if (bindingId) {
+                        const targetEntity = (model as any)[`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname`];
+                        const binding = await WebApi.getBinding(attribute, bindingId, metadata, targetEntity);
+                        Object.assign(requestData, binding);
+                    }
+                    delete requestData[attribute];
+                    delete requestData[`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname`];
                 }
-                delete requestData[attribute];
             }
         }
         return requestData;
     }
 
-    private static async getBinding(attribute: string, id: string, metadata: Xrm.Metadata.EntityMetadata): Promise<any> {
-        const manyToOneMetadata = await WebApi.getManyToOneMetadata(attribute, metadata),
+    public static async getBinding(attribute: string, id: string, metadata: Xrm.Metadata.EntityMetadata, targetEntity?: string): Promise<any> {
+        const manyToOneMetadata = await WebApi.getManyToOneMetadata(attribute, metadata, targetEntity),
             {ReferencedEntity: referencedEntity, ReferencingEntityNavigationPropertyName: referencingEntityNavigationPropertyName} = manyToOneMetadata,
             referencedMetadata = await Xrm.Utility.getEntityMetadata(referencedEntity),
             referencedEntitySetName = referencedMetadata.EntitySetName,
@@ -232,10 +235,10 @@ export class WebApi {
             request.onreadystatechange = function (): void {
                 if (this.readyState === 4) {
                     request.onreadystatechange = null;
-                    if ([200, 201, 204].includes(this.status)) {
+                    if ([200, 201, 204, 304].includes(this.status)) {
                         resolve(request);
                     } else {
-                        reject(new Error('Unexpected Error'));
+                        reject(request);
                     }
                 }
             };
@@ -413,6 +416,13 @@ export class WebApi {
             const {value: manyToOneMetadatas} = JSON.parse(request.response);
             return manyToOneMetadatas;
         }
+    }
+
+    public static async getAttributesMetadata(entityLogicalName: string, select: string[]): Promise<any> {
+        const uri = `EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes?$select=${select.join(',')}`,
+            request = await WebApi.request('GET', uri);
+        const {value: attributesMetadata} = JSON.parse(request.response);
+        return attributesMetadata;
     }
 
     private static getMetadataAttributes(attributes: string[] = [], filters: Filter[] = [], expands: Expand[] = []): string[] {
