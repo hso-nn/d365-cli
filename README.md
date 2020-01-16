@@ -136,3 +136,22 @@ Once the files are deployed, it's possible to point to a local file instead of t
       npm run watch
     ```
   * Now refresh D365 and your local file will be served.
+
+# Examples
+## Cloning Quote
+
+```typescript
+    private static async clone(executionContext: Xrm.Events.EventContext): Promise<void> {
+        const formContext = executionContext.getFormContext(),
+            id = formContext.data.entity.getId(),
+            quote = await QuoteService.retrieveClone(id),
+            validation = await QuoteService.validateRecord(quote);
+        if (validation.isValid) {
+            try {
+                await QuoteService.createRecord(quote);
+            } catch (e) {
+                console.log(`${e.code} - ${e.message}`);
+            }
+        }
+    }
+```
