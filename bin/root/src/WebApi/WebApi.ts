@@ -1,4 +1,5 @@
 import {Model} from './Model';
+import {Http, JsonHttpHeaders, jsonHttpHeaders, Method} from '../Http/Http';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface Expand {
@@ -34,19 +35,6 @@ export interface MultipleSystemQueryOptions extends SystemQueryOptions {
     filters?: Filter[];
     orders?: OrderBy[];
     top?: number;
-}
-
-type Method = 'GET' | 'POST' | 'DELETE';
-
-interface HttpHeaders {
-    [index: string]: string;
-}
-
-interface JsonHttpHeaders extends HttpHeaders {
-    'OData-MaxVersion': string;
-    'OData-Version': string;
-    'Accept': string;
-    'Content-Type': string;
 }
 
 const dateReviver = (key: string, value: any): any => {
@@ -142,7 +130,7 @@ export class WebApi {
             optionParts.push($filter);
         }
         const uri = `${entitySetName}?${optionParts.join('&')}`,
-            request = await WebApi.request('GET', uri, null, WebApi.jsonHeaders),
+            request = await WebApi.request('GET', uri),
             data = JSON.parse(request.response);
         return data['@odata.count'];
     }
@@ -159,7 +147,7 @@ export class WebApi {
                 relEntitySetName = relEntityMetadata.EntitySetName;
             uri += `?$id=${this.apiUrl}${relEntitySetName}(${relId})`;
         }
-        return WebApi.request('DELETE', uri, null, WebApi.jsonHeaders);
+        return WebApi.request('DELETE', uri);
     }
 
     public static async executeAction(actionName: string, data?: any, entityLogicalName?: string, id?: string): Promise<JSON> {
@@ -172,13 +160,13 @@ export class WebApi {
 
     private static async executeBoundAction(actionName: string, data: any, entityLogicalName: string, id: string): Promise<JSON> {
         const metadata = await Xrm.Utility.getEntityMetadata(entityLogicalName),
-            xmlHttpRequest = await WebApi.request('POST', `${metadata.EntitySetName}(${id})/Microsoft.Dynamics.CRM.${actionName}`, data, WebApi.jsonHeaders);
+            xmlHttpRequest = await WebApi.request('POST', `${metadata.EntitySetName}(${id})/Microsoft.Dynamics.CRM.${actionName}`, data);
         return xmlHttpRequest.response && JSON.parse(xmlHttpRequest.response, dateReviver);
     }
 
     private static async executeUnboundAction(actionName: string, data?: any): Promise<JSON> {
         const method: Method = data ? 'POST' : 'GET',
-            xmlHttpRequest = await WebApi.request(method, `${actionName}`, data, WebApi.jsonHeaders);
+            xmlHttpRequest = await WebApi.request(method, `${actionName}`, data);
         return xmlHttpRequest.response && JSON.parse(xmlHttpRequest.response, dateReviver);
     }
 
@@ -215,35 +203,14 @@ export class WebApi {
         return binding;
     }
 
-    private static jsonHeaders: JsonHttpHeaders = {
-        'OData-MaxVersion': '4.0',
-        'OData-Version': '4.0',
-        'Accept': 'application/json',
-        'Content-Type': 'application/json; charset=utf-8'
-    };
-
-    private static request(method: Method, uri: string, data?: any, httpHeaders: HttpHeaders = {}): Promise<XMLHttpRequest> {
-        return new Promise((resolve, reject): void => {
-            const request = new XMLHttpRequest(),
-                url = `${this.apiUrl}${uri}`,
-                requestData = data && JSON.stringify(data),
-                headerKeys = Object.keys(httpHeaders);
-            request.open(method, encodeURI(url), true);
-            for (const key of headerKeys) {
-                request.setRequestHeader(key, httpHeaders[key]);
-            }
-            request.onreadystatechange = function (): void {
-                if (this.readyState === 4) {
-                    request.onreadystatechange = null;
-                    if ([200, 201, 204, 304].includes(this.status)) {
-                        resolve(request);
-                    } else {
-                        reject(request);
-                    }
-                }
-            };
-            request.send(requestData);
-        });
+    private static async request(method: Method, uri: string, data?: any, httpHeaders: JsonHttpHeaders = jsonHttpHeaders): Promise<XMLHttpRequest> {
+        const url = `${this.apiUrl}${uri}`;
+        try {
+            return await Http.request(method, url, data, httpHeaders);
+        } catch (e) {
+            const responseJSON = JSON.parse(e.message);
+            throw new Error(responseJSON.error.message);
+        }
     }
 
     private static parseModels(models: Model[], options: SystemQueryOptions): Model[] {
@@ -412,7 +379,7 @@ export class WebApi {
             return metadata.ManyToOneRelationships.getAll();
         } else {
             const uri = `EntityDefinitions(LogicalName='${metadata.LogicalName}')/ManyToOneRelationships`;
-            const request = await WebApi.request('GET', uri, null, WebApi.jsonHeaders);
+            const request = await WebApi.request('GET', uri);
             const {value: manyToOneMetadatas} = JSON.parse(request.response);
             return manyToOneMetadatas;
         }
