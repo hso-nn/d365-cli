@@ -17,4 +17,15 @@ export class FormUtil {
             control.addCustomView(viewId, defaultView.returnedtypecode, defaultView.name, firstChild.outerHTML, defaultView.layoutxml, true);
         }
     }
+
+    static setDisabled(executionContext: Xrm.Events.EventContext, disabled: boolean, attributeNames: string[]): void {
+        const formContext = executionContext.getFormContext();
+
+        attributeNames.forEach((fieldname: string) => {
+            const formControl: Xrm.Controls.StandardControl = formContext.getControl(fieldname);
+            if (formControl) {
+                formControl.setDisabled(disabled);
+            }
+        });
+    }
 }
