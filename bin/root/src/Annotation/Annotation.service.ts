@@ -1,8 +1,11 @@
-import {WebApi} from '../WebApi/WebApi';
+import {Filter, WebApi} from '../WebApi/WebApi';
 import {AnnotationModel} from './Annotation.model';
 import {Base64} from '../util/Base64';
+import {Model, ModelValidation} from '../WebApi/Model';
 
 export class AnnotationService {
+    private static logicalName = 'annotation';
+
     public static async parseAnnotation(blob: Blob, filename: string, id: string, targetEntityName: string): Promise<AnnotationModel> {
         return {
             subject: 'Generated png file based on svg',
@@ -19,7 +22,7 @@ export class AnnotationService {
 
     public static async upsertRecord(annotationModel: AnnotationModel): Promise<AnnotationModel> {
         const {id, logicalName} = annotationModel.objectid,
-            annotations: AnnotationModel[] = await WebApi.retrieveMultipleRecords('annotation', {
+            annotations: AnnotationModel[] = await WebApi.retrieveMultipleRecords(AnnotationService.logicalName, {
                 select: ['annotationid', 'objectid'],
                 filters: [{
                     conditions: [{
@@ -55,5 +58,18 @@ export class AnnotationService {
         const {ReferencingEntityNavigationPropertyName: navigationPropertyName} = manyToOneMetadata;
         data[`${navigationPropertyName}@odata.bind`] = `/${entitySetName}(${value})`;
         return data;
+    }
+
+    public static async count(filters?: Filter[]): Promise<number> {
+        return WebApi.count(AnnotationService.logicalName, filters);
+    }
+
+    public static async retrieveClone(id: string): Promise<AnnotationModel> {
+        const origRecord = await Xrm.WebApi.retrieveRecord(AnnotationService.logicalName, id);
+        return Model.parseCreateModel(AnnotationService.logicalName, origRecord);
+    }
+
+    public static async validateRecord(annotationModel: AnnotationModel): Promise<ModelValidation> {
+        return Model.validateRecord(AnnotationService.logicalName, annotationModel);
     }
 }
