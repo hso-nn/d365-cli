@@ -50,6 +50,7 @@ export class Webresource {
             extension = template === 'React' ? 'tsx' : 'ts';
         // eslint-disable-next-line max-len
         shell.sed('-i', 'entry: {', `entry: {\n        ${webresourcename}: [\n            path.resolve(__dirname, "src/${webresourcename}/${webresourcename}.${extension}")\n        ],`, webpackConfigFile);
+        shell.exec('git add webpack.config.js');
         console.log('Adding D365 Webresource done');
     }
 }
