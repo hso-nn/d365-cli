@@ -145,6 +145,7 @@ Once the files are deployed, it's possible to point to a local file instead of t
         const formContext = executionContext.getFormContext(),
             id = formContext.data.entity.getId(),
             quote = await QuoteService.retrieveClone(id),
+            quote.name = `Copy - ${quote.name}`,
             validation = await QuoteService.validateRecord(quote);
         if (validation.isValid) {
             try {
