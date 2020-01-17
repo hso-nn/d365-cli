@@ -104,7 +104,6 @@ class App {
     private mountTokenRoute(router: Router): void {
         router.get('/token/:token', (req: Request, res: Response): void => {
             this.bearer = req.params.token;
-            console.log(`Bearer: ${this.bearer}`);
             res.redirect('/deploy');
         });
     }
@@ -163,7 +162,6 @@ class App {
     private async deployFile(path: string, messenger: Function): Promise<void> {
         return new Promise((resolve): void => {
             fs.readFile(path, async (err: Error, data: Buffer) => {
-                console.log(`Using Bearer: ${this.bearer}`);
                 const crmPath = path.substr(5),
                     webresource = await this.getWebresource(crmPath);
                 messenger(`${crmPath}`);
