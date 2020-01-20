@@ -32,6 +32,7 @@ export class LicenseValidator {
         const webpackConfigFile = shell.ls('webpack.config.js')[0];
         // eslint-disable-next-line max-len
         shell.sed('-i', 'entry: {', `entry: {\n        LicenseValidator: [\n            path.resolve(__dirname, "src/License/Validator.ts")\n        ],`, webpackConfigFile);
+        shell.exec('git add webpack.config.js');
         console.log('Adding D365 License Validator done');
     }
 }
