@@ -63,7 +63,7 @@ export class Update {
         console.log(`Updating util...`);
         shell.cp('-R', `${__dirname}/root/src/util`, './src');
         shell.exec('git add src/util/Base64.ts');
-        shell.exec('git add src/util/ModelValidator.ts');
+        shell.exec('git add src/util/FormUtil.ts');
 
         console.log(`Updating Annotation...`);
         shell.cp('-R', `${__dirname}/root/src/Annotation`, './src');
