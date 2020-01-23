@@ -14,7 +14,8 @@ const scssLoaders = [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"
 
 module.exports = {
     mode: mode,
-    entry: {},
+    entry: {
+    },
     output: {
         path: dir_build,
         filename: "[name]/[name].js",

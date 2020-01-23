@@ -214,7 +214,7 @@ export class Update {
             start = content.indexOf('entry:'),
             end = content.indexOf('output:'),
             entryPart = content.substr(start, end - start),
-            cutEntry = entryPart.replace('\r\n    },', '');
+            cutEntry = entryPart.replace('\r\n    },\r\n    ', '');
         shell.cp('-R', `${__dirname}/root/webpack.config.js`, '.');
         const webpackConfigFile = shell.ls('webpack.config.js')[0];
         shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), variables.publisher, webpackConfigFile);
