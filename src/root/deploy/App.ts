@@ -4,7 +4,7 @@ import * as crypto from 'crypto';
 import * as http from 'http';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
-import * as opn from 'opn';
+import * as open from 'open';
 import {Express, Router} from 'express';
 import {WebresourceService} from './Webresource/Webresource.service';
 import {WebresourceModel} from './Webresource/Webresource.model';
@@ -46,7 +46,7 @@ class App {
             port = parseInt(portSplit[1]),
             openUrl = redirectUriSplit.slice(0, redirectUriSplit.length - 1).join('/');
         this.httpServer = this.express.listen(port, (): void => {
-            opn(openUrl);
+            open(openUrl);
             return console.log(`server is listening on ${port}`);
         });
         this.httpServer.on('connection', (socket: Socket) => {
