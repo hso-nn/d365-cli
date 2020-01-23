@@ -1,6 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-// @ts-ignore
-import i18next from 'i18next';
+import i18next, {TOptions} from 'i18next';
 
 declare interface Resources {
     [index: string]: {translation: {[index: string]: string}};
@@ -43,11 +41,11 @@ export class Translation {
         }
     }
 
-    public static translate(text: string, options?: i18next.TOptions | string): string {
+    public static translate(text: string, options?: TOptions | string): string {
         return i18next.t(text, options);
     }
 
-    public static translateArray(text: string | Array<string>, options?: i18next.TOptions | string): Array<string> {
+    public static translateArray(text: string | Array<string>, options?: TOptions | string): Array<string> {
         if (text instanceof Array) {
             const translations: string[] = [];
             for (const txt of text) {
