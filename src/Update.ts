@@ -80,9 +80,9 @@ export class Update {
     private static updateDeploy(variables: AllVariables): void {
         console.log(`Updating deploy...`);
         shell.cp('-R', `${__dirname}/root/deploy/deploy.js`, './deploy');
-        const check = shell.grep(`clientSecret`, './deploy/crm.json'),
+        const checkClientSecret = shell.grep(`clientSecret`, './deploy/crm.json'),
             {publisher, solution, environment} = variables;
-        if (check.stdout !== '\n') {
+        if (checkClientSecret.stdout !== '\n') {
             shell.cp('-R', `${__dirname}/root/deploy/crm.json`, './deploy');
             const crmJsonFile = shell.ls('./deploy/crm.json')[0];
             shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, crmJsonFile);
@@ -132,6 +132,8 @@ export class Update {
             const split = filepath.split('/'),
                 entityname = split[1],
                 file = shell.ls(filepath)[0];
+            shell.sed('-i', `import {MultipleSystemQueryOptions, SystemQueryOptions, WebApi} from '../WebApi/WebApi';`,
+                `import {Filter, MultipleSystemQueryOptions, SystemQueryOptions, WebApi} from '../WebApi/WebApi';`, file);
             shell.sed('-i', `export class ${entityname}Service {`,
                 `export class ${entityname}Service {\n    ` + Update.serviceFileSnippetCount
                     .replace(/EntityService/g, `${entityname}Service`) + '\n', file);
@@ -163,8 +165,8 @@ export class Update {
                     .replace(/entityModel/g, `${entitynameCamelCase}Model`) + '\n', file);
             shell.sed('-i', `import {Model}`,
                 `import {Model, ModelValidation}`, file);
-            shell.sed('-i', `export`,
-                `import {Model, ModelValidation} from '../WebApi/Model';\n\nexport`, file);
+            shell.sed('-i', `export class`,
+                `import {Model, ModelValidation} from '../WebApi/Model';\n\nexport class`, file);
             console.log(`Modified ${filepath}`);
         }
     }
@@ -212,7 +214,7 @@ export class Update {
             start = content.indexOf('entry:'),
             end = content.indexOf('output:'),
             entryPart = content.substr(start, end - start),
-            cutEntry = entryPart.replace('\r\n    },', '');
+            cutEntry = entryPart.replace('\r\n    },\r\n    ', '');
         shell.cp('-R', `${__dirname}/root/webpack.config.js`, '.');
         const webpackConfigFile = shell.ls('webpack.config.js')[0];
         shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), variables.publisher, webpackConfigFile);
