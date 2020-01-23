@@ -6,7 +6,7 @@ var path = require("path"),
     WebpackAutoInject = require("webpack-auto-inject-version"),
     CopyWebpackPlugin = require("copy-webpack-plugin"),
     MiniCssExtractPlugin = require("mini-css-extract-plugin"),
-    UglifyJSPlugin = require("uglifyjs-webpack-plugin"),
+    TerserPlugin = require("terser-webpack-plugin"),
     ReplaceInFileWebpackPlugin = require("replace-in-file-webpack-plugin");
 
 const scssLoaders = [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader", "sass-loader"],
@@ -136,15 +136,15 @@ module.exports = {
         colors: true
     },
     optimization: {
-        minimizer: [
-            new UglifyJSPlugin({
-                uglifyOptions: {
-                    compress: {
-                        drop_console: mode !== "development",
-                    }
+        minimize: mode !== "development",
+        minimizer: [new TerserPlugin({
+            extractComments: false,
+            terserOptions: {
+                compress: {
+                    drop_console: mode !== "development"
                 }
-            })
-        ]
+            }
+        })]
     },
     devtool: mode === "development" ? "source-map" : false
 };

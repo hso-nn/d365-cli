@@ -5,7 +5,7 @@ const path = require("path"),
     dir_build = path.resolve(__dirname, "bin"),
     WebpackAutoInject = require("webpack-auto-inject-version"),
     CopyWebpackPlugin = require("copy-webpack-plugin"),
-    UglifyJSPlugin = require("uglifyjs-webpack-plugin"),
+    TerserPlugin = require("terser-webpack-plugin"),
     nodeExternals = require("webpack-node-externals");
 
 module.exports = {
@@ -85,15 +85,15 @@ module.exports = {
         colors: true
     },
     optimization: {
-        minimizer: [
-            new UglifyJSPlugin({
-                uglifyOptions: {
-                    compress: {
-                        drop_console: false,
-                    }
+        minimize: mode !== "development",
+        minimizer: [new TerserPlugin({
+            extractComments: false,
+            terserOptions: {
+                compress: {
+                    drop_console: mode !== "development"
                 }
-            })
-        ]
+            }
+        })]
     },
     devtool: mode === "development" ? "source-map" : false
 };
