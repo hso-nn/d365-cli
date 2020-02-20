@@ -17,8 +17,8 @@ module.exports = {
     },
     externals: [nodeExternals()],
     entry: {
-        "root/deploy/deploy": [
-            path.resolve(__dirname, "src/root/Deploy/App.ts")
+        "root/tools/deploy": [
+            path.resolve(__dirname, "src/root/tools/Deploy.ts")
         ],
         "main": [
             path.resolve(__dirname, "src/main.ts")

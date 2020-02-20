@@ -1,115 +1,22 @@
-import * as express from 'express';
 import * as fs from 'fs';
-import * as crypto from 'crypto';
-import * as http from 'http';
-// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-// @ts-ignore
-import * as open from 'open';
-import {Express, Router} from 'express';
 import {WebresourceService} from './Webresource/Webresource.service';
 import {WebresourceModel} from './Webresource/Webresource.model';
 import {Request, Response} from 'express-serve-static-core';
-import {Socket} from 'net';
+import {AdalRouter} from './AdalRouter';
+import {Router} from 'express';
+import * as crypto from 'crypto';
 
-
-export interface CrmJson {
-    crm: {
-        version: string;
-        publisher_prefix: string;
-        solution_name: string;
-        url: string;
-    };
-    adal: {
-        clientId: string;
-        redirectUri: string;
-    };
-}
-
-class App {
-    public express: Express;
-    private httpServer: http.Server;
-    private sockets: Socket[] = [];
-    private settings: CrmJson = JSON.parse(fs.readFileSync('deploy/crm.json', 'utf8'));
-    private bearer: string;
+class Deploy extends AdalRouter {
     private md5 = (contents: string): string => crypto.createHash('md5').update(contents).digest('hex');
 
-    constructor() {
-        this.express = express();
-        this.express.use(express.static('node_modules/adal-angular/dist'));
-        this.mountRoutes();
-        this.startListen();
-    }
-
-    private startListen(): void {
-        const redirectUriSplit = this.settings.adal.redirectUri.split('/'),
-            portSplit = redirectUriSplit[redirectUriSplit.length -2].split(':'),
-            port = parseInt(portSplit[1]),
-            openUrl = redirectUriSplit.slice(0, redirectUriSplit.length - 1).join('/');
-        this.httpServer = this.express.listen(port, (): void => {
-            open(openUrl);
-            return console.log(`server is listening on ${port}`);
-        });
-        this.httpServer.on('connection', (socket: Socket) => {
-            this.sockets.push(socket);
-        });
-    }
-
-    private mountRoutes(): void {
-        const router = express.Router();
-        App.mountDefaultRoute(router);
-        this.mountAuthRoute(router);
-        this.mountTokenRoute(router);
+    protected mountRoutes(): Router {
+        const router: Router = super.mountRoutes();
         this.mountDeployRoute(router);
-        this.express.use('/', router);
-    }
-
-    private static mountDefaultRoute(router: Router): void {
-        router.get('/', (req: Request, res: Response) => {
-            res.redirect('/auth');
-        });
-    }
-
-    private mountAuthRoute(router: Router): void {
-        router.get('/auth', (req: Request, res: Response) => {
-            res.send(`
-                <head>
-                    <title>test</title>
-                </head>
-                <body>
-                    <script src="adal.min.js"></script>
-                    <script>
-                        var config = {
-                            clientId: "${this.settings.adal.clientId}",
-                            popUp: true,
-                            callback: function (errorDesc, token, error, tokenType) {
-                                authContext.acquireToken('${this.settings.crm.url}', function (errorDesc, token, error) {
-                                    if (!error) {
-                                        window.location.href = "/token/" + token;
-                                    }
-                                });
-                            }
-                        }
-                        var authContext = new AuthenticationContext(config);
-                        if (authContext.isCallback(window.location.hash)) {
-                            authContext.handleWindowCallback();
-                        } else {
-                            authContext.login();
-                        }
-                    </script>
-                </body>`
-            );
-        });
-    }
-
-    private mountTokenRoute(router: Router): void {
-        router.get('/token/:token', (req: Request, res: Response): void => {
-            this.bearer = req.params.token;
-            res.redirect('/deploy');
-        });
+        return router;
     }
 
     private mountDeployRoute(router: Router): void {
-        router.get('/deploy', async (req: Request, res: Response): Promise<void> => {
+        router.get('/authenticated', async (req: Request, res: Response): Promise<void> => {
             res.setHeader('Connection', 'Transfer-Encoding');
             res.setHeader('Content-Type', 'text/html; charset=utf-8');
             res.setHeader('Transfer-Encoding', 'chunked');
@@ -226,4 +133,4 @@ class App {
         return webresources[0];
     }
 }
-new App().express;
+new Deploy().express;

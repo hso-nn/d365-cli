@@ -17,6 +17,7 @@ export class Update {
 
     private static async update(): Promise<void> {
         console.log(`Updating D365 Project...`);
+        Update.moveDeploy();
         const variables = await Variables.get();
         Update.updateProjectRootFolder();
         Update.updateDeploy(variables);
@@ -77,14 +78,27 @@ export class Update {
         shell.rm('-R', './src/tsx');
     }
 
+    private static moveDeploy(): void {
+        console.log(`Moving deploy folder...`);
+        if (shell.test('-f', 'deploy/deploy.js')) {
+            shell.cp('-R','deploy', 'tools');
+            if (shell.which('git')) {
+                shell.exec('git rm deploy/deploy.js');
+                shell.exec('git rm deploy/crm.json');
+                shell.exec('git add tools/deploy.js');
+                shell.exec('git add tools/crm.json');
+            }
+        }
+    }
+
     private static updateDeploy(variables: AllVariables): void {
-        console.log(`Updating deploy...`);
-        shell.cp('-R', `${__dirname}/root/deploy/deploy.js`, './deploy');
-        const checkClientSecret = shell.grep(`clientSecret`, './deploy/crm.json'),
+        console.log(`Updating deploy folder...`);
+        shell.cp('-R', `${__dirname}/root/tools/deploy.js`, './tools');
+        const checkClientSecret = shell.grep(`clientSecret`, './tools/crm.json'),
             {publisher, solution, environment} = variables;
         if (checkClientSecret.stdout !== '\n') {
-            shell.cp('-R', `${__dirname}/root/deploy/crm.json`, './deploy');
-            const crmJsonFile = shell.ls('./deploy/crm.json')[0];
+            shell.cp('-R', `${__dirname}/root/tools/crm.json`, './tools');
+            const crmJsonFile = shell.ls('./tools/crm.json')[0];
             shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, crmJsonFile);
             shell.sed('-i', new RegExp('<%= solution %>', 'ig'), solution, crmJsonFile);
             shell.sed('-i', new RegExp('<%= environment %>', 'ig'), environment, crmJsonFile);
@@ -145,7 +159,7 @@ export class Update {
         const origRecord = await Xrm.WebApi.retrieveRecord(EntityService.logicalName, id);
         return Model.parseCreateModel(EntityService.logicalName, origRecord);
     }
-    
+
     public static async validateRecord(entityModel: EntityModel): Promise<ModelValidation> {
         return Model.validateRecord(EntityService.logicalName, entityModel);
     }`;

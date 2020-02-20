@@ -81,7 +81,7 @@ export class Variables {
         return new Promise((resolve): void => {
             let environment = '', solution = '';
             const lineReader = require('readline').createInterface({
-                input: require('fs').createReadStream(`deploy/crm.json`)
+                input: require('fs').createReadStream(`tools/crm.json`)
             });
             lineReader.on('line', (line: string) => {
                 if (line.includes('"solution_name":')) {
