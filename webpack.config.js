@@ -17,8 +17,11 @@ module.exports = {
     },
     externals: [nodeExternals()],
     entry: {
-        "root/deploy/deploy": [
-            path.resolve(__dirname, "src/root/Deploy/App.ts")
+        "root/tools/deploy": [
+            path.resolve(__dirname, "src/root/tools/Deploy.ts")
+        ],
+        "root/tools/setFormCustomizable": [
+            path.resolve(__dirname, "src/root/tools/SetFormCustomizable.ts")
         ],
         "main": [
             path.resolve(__dirname, "src/main.ts")
@@ -90,7 +93,7 @@ module.exports = {
             extractComments: false,
             terserOptions: {
                 compress: {
-                    drop_console: mode !== "development"
+                    drop_console: false
                 }
             }
         })]

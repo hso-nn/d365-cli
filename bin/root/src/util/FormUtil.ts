@@ -28,4 +28,15 @@ export class FormUtil {
             }
         });
     }
+
+    static setVisible(executionContext: Xrm.Events.EventContext, visible: boolean, attributeNames: string[]): void {
+        const formContext = executionContext.getFormContext();
+
+        attributeNames.forEach((fieldname: string) => {
+            const formControl: Xrm.Controls.StandardControl = formContext.getControl(fieldname);
+            if (formControl) {
+                formControl.setVisible(visible);
+            }
+        });
+    }
 }

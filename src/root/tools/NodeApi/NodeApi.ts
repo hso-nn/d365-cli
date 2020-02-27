@@ -3,7 +3,7 @@ import {Model} from '../../../../bin/root/src/WebApi/Model';
 import * as fs from 'fs';
 import * as https from 'https';
 import { IncomingMessage } from 'http';
-import {CrmJson} from '../App';
+import {CrmJson} from '../CrmJson';
 import { RequestOptions } from 'https';
 
 type Method = 'GET' | 'POST' | 'DELETE' | 'PATCH';
@@ -33,7 +33,7 @@ interface NodeApiResponse {
 }
 
 export class NodeApi {
-    private static settings: CrmJson = JSON.parse(fs.readFileSync('deploy/crm.json', 'utf8'));
+    private static settings: CrmJson = JSON.parse(fs.readFileSync('tools/crm.json', 'utf8'));
 
     public static async retrieveMultipleRecords(entitySetName: string, options: MultipleSystemQueryOptions, bearer: string): Promise<Model[]> {
         const query = NodeApi.getSystemQueryOptions(options),
