@@ -94,6 +94,8 @@ export class Update {
     private static updateDeploy(variables: AllVariables): void {
         console.log(`Updating deploy folder...`);
         shell.cp('-R', `${__dirname}/root/tools/deploy.js`, './tools');
+        shell.cp('-R', `${__dirname}/root/tools/setFormCustomizable.js`, './tools');
+        shell.exec('git add tools/setFormCustomizable.js');
         const checkClientSecret = shell.grep(`clientSecret`, './tools/crm.json'),
             {publisher, solution, environment} = variables;
         if (checkClientSecret.stdout !== '\n') {
