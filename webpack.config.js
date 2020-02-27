@@ -90,7 +90,7 @@ module.exports = {
             extractComments: false,
             terserOptions: {
                 compress: {
-                    drop_console: mode !== "development"
+                    drop_console: false
                 }
             }
         })]
