@@ -5,7 +5,7 @@ import {Update} from './update';
 import {Generator} from './Generator';
 
 program
-    .version('1.2.1') // .version(require('../package').version)
+    .version('1.3.0') // .version(require('../package').version)
     .usage('<command> [options]');
 
 program
