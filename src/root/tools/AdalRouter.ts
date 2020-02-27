@@ -15,6 +15,7 @@ export class AdalRouter {
     protected sockets: Socket[] = [];
     protected settings: CrmJson = JSON.parse(fs.readFileSync('tools/crm.json', 'utf8'));
     protected bearer: string;
+    private response: Response;
 
     constructor() {
         this.express = express();
@@ -42,6 +43,7 @@ export class AdalRouter {
         AdalRouter.mountDefaultRoute(router);
         this.mountAuthRoute(router);
         this.mountTokenRoute(router);
+        this.mountAuthenticatedRoute(router);
         this.express.use('/', router);
         return router;
     }
@@ -88,6 +90,32 @@ export class AdalRouter {
         router.get('/token/:token', (req: Request, res: Response): void => {
             this.bearer = req.params.token;
             res.redirect('/authenticated');
+        });
+    }
+
+    private mountAuthenticatedRoute(router: Router): void {
+        router.get('/authenticated', async (req: Request, res: Response): Promise<void> => {
+            res.setHeader('Connection', 'Transfer-Encoding');
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+            res.setHeader('Transfer-Encoding', 'chunked');
+
+            res.flushHeaders();
+            this.response = res;
+            await this.onAuthenticated();
+            res.send();
+        });
+    }
+
+    protected onAuthenticated(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    protected log(message: string): Promise<void> {
+        return new Promise(resolve => {
+            this.response.write(`${message}`, () => {
+                this.response.flushHeaders();
+                resolve();
+            });
         });
     }
 }
