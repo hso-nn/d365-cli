@@ -16,14 +16,6 @@ class Deploy extends AdalRouter {
         this.log(`Deploying to ${url}...<br/>`);
         await this.deployDirectory(`dist/${publisher_prefix}_`);
         this.log('Deploy finished');
-        setTimeout(() => {
-            this.httpServer.close((): void => {
-                return console.log(`server stopped listening`);
-            });
-            for (const socket of this.sockets) {
-                socket.destroy();
-            }
-        }, 100);
     }
 
     private async deployDirectory(directory: string): Promise<void> {

@@ -88,6 +88,17 @@ program
     });
 
 program
+    .command('setFormCustomizable <customizable>')
+    .alias('f')
+    .description('Sets the Solution forms iscustomizable/canbedeleted true/false')
+    .action((customizable?: boolean) => {
+        shell.exec(`npm run setFormCustomizable:${customizable ? 'true' : 'false'}`);
+    })
+    .on('--help', () => {
+        console.log(`Sets the Solution forms iscustomizable/canbedeleted true/false`);
+    });
+
+program
     .arguments('<command>')
     .action(() => {
         program.outputHelp();

@@ -102,6 +102,14 @@ export class AdalRouter {
             res.flushHeaders();
             this.response = res;
             await this.onAuthenticated();
+            setTimeout(() => {
+                this.httpServer.close((): void => {
+                    return console.log(`server stopped listening`);
+                });
+                for (const socket of this.sockets) {
+                    socket.destroy();
+                }
+            }, 100);
             res.send();
         });
     }
@@ -112,7 +120,7 @@ export class AdalRouter {
 
     protected log(message: string): Promise<void> {
         return new Promise(resolve => {
-            this.response.write(`${message}`, () => {
+            this.response.write(`${message}<br/>`, () => {
                 this.response.flushHeaders();
                 resolve();
             });
