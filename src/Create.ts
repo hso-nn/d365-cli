@@ -36,7 +36,7 @@ export class Create {
 
         const answers = await Create.inquirer();
 
-        const crmJsonFile = shell.ls('Webresources/deploy/crm.json')[0];
+        const crmJsonFile = shell.ls('Webresources/tools/crm.json')[0];
         shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, crmJsonFile);
         shell.sed('-i', new RegExp('<%= solution %>', 'ig'), answers.solution, crmJsonFile);
         shell.sed('-i', new RegExp('<%= environment %>', 'ig'), answers.environment, crmJsonFile);
