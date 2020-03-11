@@ -7,17 +7,18 @@ interface Expand {
     select: string[];
 }
 
-type FilterCondition = 'eq' | 'ne' | 'gt' | 'ge' | 'lt' | 'le';
+type FilterCondition = 'eq' | 'ne' | 'gt' | 'ge' | 'lt' | 'le' | 'OnOrBefore' | 'On' | 'OnOrAfter' | 'Today' | 'Tomorrow';
 interface Condition {
     attribute: string;
     operator?: FilterCondition;
-    value: any;
+    value?: any;
 }
 
 type FilterType = 'and' | 'or' | 'not';
 export interface Filter {
     type?: FilterType;
     conditions: Condition[];
+    filters?: Filter[];
 }
 
 type Order = 'asc' | 'desc';
@@ -296,17 +297,39 @@ export class WebApi {
         return filterAttributes.length > 0 ? `$filter=${filterAttributes.join(' and ')}` : null;
     }
 
+    // eslint-disable-next-line max-lines-per-function
     private static async parseFilter(filter: Filter, metadata: Xrm.Metadata.EntityMetadata): Promise<string> {
-        const {type = 'and', conditions} = filter,
+        const {type = 'and', conditions, filters = []} = filter,
             filterParts: string[] = [];
         for (const condition of conditions) {
             const {attribute, operator = 'eq', value} = condition,
                 optionsName = await WebApi.getOptionsName(attribute, metadata),
                 attributeMetadata = metadata.Attributes.get(attribute),
-                attributeType = attributeMetadata && (attributeMetadata as any).AttributeType;
-            let filterStr = `${optionsName} ${operator}`;
-            filterStr += attributeType === 14 ? ` '${value}'` : ` ${value}`; // String
+                attributeType = attributeMetadata && (attributeMetadata as any).AttributeType,
+                valueEscaped = attributeType === 14 ? `'${value}'` : `${value}`;
+
+            let filterStr;
+            switch(operator) {
+            case 'OnOrBefore':
+            case 'On':
+            case 'OnOrAfter':
+                filterStr = `Microsoft.Dynamics.CRM.${operator}(PropertyName='${optionsName}',PropertyValue='${value}')`;
+                break; 
+            
+            case 'Today':
+            case 'Tomorrow':
+                filterStr = `Microsoft.Dynamics.CRM.${operator}(PropertyName='${optionsName}')`;
+                break;
+            
+            default:
+                filterStr = `${optionsName} ${operator} ${valueEscaped}`;
+                break;
+            }
             filterParts.push(filterStr);
+        }
+
+        for (const fltr of filters) {
+            filterParts.push(`(${await this.parseFilter(fltr, metadata)})`);
         }
         return `${filterParts.join(` ${type} `)}`;
     }
