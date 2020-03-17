@@ -318,9 +318,9 @@ export class WebApi {
             }
         }
         for (const fltr of filters) {
-            filterParts.push(`(${await WebApi.parseFilter(fltr, metadata)})`);
+            filterParts.push(await WebApi.parseFilter(fltr, metadata));
         }
-        return `${filterParts.join(` ${type} `)}`;
+        return `(${filterParts.join(` ${type} `)})`;
     }
 
     private static async parseFilterCondition(condition: Condition, metadata: Xrm.Metadata.EntityMetadata): Promise<string> {
