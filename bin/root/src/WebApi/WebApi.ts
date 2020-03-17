@@ -338,7 +338,8 @@ export class WebApi {
         let filterStr = `Microsoft.Dynamics.CRM.${operator}(PropertyName='${optionsName}'`;
         if (value !== undefined) {
             if (Array.isArray(value)) {
-                filterStr += `,PropertyValues='[${value}]'`;
+                const values = value.map(val => `'${val}'`);
+                filterStr += `,PropertyValues=[${values.join(',')}]`;
             } else {
                 filterStr += `,PropertyValue='${value}'`;
             }
