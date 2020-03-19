@@ -7,17 +7,27 @@ interface Expand {
     select: string[];
 }
 
-type FilterCondition = 'eq' | 'ne' | 'gt' | 'ge' | 'lt' | 'le';
+// https://docs.microsoft.com/en-us/dynamics365/customer-engagement/web-api/tomorrow?view=dynamics-ce-odata-9
+type QueryFunction = 'Above' | 'AboveOrEqual' | 'Between' | 'Contains' | 'ContainValues' | 'DoesNotContainValues' | 'EqualBusinessId' | 'EqualUserId' | 'EqualUserLanguage' | 'EqualUserOrUserHierarchy' |
+    'EqualUserOrHierarchyAndTeams' | 'EqualUserOrUserTeams' | 'EqualUserTeams' | 'In' | 'InFiscalPeriod' | 'InFiscalPeriodAndYear' | 'InFiscalYear' | 'InOrAfterFiscalPeriodAndYear' |
+    'InOrBeforeFiscalPeriodAndYear' | 'Last7Days' | 'LastFiscalPeriod' | 'LastFiscalYear' | 'LastMonth' | 'LastWeek' | 'LastXDays' | 'LastXFiscalPeriods' | 'LastXFiscalYears' | 'LastXHours' |
+    'LastXMonths' | 'LastXWeeks' | 'LastXYears' | 'LastYear' | 'Next7Days' | 'NextFiscalPeriod' | 'NextFiscalYear' | 'NextMonth' | 'NextWeek' | 'NextXDays' | 'NextXFiscalPeriods' |
+    'NextXFiscalYears' | 'NextXHourds' | 'NextXMonths' | 'NextXWeeks' | 'NextXYears' | 'NextYear' | 'NotBetween' | 'NotEqualBusinessId' | 'NotEqualUserId' | 'NotIn' | 'NotUnder' | 'OlderThanXDays' |
+    'OlderThanXHours' | 'OlderThanXMinutes' | 'OlderThanXMonths' | 'OlderThanXWeeks' | 'OlderThanXYears' | 'On' | 'OnOrAfter' | 'OnOrBefore' | 'ThisFiscalPerios' | 'ThisFiscalYear' | 'ThisMonth' |
+    'ThisWeek' | 'ThisYear' | 'Today' | 'Tomorrow' | 'Under' | 'UnderOrEqual' | 'Yesterday';
+const filterConditions = ['eq' , 'ne', 'gt', 'ge', 'lt', 'le'] as const;
+type FilterCondition = typeof filterConditions[number]; // 'eq' | 'ne' | 'gt' | 'ge' | 'lt' | 'le';
 interface Condition {
     attribute: string;
-    operator?: FilterCondition;
-    value: any;
+    operator?: FilterCondition | QueryFunction;
+    value?: any;
 }
 
 type FilterType = 'and' | 'or' | 'not';
 export interface Filter {
     type?: FilterType;
     conditions: Condition[];
+    filters?: Filter[];
 }
 
 type Order = 'asc' | 'desc';
@@ -297,18 +307,45 @@ export class WebApi {
     }
 
     private static async parseFilter(filter: Filter, metadata: Xrm.Metadata.EntityMetadata): Promise<string> {
-        const {type = 'and', conditions} = filter,
+        const {type = 'and', conditions, filters = []} = filter,
             filterParts: string[] = [];
         for (const condition of conditions) {
-            const {attribute, operator = 'eq', value} = condition,
-                optionsName = await WebApi.getOptionsName(attribute, metadata),
-                attributeMetadata = metadata.Attributes.get(attribute),
-                attributeType = attributeMetadata && (attributeMetadata as any).AttributeType;
-            let filterStr = `${optionsName} ${operator}`;
-            filterStr += attributeType === 14 ? ` '${value}'` : ` ${value}`; // String
-            filterParts.push(filterStr);
+            const {operator = 'eq'} = condition;
+            if (filterConditions.includes(operator as FilterCondition)) {
+                filterParts.push(await WebApi.parseFilterCondition(condition, metadata));
+            } else {
+                filterParts.push(await WebApi.parseQueryFunction(condition, metadata));
+            }
         }
-        return `${filterParts.join(` ${type} `)}`;
+        for (const fltr of filters) {
+            filterParts.push(await WebApi.parseFilter(fltr, metadata));
+        }
+        return `(${filterParts.join(` ${type} `)})`;
+    }
+
+    private static async parseFilterCondition(condition: Condition, metadata: Xrm.Metadata.EntityMetadata): Promise<string> {
+        const {attribute, operator = 'eq', value} = condition,
+            attributeMetadata = metadata.Attributes.get(attribute),
+            attributeType = attributeMetadata && (attributeMetadata as any).AttributeType,
+            optionsName = await WebApi.getOptionsName(attribute, metadata),
+            valueEscaped = attributeType === 14 ? `'${value}'` : `${value}`;
+        return `${optionsName} ${operator} ${valueEscaped}`;
+    }
+
+    private static async parseQueryFunction(condition: Condition, metadata: Xrm.Metadata.EntityMetadata): Promise<string> {
+        const {attribute, operator = 'eq', value} = condition,
+            optionsName = await WebApi.getOptionsName(attribute, metadata);
+        let filterStr = `Microsoft.Dynamics.CRM.${operator}(PropertyName='${optionsName}'`;
+        if (value !== undefined) {
+            if (Array.isArray(value)) {
+                const values = value.map(val => `'${val}'`);
+                filterStr += `,PropertyValues=[${values.join(',')}]`;
+            } else {
+                filterStr += `,PropertyValue='${value}'`;
+            }
+        }
+        filterStr += `)`;
+        return filterStr;
     }
 
     private static async generateExpand(expands: Expand[] = [], metadata: Xrm.Metadata.EntityMetadata): Promise<string> {
