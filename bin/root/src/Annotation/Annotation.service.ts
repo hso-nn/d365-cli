@@ -1,4 +1,4 @@
-import {Filter, WebApi} from '../WebApi/WebApi';
+import {Filter, MultipleSystemQueryOptions, SystemQueryOptions, WebApi} from '../WebApi/WebApi';
 import {AnnotationModel} from './Annotation.model';
 import {Base64} from '../util/Base64';
 import {Model, ModelValidation} from '../WebApi/Model';
@@ -8,8 +8,8 @@ export class AnnotationService {
 
     public static async parseAnnotation(blob: Blob, filename: string, id: string, targetEntityName: string): Promise<AnnotationModel> {
         return {
-            subject: 'Generated png file based on svg',
-            notetext: 'Automatic generated',
+            subject: '',
+            notetext: '',
             filename: filename,
             mimetype: blob.type,
             documentbody: await Base64.decodeBlob(blob),
@@ -18,6 +18,22 @@ export class AnnotationService {
                 logicalName: targetEntityName
             }
         };
+    }
+
+    public static async retrieveMultipleRecords(multipleSystemQueryOptions: MultipleSystemQueryOptions): Promise<AnnotationModel[]> {
+        return WebApi.retrieveMultipleRecords(AnnotationService.logicalName, multipleSystemQueryOptions);
+    }
+
+    public static async retrieveRecord(id: string, systemQueryOptions: SystemQueryOptions): Promise<AnnotationModel> {
+        return WebApi.retrieveRecord(AnnotationService.logicalName, id, systemQueryOptions);
+    }
+
+    public static async updateRecord(id: string, entityModel: AnnotationModel): Promise<AnnotationModel> {
+        return WebApi.updateRecord(AnnotationService.logicalName, id, entityModel);
+    }
+
+    public static async createRecord(entityModel: AnnotationModel): Promise<AnnotationModel> {
+        return WebApi.createRecord(AnnotationService.logicalName, entityModel);
     }
 
     public static async upsertRecord(annotationModel: AnnotationModel): Promise<AnnotationModel> {
