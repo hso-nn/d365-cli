@@ -8,8 +8,8 @@ export class AnnotationService {
 
     public static async parseAnnotation(blob: Blob, filename: string, id: string, targetEntityName: string): Promise<AnnotationModel> {
         return {
-            subject: 'Generated png file based on svg',
-            notetext: 'Automatic generated',
+            subject: '',
+            notetext: '',
             filename: filename,
             mimetype: blob.type,
             documentbody: await Base64.decodeBlob(blob),
