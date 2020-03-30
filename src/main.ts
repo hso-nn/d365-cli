@@ -3,6 +3,7 @@ import * as program from 'commander';
 import {Create} from './Create';
 import {Update} from './update';
 import {Generator} from './Generator';
+import {Resx} from './root/Resx';
 
 program
     .version('1.4.1') // .version(require('../package').version)
@@ -96,6 +97,13 @@ program
     })
     .on('--help', () => {
         console.log(`Sets the Solution forms iscustomizable/canbedeleted true/false`);
+    });
+
+program
+    .command('resx')
+    .description('Extracts translation to resx files')
+    .action(() => {
+        Resx.extract();
     });
 
 program
