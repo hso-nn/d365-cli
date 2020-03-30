@@ -1,5 +1,5 @@
 
-type Translation = 'i18n' | 'resx';
+export type TranslationType = 'i18n' | 'resx';
 
 export interface CrmJson {
     crm: {
@@ -14,6 +14,6 @@ export interface CrmJson {
     };
     webresource: {
         namespace: string;
-        translation: Translation;
+        translation: TranslationType;
     };
 }
