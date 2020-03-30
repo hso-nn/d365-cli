@@ -1,4 +1,6 @@
 
+type Translation = 'i18n' | 'resx';
+
 export interface CrmJson {
     crm: {
         version: string;
@@ -9,5 +11,9 @@ export interface CrmJson {
     adal: {
         clientId: string;
         redirectUri: string;
+    };
+    webresource: {
+        namespace: string;
+        translation: Translation;
     };
 }

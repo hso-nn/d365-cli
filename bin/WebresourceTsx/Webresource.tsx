@@ -8,17 +8,12 @@ interface WebresourceProps {}
 
 // eslint-disable-next-line no-unused-vars,max-lines-per-function
 const Webresource: React.FC<WebresourceProps> = (props: WebresourceProps): JSX.Element => {
-    const [translationInitialized, setTranslationInitialized] = useState(false);
-    Translation.init({
-        relativePath: '<%= publisher %>_/<%= namespace %>/locales'
-    }).then(() => {
-        setTranslationInitialized(true);
-    });
-
+    const [yourBoolean, setYourBoolean] = useState(false);
+    console.log(yourBoolean + setYourBoolean); // Prevent linting error
     // eslint-disable-next-line max-lines-per-function
     return (
         <>
-            {translationInitialized && <span>{Translation.translate('Language')}</span>}
+            translationInitialized && <span>{Translation.translate('Language')}</span>
         </>
     );
 };
