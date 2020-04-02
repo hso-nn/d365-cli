@@ -142,7 +142,10 @@ class Deploy extends AdalRouter {
     }
 
     private static xmlBuilder = new xml2js.Builder();
-    private static xmlRegex = /(\s?\n+\s+|\n)/g;
+    private static get xmlRegex(): RegExp {
+        return /(\s?\n+\s+|\n)/g;
+    }
+
     private async getDependencyXML(webresource: WebresourceModel, data: Buffer): Promise<string> {
         const xmlDoc = await this.generateWebresourceXmlDoc(webresource, data);
         const xml = Deploy.xmlBuilder.buildObject(xmlDoc);
@@ -152,7 +155,10 @@ class Deploy extends AdalRouter {
         return trimmedXml;
     }
 
-    private static translationRegex = /\.translate\("([^']*)"\)/gm;
+    private static get translationRegex(): RegExp {
+        return /\.translate\("([^']*)"\)/gm;
+    }
+
     private async generateWebresourceXmlDoc(webresource: WebresourceModel, data: Buffer): Promise<XmlDoc> {
         const filepaths = shell.ls(`dist/**/locales/*.resx*`).map(filepath => filepath.substr(5)), // remove 'dist/'
             xmlDoc: XmlDoc = await xml2js.parseStringPromise(webresource.dependencyxml),
@@ -186,7 +192,10 @@ class Deploy extends AdalRouter {
         }
     }
 
-    private static localesRegex = /locales\/locales(\.\d{4})?\.resx/gm;
+    private static get localesRegex(): RegExp {
+        return /locales\/locales(\.\d{4})?\.resx/gm;
+    }
+
     private cleanLibraries(xmlDoc: XmlDoc, keepFilepaths: string[] = []): void {
         const dependency = xmlDoc.Dependencies.Dependency[0];
         if (!dependency.Library) {
@@ -208,10 +217,15 @@ class Deploy extends AdalRouter {
         return {
             name: filepath,
             displayName: filepath,
-            languagecode: '',
+            languagecode: Deploy.getLanguageCode(filepath),
             description: '',
             libraryUniqueId: Deploy.guid()
         };
+    }
+
+    private static getLanguageCode(filepath: string): string {
+        const match = Deploy.localesRegex.exec(filepath);
+        return match[1]?.substr(1) || '';
     }
 
     private static guid(): string {
