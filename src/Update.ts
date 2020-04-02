@@ -97,13 +97,15 @@ export class Update {
         shell.cp('-R', `${__dirname}/root/tools/setFormCustomizable.js`, './tools');
         shell.exec('git add tools/setFormCustomizable.js');
         const checkClientSecret = shell.grep(`clientSecret`, './tools/crm.json'),
-            {publisher, solution, environment} = variables;
+            {publisher, solution, environment, namespace, translationtype} = variables;
         if (checkClientSecret.stdout !== '\n') {
             shell.cp('-R', `${__dirname}/root/tools/crm.json`, './tools');
             const crmJsonFile = shell.ls('./tools/crm.json')[0];
             shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, crmJsonFile);
             shell.sed('-i', new RegExp('<%= solution %>', 'ig'), solution, crmJsonFile);
             shell.sed('-i', new RegExp('<%= environment %>', 'ig'), environment, crmJsonFile);
+            shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), namespace, crmJsonFile);
+            shell.sed('-i', new RegExp('<%= translationtype %>', 'ig'), translationtype, crmJsonFile);
         }
     }
 

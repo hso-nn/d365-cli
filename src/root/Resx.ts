@@ -24,9 +24,6 @@ export class Resx {
             Resx.addLocalesFile();
         }
         await Resx.processCodeKeys((codeKeys));
-        // for (const key of keys) {
-        //     console.log(key);
-        // }
         return null;
     }
 
@@ -79,8 +76,6 @@ export class Resx {
 
     private static processXmlDoc(xmlDoc: XmlDoc, codeKeys: string[]): void {
         const resxKeys = xmlDoc.root.data.map((item: XmlItem) => item.$.name);
-        console.log(codeKeys);
-        console.log(resxKeys);
         for (const resxKey of resxKeys) {
             if (!codeKeys.includes(resxKey)) {
                 const xmlItem = xmlDoc.root.data.find(item => item.$.name === resxKey),

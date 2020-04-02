@@ -3,6 +3,29 @@ import {WebresourceService} from './Webresource/Webresource.service';
 import {WebresourceModel} from './Webresource/Webresource.model';
 import {AdalRouter} from './AdalRouter';
 import * as crypto from 'crypto';
+import * as xml2js from 'xml2js';
+import * as shell from 'shelljs';
+
+interface LibraryItem {
+    name: string;
+    displayName: string;
+    languagecode?: string;
+    description?: string;
+    libraryUniqueId?: string;
+}
+
+interface XmlDoc {
+    Dependencies: {
+        Dependency: {
+            $: {
+                componentType: string; // WebResource
+            };
+            Library: {
+                $: LibraryItem;
+            }[];
+        }[];
+    };
+}
 
 class Deploy extends AdalRouter {
     private md5 = (contents: string): string => crypto.createHash('md5').update(contents).digest('hex');
@@ -38,28 +61,26 @@ class Deploy extends AdalRouter {
         });
     }
 
-    private async deployFile(path: string): Promise<void> {
-        return new Promise((resolve): void => {
-            fs.readFile(path, async (err: Error, data: Buffer) => {
-                const crmPath = path.substr(5),
-                    webresource = await this.getWebresource(crmPath);
-                this.log(`${crmPath}`);
-                if (webresource) {
-                    await this.updateWebresource(webresource, data);
-                } else {
-                    await this.insertWebresource(data, crmPath);
-                }
-                resolve();
-            });
-        });
+    private async deployFile(filepath: string): Promise<void> {
+        const filedata = fs.readFileSync(filepath), // String(fs.readFileSync(filepath)),
+            crmPath = filepath.substr(5),
+            webresource = await this.getWebresource(crmPath);
+        this.log(`${crmPath}`);
+        if (webresource) {
+            await this.updateWebresource(webresource, filedata);
+        } else {
+            await this.insertWebresource(filedata, crmPath);
+        }
     }
 
     private async updateWebresource(webresource: WebresourceModel, data: Buffer): Promise<void> {
         const md5Orig = this.md5(webresource.content),
             base64 = data.toString('base64'),
+            dependencyXML = await this.generateDependencyXML(webresource, data),
             md5New = this.md5(base64);
-        if (md5Orig !== md5New) {
+        if (md5Orig !== md5New || dependencyXML && dependencyXML !== webresource?.dependencyxml) {
             webresource.content = base64;
+            webresource.dependencyxml = dependencyXML;
             try {
                 await WebresourceService.upsert(webresource, this.bearer);
                 this.log(` updated...`);
@@ -77,11 +98,16 @@ class Deploy extends AdalRouter {
         const base64 = data.toString('base64');
         try {
             const solutionUniqueName = this.settings.crm.solution_name,
-                webresource = await WebresourceService.upsert({
+                webresourceModel: WebresourceModel = {
                     content: base64,
                     name: path,
                     displayname: path
-                }, this.bearer);
+                },
+                dependencyXML = await this.generateDependencyXML(webresourceModel, data);
+            if (dependencyXML) {
+                webresourceModel.dependencyxml = dependencyXML;
+            }
+            const webresource = await WebresourceService.upsert(webresourceModel, this.bearer);
             this.log(` inserted...`);
             await WebresourceService.addToSolution(webresource, solutionUniqueName, this.bearer);
             this.log(` and added to solution ${solutionUniqueName}<br/>`);
@@ -93,7 +119,7 @@ class Deploy extends AdalRouter {
 
     private async getWebresource(path: string): Promise<WebresourceModel> {
         const webresources = await WebresourceService.retrieveMultipleRecords({
-            select: ['name', 'webresourcetype', 'content', 'displayname', 'solutionid'],
+            select: ['name', 'webresourcetype', 'content', 'displayname', 'solutionid', 'dependencyxml'],
             filters: [{
                 conditions: [{
                     attribute: 'name',
@@ -103,6 +129,96 @@ class Deploy extends AdalRouter {
             top: 1
         }, this.bearer);
         return webresources[0];
+    }
+
+    // Small wrapper method for future support of html files, etc
+    private async generateDependencyXML(webresource: WebresourceModel, data: Buffer): Promise<string> {
+        if (webresource.name.endsWith('.js')) {
+            const dependencyXML = await this.getDependencyXML(webresource, data);
+            console.log(`Dependencyxml: ${dependencyXML}`);
+            return dependencyXML;
+        }
+        // `<Dependencies><Dependency componentType="WebResource"></Dependency></Dependencies>`;
+    }
+
+    private static xmlBuilder = new xml2js.Builder();
+    private static xmlRegex = /(\s?\n+\s+|\n)/g;
+    private async getDependencyXML(webresource: WebresourceModel, data: Buffer): Promise<string> {
+        const xmlDoc = await this.generateWebresourceXmlDoc(webresource, data);
+        const xml = Deploy.xmlBuilder.buildObject(xmlDoc);
+        let trimmedXml = xml.replace(Deploy.xmlRegex, '');
+        const index = trimmedXml.indexOf('?>');
+        trimmedXml = trimmedXml.substr(index + 2);
+        return trimmedXml;
+    }
+
+    private static translationRegex = /\.translate\("([^']*)"\)/gm;
+    private async generateWebresourceXmlDoc(webresource: WebresourceModel, data: Buffer): Promise<XmlDoc> {
+        const filepaths = shell.ls(`dist/**/locales/*.resx*`).map(filepath => filepath.substr(5)), // remove 'dist/'
+            xmlDoc: XmlDoc = await xml2js.parseStringPromise(webresource.dependencyxml),
+            hasTranslation = Deploy.translationRegex.test(String(data));
+        if (filepaths.length === 0) {
+            return xmlDoc;
+        }
+        if (hasTranslation) {
+            this.addLibraries(xmlDoc, filepaths);
+            this.cleanLibraries(xmlDoc, filepaths);
+        } else {
+            this.cleanLibraries(xmlDoc);
+        }
+
+        return xmlDoc;
+    }
+
+    private addLibraries(xmlDoc: XmlDoc, filepaths: string[]): void {
+        const dependency = xmlDoc.Dependencies.Dependency[0];
+        if (!dependency.Library) {
+            dependency.Library = [];
+        }
+        for (const filepath of filepaths) {
+            const library = dependency.Library.find(library => library.$.name === filepath);
+            if (!library) {
+                this.log(`Adding dependency: ${filepath}`);
+                dependency.Library.push({
+                    $: Deploy.createLibraryItem(filepath)
+                });
+            }
+        }
+    }
+
+    private static localesRegex = /locales\/locales(\.\d{4})?\.resx/gm;
+    private cleanLibraries(xmlDoc: XmlDoc, keepFilepaths: string[] = []): void {
+        const dependency = xmlDoc.Dependencies.Dependency[0];
+        if (!dependency.Library) {
+            return;
+        }
+        for (let i = dependency.Library.length - 1; i >= 0; i -= 1) {
+            const library = dependency.Library[i],
+                name = library.$.name;
+            if (Deploy.localesRegex.test(name)) {
+                if (!keepFilepaths.includes(name)) {
+                    this.log(`Removing dependency: ${name}`);
+                    dependency.Library.splice(i, 1);
+                }
+            }
+        }
+    }
+
+    private static createLibraryItem(filepath: string): LibraryItem {
+        return {
+            name: filepath,
+            displayName: filepath,
+            languagecode: '',
+            description: '',
+            libraryUniqueId: Deploy.guid()
+        };
+    }
+
+    private static guid(): string {
+        return '{xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx}'.replace(/[xy]/g, function (c) {
+            const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
 }
 new Deploy().express;
