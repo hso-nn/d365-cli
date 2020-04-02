@@ -82,10 +82,6 @@ module.exports = {
             from: "./root/**/**.json",
             to: dir_build,
             context: "src"
-        }, {
-            from: "./root/**/CrmJson.ts",
-            to: dir_build,
-            context: "src"
         }]),
     ]),
     stats: {
