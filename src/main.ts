@@ -32,7 +32,7 @@ program
     });
 
 program
-    .command('extract-translations')
+    .command('extractTranslations')
     .alias('extract')
     .description('Extracts translations into resx or json files, dependent on crm.json translation setting.')
     .action(async () => {
