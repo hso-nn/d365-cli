@@ -18,7 +18,6 @@ interface XmlDoc {
 
 export class Resx {
     public static async extract(): Promise<void> {
-        console.log('Extracting');
         const codeKeys = Resx.getCodeKeys();
         if (codeKeys.length > 0) {
             Resx.addLocalesFile();
