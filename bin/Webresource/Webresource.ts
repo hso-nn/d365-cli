@@ -2,6 +2,7 @@ import './Webresource.scss';
 
 class Webresource {
     public static onLoad(globalContext: Xrm.GlobalContext): void {
+        console.log(globalContext); // Prevent linting error
     }
 }
 

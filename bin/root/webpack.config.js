@@ -56,8 +56,6 @@ module.exports = {
                 path.resolve(__dirname, "./src/libs")
             ]
         }, {
-            test: /\.json$/, loader: "json"
-        }, {
             test: /\.scss$/, loader: scssLoaders
         }, {
             test: /\.css$/, loader: cssLoaders

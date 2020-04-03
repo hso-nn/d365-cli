@@ -1,4 +1,4 @@
-import {MultipleSystemQueryOptions} from '../../../../bin/root/src/WebApi/WebApi';
+import {MultipleSystemQueryOptions, SystemQueryOptions} from '../../../../bin/root/src/WebApi/WebApi';
 import {WebresourceModel} from './Webresource.model';
 import {NodeApi} from '../NodeApi/NodeApi';
 
@@ -8,6 +8,10 @@ export class WebresourceService {
 
     public static async retrieveMultipleRecords(multipleSystemQueryOptions: MultipleSystemQueryOptions, bearer: string): Promise<WebresourceModel[]> {
         return NodeApi.retrieveMultipleRecords(WebresourceService.entitySetName, multipleSystemQueryOptions, bearer);
+    }
+
+    public static async retrieveRecord(id: string, systemQueryOptions: SystemQueryOptions, bearer: string): Promise<WebresourceModel> {
+        return NodeApi.retrieveRecord(WebresourceService.entitySetName, id, systemQueryOptions, bearer);
     }
 
     public static async upsert(webresource: WebresourceModel, bearer: string): Promise<WebresourceModel> {

@@ -1,12 +1,14 @@
 import * as colors from 'colors';
 import * as shell from 'shelljs';
 import * as inquirer from 'inquirer';
+import {TranslationType} from './root/tools/CrmJson';
 
 interface CreateAnswers {
     publisher?: string;
     solution?: string;
     environment?: string;
     namespace?: string;
+    translationtype?: TranslationType;
 }
 
 export class Create {
@@ -40,6 +42,8 @@ export class Create {
         shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, crmJsonFile);
         shell.sed('-i', new RegExp('<%= solution %>', 'ig'), answers.solution, crmJsonFile);
         shell.sed('-i', new RegExp('<%= environment %>', 'ig'), answers.environment, crmJsonFile);
+        shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), answers.namespace, crmJsonFile);
+        shell.sed('-i', new RegExp('<%= translationtype %>', 'ig'), answers.translationtype, crmJsonFile);
 
         const packageJsonFile = shell.ls('Webresources/package.json')[0];
         shell.sed('-i', '<%= projectname %>', projectname.toLowerCase(), packageJsonFile);
@@ -77,6 +81,14 @@ export class Create {
             type: 'input',
             name: 'namespace',
             message: 'Namespace (eg. Customer or Product name):'
+        }, {
+            type: 'list',
+            name: 'translationtype',
+            message: 'Which translation type do you want?',
+            choices: [
+                'resx',
+                'i18n'
+            ]
         }]);
     }
 }

@@ -4,6 +4,7 @@
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "moduleResolution": "node",
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "target": "es5",
     "allowJs": true,

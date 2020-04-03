@@ -2,8 +2,7 @@ import {Translation} from '../translation/Translation';
 
 export class EntityForm {
     static async onLoad(executionContext: Xrm.Events.EventContext): Promise<void> {
-        await Translation.init({
-            relativePath: '<%= publisher %>_/<%= namespace %>/locales'
-        });
+        console.log(executionContext); // Prevent linting error
+        console.log(Translation.translate('test')); // See https://github.com/hso-nn/d365-cli/wiki/Translations
     }
 }
