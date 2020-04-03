@@ -80,7 +80,7 @@ export class Variables {
 
     private static readCrmJson(): Promise<CrmJsonVariable> {
         return new Promise((resolve): void => {
-            let environment = '', solution = '', translationtype = 'resx';
+            let environment = '', solution = '', translationtype = '';
             const lineReader = require('readline').createInterface({
                 input: require('fs').createReadStream(`tools/crm.json`)
             });

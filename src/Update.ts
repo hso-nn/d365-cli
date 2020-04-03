@@ -105,7 +105,7 @@ export class Update {
             shell.sed('-i', new RegExp('<%= solution %>', 'ig'), solution, crmJsonFile);
             shell.sed('-i', new RegExp('<%= environment %>', 'ig'), environment, crmJsonFile);
             shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), namespace, crmJsonFile);
-            shell.sed('-i', new RegExp('<%= translationtype %>', 'ig'), translationtype, crmJsonFile);
+            shell.sed('-i', new RegExp('<%= translationtype %>', 'ig'), translationtype || 'i18n', crmJsonFile);
         }
     }
 
