@@ -3,7 +3,7 @@ import * as program from 'commander';
 import {Create} from './Create';
 import {Update} from './update';
 import {Generator} from './Generator';
-import {Resx} from './root/Resx';
+import {Variables} from './Variables';
 
 program
     .version('1.4.1') // .version(require('../package').version)
@@ -32,17 +32,35 @@ program
     });
 
 program
-    .command('xi18n')
-    .alias('i18n')
-    .description('Extracts i18n messages from source code.')
-    .action(() => {
-        shell.exec('npm run i18next-scanner');
+    .command('extract-translations')
+    .alias('extract')
+    .description('Extracts translations into resx or json files, dependent on crm.json translation setting.')
+    .action(async () => {
+        const variables = await Variables.get();
+        if (variables.translationtype === 'i18n') {
+            console.log('Extracting i18n json files');
+            shell.exec('npm run i18next-scanner');
+        } else {
+            console.log('Extracting resx files');
+            shell.exec('npm run resx');
+        }
     })
     .on('--help', () => {
-        console.log(`In translation folder a folder 'locales' will be generated having a translation file per language.`);
-        console.log(`The translation files to be generated can be found in your project 'i18next-scanner.config.js file`);
-        console.log(`You have to add the translations after the generation`);
+        console.log(`In translation folder a folder 'locales' will be generated having translation files.`);
+        console.log('When your translation setting is i18n, it will generate a json files for each language specified in i18next-scanner.config.js');
+        console.log(`When your translation setting is resx, it will generate one locales.resx file.`);
+        console.log(`You have to add for each required language a copy yourself like locales.1033.resx.`);
+        console.log(`Once done, the tooling will keep up-to-date for you.`);
     });
+
+/* easy debugging/programming
+program
+    .command('resx')
+    .description('Extracts translation to resx files')
+    .action(() => {
+        Resx.extract();
+    });
+ */
 
 program
     .command('lint')
@@ -97,13 +115,6 @@ program
     })
     .on('--help', () => {
         console.log(`Sets the Solution forms iscustomizable/canbedeleted true/false`);
-    });
-
-program
-    .command('resx')
-    .description('Extracts translation to resx files')
-    .action(() => {
-        Resx.extract();
     });
 
 program

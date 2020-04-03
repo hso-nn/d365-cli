@@ -20,6 +20,9 @@ module.exports = {
         "root/tools/deploy": [
             path.resolve(__dirname, "src/root/tools/Deploy.ts")
         ],
+        "root/tools/resx": [
+            path.resolve(__dirname, "src/root/tools/Resx.ts")
+        ],
         "root/tools/setFormCustomizable": [
             path.resolve(__dirname, "src/root/tools/SetFormCustomizable.ts")
         ],
