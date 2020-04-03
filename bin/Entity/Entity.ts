@@ -11,6 +11,7 @@ export const Ribbon = {
     // In Ribbon WorkBench specify function: <%= publisher %>.<%= namespace %>.Entity.Ribbon.myRibbonMethod
     // In Ribbon WorkBench specify Xrm Parameter 'Primary Control', which is formContext
     myRibbonMethod: (formContext: Xrm.FormContext): void => {
+        console.log(formContext); // Prevent linting error
         // EntityForm.myFormMethod(formContext);
     }
 };

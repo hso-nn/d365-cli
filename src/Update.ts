@@ -1,5 +1,6 @@
 import * as colors from 'colors';
 import * as shell from 'shelljs';
+import * as fs from 'fs';
 import {AllVariables, Variables} from './Variables';
 
 export class Update {
@@ -25,6 +26,7 @@ export class Update {
         Update.updatePackageJson(variables);
         Update.updateServiceFiles();
         Update.updateModelFiles();
+        Update.updateFormFiles(variables);
         Update.updateEntityFiles();
         Update.updateWebpackConfig(variables);
         console.log(`Updating D365 Project done`);
@@ -93,17 +95,19 @@ export class Update {
 
     private static updateDeploy(variables: AllVariables): void {
         console.log(`Updating deploy folder...`);
-        shell.cp('-R', `${__dirname}/root/tools/deploy.js`, './tools');
-        shell.cp('-R', `${__dirname}/root/tools/setFormCustomizable.js`, './tools');
-        shell.exec('git add tools/setFormCustomizable.js');
+        shell.cp('-R', `${__dirname}/root/tools/*.js`, './tools');
+        shell.exec('git add tools');
         const checkClientSecret = shell.grep(`clientSecret`, './tools/crm.json'),
-            {publisher, solution, environment} = variables;
-        if (checkClientSecret.stdout !== '\n') {
+            checkTranslation = shell.grep('translation', './tools/crm.json'),
+            {publisher, solution, environment, namespace, translationtype} = variables;
+        if (checkClientSecret.stdout !== '\n' || checkTranslation.stdout === '\n') {
             shell.cp('-R', `${__dirname}/root/tools/crm.json`, './tools');
             const crmJsonFile = shell.ls('./tools/crm.json')[0];
             shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, crmJsonFile);
             shell.sed('-i', new RegExp('<%= solution %>', 'ig'), solution, crmJsonFile);
             shell.sed('-i', new RegExp('<%= environment %>', 'ig'), environment, crmJsonFile);
+            shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), namespace, crmJsonFile);
+            shell.sed('-i', new RegExp('<%= translationtype %>', 'ig'), translationtype || 'i18n', crmJsonFile);
         }
     }
 
@@ -200,6 +204,24 @@ export class Update {
                 console.log(`Modified ${filepath}`);
             }
         });
+    }
+
+    private static getTranslationInitRegex(variables: AllVariables): RegExp {
+        const {publisher, namespace} = variables;
+        return new RegExp(`await Translation\\.init\\({\\s*relativePath:\\s'${publisher}_/${namespace}/locales'\\s*}\\);\\s*`, 'gm');
+        // return /await Translation\.init\({\s*relativePath:\s'hds_\/ces\/locales'\s*}\);\s*/gm;
+    }
+    private static updateFormFiles(variables: AllVariables): void {
+        console.log('Updating Entity files');
+        const filepaths = shell.ls(`src/**/*.form.ts`);
+        for (const filepath of filepaths) {
+            const check = shell.grep(`Translation.init`, filepath);
+            if (check.stdout !== '\n') {
+                const filedata = String(fs.readFileSync(filepath));
+                shell.ShellString(filedata.replace(Update.getTranslationInitRegex(variables), '')).to(filepath);
+                console.log(`Modified ${filepath}`);
+            }
+        }
     }
 
     private static updateEntityFiles(): void {

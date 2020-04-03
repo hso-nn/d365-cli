@@ -1,6 +1,6 @@
 {
   "name": "@hso/d365-cli",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "author": "HSO Innovation <innovation@hso.com> (http://www.hso.com)",
   "description": "HSO D365 Command Line Interface",
   "repository": {
@@ -36,6 +36,7 @@
     "@types/inquirer": "^6.5.0",
     "@types/node": "^13.9.1",
     "@types/shelljs": "^0.8.6",
+    "@types/xml2js": "^0.4.5",
     "@types/xrm": "^9.0.21",
     "@typescript-eslint/eslint-plugin": "^2.24.0",
     "@typescript-eslint/parser": "^2.24.0",
@@ -53,7 +54,8 @@
     "webpack-auto-inject-version": "^1.2.2",
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.10.3",
-    "webpack-node-externals": "^1.7.2"
+    "webpack-node-externals": "^1.7.2",
+    "xml2js": "^0.4.23"
   },
   "dependencies": {
     "colors": "^1.4.0",

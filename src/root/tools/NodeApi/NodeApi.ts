@@ -1,4 +1,4 @@
-import {Filter, MultipleSystemQueryOptions} from '../../../../bin/root/src/WebApi/WebApi';
+import {Filter, MultipleSystemQueryOptions, SystemQueryOptions} from '../../../../bin/root/src/WebApi/WebApi';
 import {Model} from '../../../../bin/root/src/WebApi/Model';
 import * as fs from 'fs';
 import * as https from 'https';
@@ -44,6 +44,17 @@ export class NodeApi {
                 'Authorization': `Bearer ${bearer}`
             });
         return body.value;
+    }
+
+    public static async retrieveRecord(entitySetName: string, id: string, options: SystemQueryOptions, bearer: string): Promise<Model> {
+        const query = NodeApi.getSystemQueryOptions(options),
+            {crm} = NodeApi.settings,
+            {url, version} = crm,
+            uri = `${url}/api/data/v${version}/${entitySetName}(${id})${query}`,
+            {body} = await NodeApi.request('GET', uri, null, {
+                'Authorization': `Bearer ${bearer}`
+            });
+        return body;
     }
 
     public static async updateRecord(entitySetName: string, id: string, model: Model, bearer: string): Promise<Model> {
