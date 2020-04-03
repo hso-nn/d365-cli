@@ -13,7 +13,7 @@ const Webresource: React.FC<WebresourceProps> = (props: WebresourceProps): JSX.E
     // eslint-disable-next-line max-lines-per-function
     return (
         <>
-            translationInitialized && <span>{Translation.translate('Language')}</span>
+            <span>{Translation.translate('Language')}</span>
         </>
     );
 };
