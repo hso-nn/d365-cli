@@ -95,12 +95,12 @@ export class Update {
 
     private static updateDeploy(variables: AllVariables): void {
         console.log(`Updating deploy folder...`);
-        shell.cp('-R', `${__dirname}/root/tools/deploy.js`, './tools');
-        shell.cp('-R', `${__dirname}/root/tools/setFormCustomizable.js`, './tools');
-        shell.exec('git add tools/setFormCustomizable.js');
+        shell.cp('-R', `${__dirname}/root/tools/*.js`, './tools');
+        shell.exec('git add tools');
         const checkClientSecret = shell.grep(`clientSecret`, './tools/crm.json'),
+            checkTranslation = shell.grep('translation', './tools/crm.json'),
             {publisher, solution, environment, namespace, translationtype} = variables;
-        if (checkClientSecret.stdout !== '\n') {
+        if (checkClientSecret.stdout !== '\n' || checkTranslation.stdout === '\n') {
             shell.cp('-R', `${__dirname}/root/tools/crm.json`, './tools');
             const crmJsonFile = shell.ls('./tools/crm.json')[0];
             shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, crmJsonFile);
