@@ -1,5 +1,6 @@
 import * as colors from 'colors';
 import * as shell from 'shelljs';
+import * as fs from 'fs';
 import {AllVariables, Variables} from './Variables';
 
 export class Update {
@@ -25,6 +26,7 @@ export class Update {
         Update.updatePackageJson(variables);
         Update.updateServiceFiles();
         Update.updateModelFiles();
+        Update.updateFormFiles(variables);
         Update.updateEntityFiles();
         Update.updateWebpackConfig(variables);
         console.log(`Updating D365 Project done`);
@@ -202,6 +204,24 @@ export class Update {
                 console.log(`Modified ${filepath}`);
             }
         });
+    }
+
+    private static getTranslationInitRegex(variables: AllVariables): RegExp {
+        const {publisher, namespace} = variables;
+        return new RegExp(`await Translation\\.init\\({\\s*relativePath:\\s'${publisher}_/${namespace}/locales'\\s*}\\);\\s*`, 'gm');
+        // return /await Translation\.init\({\s*relativePath:\s'hds_\/ces\/locales'\s*}\);\s*/gm;
+    }
+    private static updateFormFiles(variables: AllVariables): void {
+        console.log('Updating Entity files');
+        const filepaths = shell.ls(`src/**/*.form.ts`);
+        for (const filepath of filepaths) {
+            const check = shell.grep(`Translation.init`, filepath);
+            if (check.stdout !== '\n') {
+                const filedata = String(fs.readFileSync(filepath));
+                shell.ShellString(filedata.replace(Update.getTranslationInitRegex(variables), '')).to(filepath);
+                console.log(`Modified ${filepath}`);
+            }
+        }
     }
 
     private static updateEntityFiles(): void {
