@@ -1,4 +1,4 @@
-import crmJson from '../../deploy/crm.json';
+import crmJson from '../../tools/crm.json';
 import {TranslationI18n} from './TranslationI18n';
 
 export class Translation {

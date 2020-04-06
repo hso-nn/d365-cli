@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import crmJson from '../../deploy/crm.json';
+import crmJson from '../../tools/crm.json';
 
 declare interface Resources {
     [index: string]: {translation: {[index: string]: string}};
@@ -42,7 +42,7 @@ export class TranslationI18n {
         }
     }
 
-    public static translate(text: string, options?: i18next.TOptions | string): string {
+    public static translate(text: string, options?: string): string {
         TranslationI18n.init();
         return i18next.t(text, options);
     }
