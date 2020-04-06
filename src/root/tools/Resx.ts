@@ -49,11 +49,12 @@ export class Resx {
             shell.mkdir(`src/translation/locales`);
         }
         if (!shell.test('-f', 'src/translation/locales/locales.resx')) {
-            shell.cp('-R', `${__dirname}/Locales/locales.resx`, './src/translation/locales');
+            shell.cp('-R', `${__dirname}/locales.resx`, './src/translation/locales');
+            // shell.cp('-R', `${__dirname}/Locales/locales.resx`, './src/translation/locales');
             shell.exec('git add src/translation/locales/locales.resx');
         }
         if (!shell.test('-f', 'src/translation/locales/locales.1033.resx')) {
-            shell.cp('-r', `${__dirname}/Locales/locales.resx`, './src/translation/locales/locales.1033.resx');
+            shell.cp('-r', `${__dirname}/locales.resx`, './src/translation/locales/locales.1033.resx');
             shell.exec('git add src/translation/locales/locales.1033.resx');
         }
     }

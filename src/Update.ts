@@ -75,6 +75,7 @@ export class Update {
 
         console.log(`Updating Translation...`);
         shell.cp('-R', `${__dirname}/root/src/translation`, './src');
+        shell.exec('git add src/translation/TranslationI18n.ts');
 
         console.log(`Removing txs...`);
         shell.rm('-R', './src/tsx');
@@ -87,15 +88,17 @@ export class Update {
             if (shell.which('git')) {
                 shell.exec('git rm deploy/deploy.js');
                 shell.exec('git rm deploy/crm.json');
-                shell.exec('git add tools/deploy.js');
-                shell.exec('git add tools/crm.json');
             }
         }
     }
 
     private static updateDeploy(variables: AllVariables): void {
         console.log(`Updating deploy folder...`);
+        if (!shell.test('-d', 'tools')) {
+            shell.mkdir('tools');
+        }
         shell.cp('-R', `${__dirname}/root/tools/*.js`, './tools');
+        shell.cp('-R', `${__dirname}/root/tools/*.resx`, './tools');
         shell.exec('git add tools');
         const checkClientSecret = shell.grep(`clientSecret`, './tools/crm.json'),
             checkTranslation = shell.grep('translation', './tools/crm.json'),
