@@ -12,7 +12,7 @@ type QueryFunction = 'Above' | 'AboveOrEqual' | 'Between' | 'Contains' | 'Contai
     'EqualUserOrHierarchyAndTeams' | 'EqualUserOrUserTeams' | 'EqualUserTeams' | 'In' | 'InFiscalPeriod' | 'InFiscalPeriodAndYear' | 'InFiscalYear' | 'InOrAfterFiscalPeriodAndYear' |
     'InOrBeforeFiscalPeriodAndYear' | 'Last7Days' | 'LastFiscalPeriod' | 'LastFiscalYear' | 'LastMonth' | 'LastWeek' | 'LastXDays' | 'LastXFiscalPeriods' | 'LastXFiscalYears' | 'LastXHours' |
     'LastXMonths' | 'LastXWeeks' | 'LastXYears' | 'LastYear' | 'Next7Days' | 'NextFiscalPeriod' | 'NextFiscalYear' | 'NextMonth' | 'NextWeek' | 'NextXDays' | 'NextXFiscalPeriods' |
-    'NextXFiscalYears' | 'NextXHourds' | 'NextXMonths' | 'NextXWeeks' | 'NextXYears' | 'NextYear' | 'NotBetween' | 'NotEqualBusinessId' | 'NotEqualUserId' | 'NotIn' | 'NotUnder' | 'OlderThanXDays' |
+    'NextXFiscalYears' | 'NextXHours' | 'NextXMonths' | 'NextXWeeks' | 'NextXYears' | 'NextYear' | 'NotBetween' | 'NotEqualBusinessId' | 'NotEqualUserId' | 'NotIn' | 'NotUnder' | 'OlderThanXDays' |
     'OlderThanXHours' | 'OlderThanXMinutes' | 'OlderThanXMonths' | 'OlderThanXWeeks' | 'OlderThanXYears' | 'On' | 'OnOrAfter' | 'OnOrBefore' | 'ThisFiscalPerios' | 'ThisFiscalYear' | 'ThisMonth' |
     'ThisWeek' | 'ThisYear' | 'Today' | 'Tomorrow' | 'Under' | 'UnderOrEqual' | 'Yesterday';
 const filterConditions = ['eq' , 'ne', 'gt', 'ge', 'lt', 'le'] as const;
