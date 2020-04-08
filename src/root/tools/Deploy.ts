@@ -138,7 +138,6 @@ class Deploy extends AdalRouter {
             console.log(`Dependencyxml: ${dependencyXML}`);
             return dependencyXML;
         }
-        // `<Dependencies><Dependency componentType="WebResource"></Dependency></Dependencies>`;
     }
 
     private static xmlBuilder = new xml2js.Builder();
@@ -155,6 +154,10 @@ class Deploy extends AdalRouter {
         return trimmedXml;
     }
 
+    private static get defaultDependencyxml(): string {
+        return `<Dependencies><Dependency componentType="WebResource"></Dependency></Dependencies>`;
+    }
+
     private static get translationRegex(): RegExp {
         return /\.translate\("([^']*)"\)/gm;
     }
@@ -162,19 +165,18 @@ class Deploy extends AdalRouter {
     private async generateWebresourceXmlDoc(webresource: WebresourceModel, data: Buffer): Promise<XmlDoc> {
         const resxPaths = shell.ls(`dist/**/locales/*.resx`),
             jsonPaths = shell.ls(`dist/**/locales/*.json`),
-            filepaths = resxPaths.concat(jsonPaths).map(filepath => filepath.substr(5)), // remove 'dist/'
-            xmlDoc: XmlDoc = await xml2js.parseStringPromise(webresource.dependencyxml),
-            hasTranslation = Deploy.translationRegex.test(String(data));
-        if (filepaths.length === 0) {
-            return xmlDoc;
+            filepaths = resxPaths.concat(jsonPaths).map(filepath => filepath.substr(5)); // remove 'dist/'
+        if (filepaths.length === 0 && webresource.dependencyxml === null) {
+            return null;
         }
+        const xmlDoc: XmlDoc = await xml2js.parseStringPromise(webresource.dependencyxml || Deploy.defaultDependencyxml),
+            hasTranslation = Deploy.translationRegex.test(String(data));
         if (hasTranslation) {
             this.addLibraries(xmlDoc, filepaths);
             this.cleanLibraries(xmlDoc, filepaths);
         } else {
             this.cleanLibraries(xmlDoc);
         }
-
         return xmlDoc;
     }
 
@@ -236,7 +238,7 @@ class Deploy extends AdalRouter {
         } else if(filepath.endsWith('.json')) {
             match = Deploy.localesJsonRegex.exec(filepath);
         }
-        return match[1] || '';
+        return match && match[1] || '';
     }
 
     private static guid(): string {
