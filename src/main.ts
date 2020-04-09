@@ -95,6 +95,15 @@ program
         console.log(`Distributes the project to the D365 environment. You need to run the 'build' command first`);
     });
 
+/* easy debugging/programming
+program
+    .command('deploy')
+    .description('Invokes the deploy builder')
+    .action(() => {
+        console.log(Deploy);
+    });
+*/
+
 program
     .command('update')
     .alias('u')
