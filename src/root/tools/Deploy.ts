@@ -27,7 +27,7 @@ interface XmlDoc {
     };
 }
 
-class Deploy extends AdalRouter {
+export class Deploy extends AdalRouter {
     private md5 = (contents: string): string => crypto.createHash('md5').update(contents).digest('hex');
 
     protected onAuthenticated(): Promise<void> {
@@ -248,4 +248,4 @@ class Deploy extends AdalRouter {
         });
     }
 }
-new Deploy().express;
+new Deploy();

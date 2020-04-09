@@ -72,4 +72,4 @@ class SetFormCustomizable extends AdalRouter {
             ['name', 'objecttypecode', 'iscustomizable', 'canbedeleted'], this.bearer);
     }
 }
-new SetFormCustomizable().express;
+new SetFormCustomizable();
