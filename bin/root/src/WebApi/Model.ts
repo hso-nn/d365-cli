@@ -1,11 +1,33 @@
 import {WebApi} from './WebApi';
 
 export interface Model {
-    createdon?: string;
+    //Attributes for $select
+    createdonbehalfbyyominame?: string;
+    owneridname?: string;
+    importsequencenumber?: number;
+    modifiedbyyominame?: string;
+    utcconversiontimezonecode?: number;
+    createdbyyominame?: string;
+    modifiedbyname?: string;
+    timezoneruleversionnumber?: number;
+    owneridyominame?: string;
     modifiedon?: string;
+    modifiedonbehalfbyyominame?: string;
+    createdbyname?: string;
+    createdon?: string;
+    createdonbehalfbyname?: string;
+    modifiedonbehalfbyname?: string;
+    versionnumber?: number;
+    overriddencreatedon?: string;
     statecode?: number;
     statuscode?: number;
-    versionnumber?: string;
+    owningbusinessunit?: string;
+    owningteam?: string;
+    modifiedby?: string;
+    createdby?: string;
+    modifiedonbehalfby?: string;
+    owninguser?: string;
+    createdonbehalfby?: string;
     ownerid?: string;
 }
 

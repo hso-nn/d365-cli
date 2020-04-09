@@ -3,10 +3,11 @@ import * as shell from 'shelljs';
 import {Entity} from './Entity';
 import {Webresource} from './Webresource';
 import {LicenseValidator} from './LicenseValidator';
+import {Model} from './Model';
 
 export class Generator {
     public static generate(schematic: string, name: string): Promise<void> {
-        const supportedSchematics = ['entity', 'webresource', 'licensevalidator'];
+        const supportedSchematics = ['entity', 'webresource', 'model', 'licensevalidator'];
         if (!shell.test('-e', 'src')) {
             console.log(colors.red(`You are not inside the project Webresources folder!`));
         } else if (!schematic) {
@@ -17,6 +18,8 @@ export class Generator {
             return Entity.generateEntity(name);
         } else if (schematic.toLowerCase() === 'webresource') {
             return Webresource.generateWebresource(name);
+        } else if(schematic.toLocaleLowerCase() === 'model') {
+            return Model.generateModel(name);
         } else if (schematic.toLowerCase() === 'licensevalidator') {
             return LicenseValidator.generateLicenseValidator(name);
         }
