@@ -184,8 +184,9 @@ export class Model extends AdalRouter {
         if (['String', 'Memo', 'DateTime', 'Lookup', 'Customer', 'Owner', 'Uniqueidentifier'].includes(attributeType)) {
             return 'string';
         } else if (['Boolean'].includes(attributeType)) {
-            const options = await NodeApi.getBooleanOptionSet(this.entityLogicalName, logicalName, this.bearer);
-            return options.map(option => option.value).join(' | ');
+            // const options = await NodeApi.getBooleanOptionSet(this.entityLogicalName, logicalName, this.bearer);
+            // return options.map(option => option.value).join(' | ');
+            return 'boolean';
         } else if (['Picklist'].includes(attributeType)) {
             const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
             return options.map(option => option.value).join(' | ');
