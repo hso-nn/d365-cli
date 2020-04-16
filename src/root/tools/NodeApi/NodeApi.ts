@@ -347,7 +347,7 @@ export class NodeApi {
     public static async getAttributesMetadata(entityLogicalName: string, bearer: string, select?: string[]): Promise<any> {
         const {crm} = NodeApi.settings,
             {url, version} = crm;
-        let uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes`;
+        let uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes?$filter=IsValidODataAttribute eq true`;
         if (select) {
             uri += `&$select=${select.join(',')}`;
         }

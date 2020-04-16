@@ -139,12 +139,15 @@ export class Model extends AdalRouter {
                 ['PrimaryIdAttribute', 'PrimaryNameAttribute']),
             relationshipNames = Object.keys(relationshipInterfaceTypes);
         let attributesString = `\n    // Attributes for $select\n`;
-        attributesString += `    ${PrimaryIdAttribute}?: string; // PrimaryIdAttribute\n`;
+        attributesString += `    ${PrimaryIdAttribute}?: ${attributesInterfaceTypes[PrimaryIdAttribute]}; // PrimaryIdAttribute\n`;
         attributesString += `    ${PrimaryNameAttribute}?: ${attributesInterfaceTypes[PrimaryNameAttribute]}; // PrimaryNameAttribute`;
         for (const logicalName of Object.keys(attributesInterfaceTypes)) {
             const interfaceType = attributesInterfaceTypes[logicalName];
-            if (!Model.defaultModelAttributes.includes(logicalName) && logicalName !== PrimaryNameAttribute &&
-                !logicalName.endsWith('yominame') && !relationshipNames.includes(logicalName)) {
+            if (!Model.defaultModelAttributes.includes(logicalName) &&
+                logicalName !== PrimaryIdAttribute &&
+                logicalName !== PrimaryNameAttribute &&
+                !relationshipNames.includes(logicalName)
+            ) {
                 attributesString += `\n    ${logicalName}?: ${interfaceType};`;
             }
         }
@@ -161,9 +164,7 @@ export class Model extends AdalRouter {
             if (interfaceType) {
                 attributesInterfaces[LogicalName] = interfaceType;
             } else {
-                if (!['Virtual', 'Uniqueidentifier', 'EntityName'].includes(AttributeType)) {
-                    this.log(`To be implemented: ${AttributeType} for ${LogicalName}`);
-                }
+                this.log(`To be implemented: ${AttributeType} for ${LogicalName}`);
             }
         }
         return attributesInterfaces;
@@ -173,7 +174,7 @@ export class Model extends AdalRouter {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private async getInterfaceType(attribute: any): Promise<string> {
         const {AttributeType: attributeType, LogicalName: logicalName} = attribute;
-        if (['String', 'Memo', 'DateTime', 'Lookup', 'Customer', 'Owner'].includes(attributeType)) {
+        if (['String', 'Memo', 'DateTime', 'Lookup', 'Customer', 'Owner', 'Uniqueidentifier'].includes(attributeType)) {
             return 'string';
         } else if (['Boolean'].includes(attributeType)) {
             const options = await NodeApi.getBooleanOptionSet(this.entityLogicalName, logicalName, this.bearer);
