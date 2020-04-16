@@ -182,7 +182,7 @@ export class Model extends AdalRouter {
         } else if (['Picklist'].includes(attributeType)) {
             const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
             return options.map(option => option.value).join(' | ');
-        } else if (['Integer', 'Double', 'BigInt', 'Decimal', 'Double'].includes(attributeType)) {
+        } else if (['Integer', 'Double', 'BigInt', 'Decimal', 'Double', 'Money'].includes(attributeType)) {
             return 'number';
         } else if (['Status'].includes(attributeType)) {
             const options = await NodeApi.getStatusOptionSet(this.entityLogicalName, this.bearer);
@@ -191,8 +191,6 @@ export class Model extends AdalRouter {
             const options = await NodeApi.getStateOptionSet(this.entityLogicalName, this.bearer);
             return options.map(option => option.value).join(' | ');
         }
-
-        // TODO File, Image, Money
     }
 
     private static get logicalNameRegex(): RegExp {
