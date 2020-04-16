@@ -19,7 +19,6 @@ export class Model extends AdalRouter {
         } else {
             const entityLogicalName = Model.getEntityLogicalName(entityname);
             if (entityLogicalName) {
-                console.log(`Generating Model for entity ${entityname}...`);
                 new Model(entityname);
             }
         }
@@ -39,7 +38,7 @@ export class Model extends AdalRouter {
     }
 
     private async generateModel(): Promise<void> {
-        this.log(`Generating model for Entity ${this.entityname} having entityLogicalName ${this.entityLogicalName}`);
+        this.log(`Generating model for Entity '${this.entityname}'<br/>Using entityLogicalName '${this.entityLogicalName}'</br>`);
         await this.writeModelFile();
         this.log('Generating model finished');
     }
@@ -59,10 +58,10 @@ export class Model extends AdalRouter {
         if (modelMatch) {
             const attributeInterfaceTypes = await this.getAttributeInterfaceTypes(),
                 relationshipInterfaceTypes = await this.getRelationshipInterfaceTypes(),
-                importsString = Model.getImportStrings(relationshipInterfaceTypes),
+                importsString = this.getImportStrings(relationshipInterfaceTypes),
                 importMatch = Model.modelImportRegex.exec(filedata);
             let modelString = await this.getAttributesString(attributeInterfaceTypes, relationshipInterfaceTypes);
-            modelString += await this.getRelationshipsString(relationshipInterfaceTypes, attributeInterfaceTypes);
+            modelString += await Model.getRelationshipsString(relationshipInterfaceTypes, attributeInterfaceTypes);
             modelString += Model.getCombinedAttributeRelationshipString(attributeInterfaceTypes, relationshipInterfaceTypes);
             let newFiledata = filedata.replace(modelMatch[1], modelString);
             newFiledata = newFiledata.replace(importMatch[1], importsString);
@@ -72,13 +71,21 @@ export class Model extends AdalRouter {
         }
     }
 
-    private static getImportStrings(relationshipInterfaceTypes: InterfaceTypes): string {
+    private getImportStrings(relationshipInterfaceTypes: InterfaceTypes): string {
         let importStrings = `import {Model} from '../WebApi/Model';\n`;
         for (const referencingEntityNavigationPropertyName of Object.keys(relationshipInterfaceTypes)) {
             if (!Model.defaultModelAttributes.includes(referencingEntityNavigationPropertyName)) {
                 const referencedEntity = relationshipInterfaceTypes[referencingEntityNavigationPropertyName],
-                    camelReferencedEntity = Model.capitalize(referencedEntity);
+                    camelReferencedEntity = Model.capitalize(referencedEntity),
+                    relatedModelFilePath = `src/${camelReferencedEntity}/${camelReferencedEntity}.model.ts`;
                 importStrings += `import {${camelReferencedEntity}Model} from '../${camelReferencedEntity}/${camelReferencedEntity}.model';\n`;
+
+                if (!shell.test('-f', relatedModelFilePath)) {
+                    this.log(`<span style="color:blue;">NavigationProperty '${referencingEntityNavigationPropertyName}' generated.<br/>
+                        Referenced model '${camelReferencedEntity}' not found.<br/>
+                        Add referenced model '${camelReferencedEntity}' by following cli command:</span><br/>
+                        <span style="color:green">hso-d365 generate Entity ${camelReferencedEntity}</span></br>`);
+                }
             }
         }
         importStrings += '\n';
@@ -102,7 +109,7 @@ export class Model extends AdalRouter {
         return combinedString;
     }
 
-    private async getRelationshipsString(relationshipInterfaceTypes: InterfaceTypes, attributesInterfaceTypes: InterfaceTypes): Promise<string> {
+    private static async getRelationshipsString(relationshipInterfaceTypes: InterfaceTypes, attributesInterfaceTypes: InterfaceTypes): Promise<string> {
         let relationshipString = `\n    // NavigationProperties for $expand`;
         const attributeNames = Object.keys(attributesInterfaceTypes);
         for (const referencingEntityNavigationPropertyName of Object.keys(relationshipInterfaceTypes)) {
