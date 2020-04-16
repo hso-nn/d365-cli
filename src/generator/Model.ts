@@ -4,6 +4,10 @@ import * as shell from 'shelljs';
 import * as fs from 'fs';
 import {NodeApi} from '../root/tools/NodeApi/NodeApi';
 
+interface InterfaceTypes {
+    [key: string]: string;
+}
+
 export class Model extends AdalRouter {
     public static generateModel(entityname: string): Promise<void> {
         if (!entityname) {
@@ -44,48 +48,122 @@ export class Model extends AdalRouter {
         return /Model\sextends\sModel\s{([\s\S]*)}/gm;
     }
 
+    private static get modelImportRegex(): RegExp {
+        return /([\s\S]*)export\sinterface\s/gm;
+    }
+
     private async writeModelFile(): Promise<void> {
         const filepath = `src/${this.entityname}/${this.entityname}.model.ts`,
             filedata = String(fs.readFileSync(filepath)),
-            match = Model.modelinterfaceRegex.exec(filedata);
-        if (match) {
-            const interfaceFields = match[1];
-            const newFiledata = filedata.replace(interfaceFields, await this.getAttributesString());
+            modelMatch = Model.modelinterfaceRegex.exec(filedata);
+        if (modelMatch) {
+            const attributeInterfaceTypes = await this.getAttributeInterfaceTypes(),
+                relationshipInterfaceTypes = await this.getRelationshipInterfaceTypes(),
+                importsString = Model.getImportStrings(relationshipInterfaceTypes),
+                importMatch = Model.modelImportRegex.exec(filedata);
+            let modelString = await this.getAttributesString(attributeInterfaceTypes, relationshipInterfaceTypes);
+            modelString += await this.getRelationshipsString(relationshipInterfaceTypes, attributeInterfaceTypes);
+            modelString += Model.getCombinedAttributeRelationshipString(attributeInterfaceTypes, relationshipInterfaceTypes);
+            let newFiledata = filedata.replace(modelMatch[1], modelString);
+            newFiledata = newFiledata.replace(importMatch[1], importsString);
             shell.ShellString(newFiledata).to(filepath);
         } else {
             this.log(`Model file seems to be corrupt. Please fix ${filepath}`);
         }
     }
 
-    private static defaultModelFields = ['createdonbehalfbyyominame', 'owneridname', 'importsequencenumber', 'modifiedbyyominame', 'utcconversiontimezonecode',
+    private static getImportStrings(relationshipInterfaceTypes: InterfaceTypes): string {
+        let importStrings = `import {Model} from '../WebApi/Model';\n`;
+        for (const referencingEntityNavigationPropertyName of Object.keys(relationshipInterfaceTypes)) {
+            if (!Model.defaultModelAttributes.includes(referencingEntityNavigationPropertyName)) {
+                const referencedEntity = relationshipInterfaceTypes[referencingEntityNavigationPropertyName],
+                    camelReferencedEntity = Model.capitalize(referencedEntity);
+                importStrings += `import {${camelReferencedEntity}Model} from '../${camelReferencedEntity}/${camelReferencedEntity}.model';\n`;
+            }
+        }
+        importStrings += '\n';
+        return importStrings;
+    }
+
+    private static getCombinedAttributeRelationshipString(attributesInterfaceTypes: InterfaceTypes, relationshipInterfaceTypes: InterfaceTypes): string {
+        let combinedString = `\n    // Attributes/NavigationProperties for $select and $expand`;
+        const attributeNames = Object.keys(attributesInterfaceTypes);
+        for (const referencingEntityNavigationPropertyName of Object.keys(relationshipInterfaceTypes)) {
+            if (!Model.defaultModelAttributes.includes(referencingEntityNavigationPropertyName) && attributeNames.includes(referencingEntityNavigationPropertyName)) {
+                const referencedEntity = relationshipInterfaceTypes[referencingEntityNavigationPropertyName],
+                    interfaceType = attributesInterfaceTypes[referencingEntityNavigationPropertyName];
+                combinedString += `\n    ${referencingEntityNavigationPropertyName}?: ${interfaceType} | ${Model.capitalize(referencedEntity)}Model;`;
+            }
+        }
+        combinedString += '\n';
+        return combinedString;
+    }
+
+    private async getRelationshipsString(relationshipInterfaceTypes: InterfaceTypes, attributesInterfaceTypes: InterfaceTypes): Promise<string> {
+        let relationshipString = `\n    // NavigationProperties for $expand`;
+        const attributeNames = Object.keys(attributesInterfaceTypes);
+        for (const referencingEntityNavigationPropertyName of Object.keys(relationshipInterfaceTypes)) {
+            if (!Model.defaultModelAttributes.includes(referencingEntityNavigationPropertyName) && !attributeNames.includes(referencingEntityNavigationPropertyName)) {
+                const referencedEntity = relationshipInterfaceTypes[referencingEntityNavigationPropertyName];
+                relationshipString += `\n    ${referencingEntityNavigationPropertyName}?: ${Model.capitalize(referencedEntity)}Model;`;
+            }
+        }
+        relationshipString += `\n`;
+        return relationshipString;
+    }
+
+    private async getRelationshipInterfaceTypes(): Promise<InterfaceTypes> {
+        const manyToOneMetadatas = await NodeApi.getManyToOneMetadatas(this.entityLogicalName, this.bearer),
+            relationshipsInterfaces: InterfaceTypes = {};
+        for (const relation of manyToOneMetadatas) {
+            const {ReferencedEntity, ReferencingEntityNavigationPropertyName} = relation;
+            relationshipsInterfaces[ReferencingEntityNavigationPropertyName] = ReferencedEntity;
+        }
+        return relationshipsInterfaces;
+    }
+
+    private static capitalize(text: string): string {
+        return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    private static defaultModelAttributes = ['createdonbehalfbyyominame', 'owneridname', 'importsequencenumber', 'modifiedbyyominame', 'utcconversiontimezonecode',
         'createdbyyominame', 'modifiedbyname', 'timezoneruleversionnumber', 'owneridyominame', 'modifiedon', 'modifiedonbehalfbyyominame', 'createdbyname',
         'createdon', 'createdonbehalfbyname', 'modifiedonbehalfbyname', 'versionnumber', 'overriddencreatedon', 'owningbusinessunit', 'owningteam',
-        'modifiedby', 'createdby', 'modifiedonbehalfby', 'owninguser', 'createdonbehalfby', 'ownerid', 'statecode', 'statuscode'];
+        'modifiedby', 'createdby', 'modifiedonbehalfby', 'owninguser', 'createdonbehalfby', 'statecode', 'statuscode', 'ownerid'];
 
-    private async getAttributesString(): Promise<string> {
-        const attributesMetadata = await NodeApi.getEntityAttributes(this.entityLogicalName, this.bearer),
-            // eslint-disable-next-line max-len
-            {PrimaryIdAttribute, PrimaryNameAttribute} = await NodeApi.getEntityDefinition(this.entityLogicalName, this.bearer, ['PrimaryIdAttribute', 'PrimaryNameAttribute']),
-            primaryNameAttributeMetadata = attributesMetadata.find((attribute: {LogicalName: string}) => attribute.LogicalName === PrimaryNameAttribute),
-            primaryNameInterface = await this.getInterfaceType(primaryNameAttributeMetadata);
-        let attributesString = `\n    //Attributes for $select\n`;
+    private async getAttributesString(attributesInterfaceTypes: InterfaceTypes, relationshipInterfaceTypes: InterfaceTypes): Promise<string> {
+        const {PrimaryIdAttribute, PrimaryNameAttribute} = await NodeApi.getEntityDefinition(this.entityLogicalName, this.bearer,
+                ['PrimaryIdAttribute', 'PrimaryNameAttribute']),
+            relationshipNames = Object.keys(relationshipInterfaceTypes);
+        let attributesString = `\n    // Attributes for $select\n`;
         attributesString += `    ${PrimaryIdAttribute}?: string; // PrimaryIdAttribute\n`;
-        attributesString += `    ${PrimaryNameAttribute}?: ${primaryNameInterface}; // PrimaryNameAttribute`;
+        attributesString += `    ${PrimaryNameAttribute}?: ${attributesInterfaceTypes[PrimaryNameAttribute]}; // PrimaryNameAttribute`;
+        for (const logicalName of Object.keys(attributesInterfaceTypes)) {
+            const interfaceType = attributesInterfaceTypes[logicalName];
+            if (!Model.defaultModelAttributes.includes(logicalName) && logicalName !== PrimaryNameAttribute &&
+                !logicalName.endsWith('yominame') && !relationshipNames.includes(logicalName)) {
+                attributesString += `\n    ${logicalName}?: ${interfaceType};`;
+            }
+        }
+        attributesString += `\n`;
+        return attributesString;
+    }
+
+    private async getAttributeInterfaceTypes(): Promise<InterfaceTypes> {
+        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer),
+            attributesInterfaces: InterfaceTypes = {};
         for (const attribute of attributesMetadata) {
             const {AttributeType, LogicalName} = attribute,
                 interfaceType = await this.getInterfaceType(attribute);
-            if (Model.defaultModelFields.includes(LogicalName) || LogicalName === PrimaryNameAttribute || LogicalName.endsWith('yominame')) {
-                // this.log(`Default Model field skipped: ${LogicalName}`);
-            } else if (interfaceType) {
-                attributesString += `\n    ${LogicalName}?: ${interfaceType};`;
+            if (interfaceType) {
+                attributesInterfaces[LogicalName] = interfaceType;
             } else {
                 if (!['Virtual', 'Uniqueidentifier', 'EntityName'].includes(AttributeType)) {
                     this.log(`To be implemented: ${AttributeType} for ${LogicalName}`);
                 }
             }
         }
-        attributesString += `\n`;
-        return attributesString;
+        return attributesInterfaces;
     }
 
     // https://docs.microsoft.com/en-us/dotnet/api/microsoft.xrm.sdk.metadata.attributemetadata?view=dynamics-general-ce-9
@@ -110,7 +188,7 @@ export class Model extends AdalRouter {
             return options.map(option => option.value).join(' | ');
         }
 
-        // TODO File, Image, Lookup, Money, Virtual
+        // TODO File, Image, Money
     }
 
     private static get logicalNameRegex(): RegExp {
@@ -123,9 +201,7 @@ export class Model extends AdalRouter {
             const filedata = String(fs.readFileSync(filepath)),
                 match = Model.logicalNameRegex.exec(filedata),
                 entityLogicalName = match && match[1] || '';
-            if (entityLogicalName) {
-                console.log(`Found EntitylogicalName: ${entityLogicalName} in ${filepath}`);
-            } else {
+            if (!entityLogicalName) {
                 console.log(colors.red(`File ${filepath} does not contains a logicalName field.`));
             }
             return entityLogicalName;

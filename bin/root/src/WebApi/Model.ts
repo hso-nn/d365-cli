@@ -2,33 +2,30 @@ import {WebApi} from './WebApi';
 
 export interface Model {
     //Attributes for $select
-    createdonbehalfbyyominame?: string;
+    statecode?: number;
     owneridname?: string;
     importsequencenumber?: number;
-    modifiedbyyominame?: string;
     utcconversiontimezonecode?: number;
-    createdbyyominame?: string;
     modifiedbyname?: string;
     timezoneruleversionnumber?: number;
-    owneridyominame?: string;
     modifiedon?: string;
-    modifiedonbehalfbyyominame?: string;
+    statuscode?: number;
     createdbyname?: string;
     createdon?: string;
     createdonbehalfbyname?: string;
     modifiedonbehalfbyname?: string;
     versionnumber?: number;
     overriddencreatedon?: string;
-    statecode?: number;
-    statuscode?: number;
-    owningbusinessunit?: string;
-    owningteam?: string;
-    modifiedby?: string;
-    createdby?: string;
-    modifiedonbehalfby?: string;
-    owninguser?: string;
-    createdonbehalfby?: string;
-    ownerid?: string;
+
+    // Attributes/NavigationProperties for $select and $expand
+    createdby?: string | Model; // SystemuserModel
+    createdonbehalfby?: string | Model; // SystemuserModel
+    modifiedby?: string | Model; // SystemuserModel
+    modifiedonbehalfby?: string | Model; // SystemuserModel
+    owninguser?: string | Model; // SystemuserModel
+    owningteam?: string | Model; // TeamModel
+    ownerid?: string | Model; // OwnerModel
+    owningbusinessunit?: string | Model; // BusinessunitModel
 }
 
 type ValidationCategory = 'Mandatory' | 'Invalid key';
