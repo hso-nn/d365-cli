@@ -333,7 +333,18 @@ export class NodeApi {
         return body;
     }
 
-    public static async getEntityAttributes(entityLogicalName: string, bearer: string, select?: string[]): Promise<any> {
+    public static async getManyToOneMetadatas(entityLogicalName: string, bearer: string): Promise<any> {
+        const {crm} = NodeApi.settings,
+            {url, version} = crm;
+        const uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/ManyToOneRelationships`,
+            {body} = await NodeApi.request('GET', uri, null, {
+                'Authorization': `Bearer ${bearer}`
+            });
+        const {value: manyToOneMetadatas} = body;
+        return manyToOneMetadatas;
+    }
+
+    public static async getAttributesMetadata(entityLogicalName: string, bearer: string, select?: string[]): Promise<any> {
         const {crm} = NodeApi.settings,
             {url, version} = crm;
         let uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes`;
