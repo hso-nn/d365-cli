@@ -86,7 +86,7 @@ export class Model extends AdalRouter {
     }
 
     private static getCombinedAttributeRelationshipString(attributesInterfaceTypes: InterfaceTypes, relationshipInterfaceTypes: InterfaceTypes): string {
-        let combinedString = `\n    // Attributes/NavigationProperties for $select and $expand`;
+        let combinedString = ``;
         const attributeNames = Object.keys(attributesInterfaceTypes);
         for (const referencingEntityNavigationPropertyName of Object.keys(relationshipInterfaceTypes)) {
             if (!Model.defaultModelAttributes.includes(referencingEntityNavigationPropertyName) && attributeNames.includes(referencingEntityNavigationPropertyName)) {
@@ -95,7 +95,10 @@ export class Model extends AdalRouter {
                 combinedString += `\n    ${referencingEntityNavigationPropertyName}?: ${interfaceType} | ${Model.capitalize(referencedEntity)}Model;`;
             }
         }
-        combinedString += '\n';
+        if (combinedString) {
+            combinedString = `\n    // Attributes/NavigationProperties for $select and $expand` + combinedString;
+            combinedString += '\n';
+        }
         return combinedString;
     }
 
