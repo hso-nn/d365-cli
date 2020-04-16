@@ -39,4 +39,28 @@ export class FormUtil {
             }
         });
     }
+
+    static async getLookupValue(attributeName: string, id: string, executionContext: Xrm.Events.EventContext): Promise<Xrm.LookupValue> {
+        const formContext = executionContext.getFormContext(),
+            entityName = formContext.data.entity.getEntityName(),
+            entityMetadata = await Xrm.Utility.getEntityMetadata(entityName, [attributeName]),
+            attributeMetadata = entityMetadata.Attributes.get(attributeName);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // @ts-ignore
+        for (const target of attributeMetadata.Targets) {
+            try {
+                const targetEntityMetadata = await Xrm.Utility.getEntityMetadata(target),
+                    entity = await Xrm.WebApi.retrieveRecord(target, id, `?$select=${targetEntityMetadata.PrimaryNameAttribute}`);
+                if (entity) {
+                    return {
+                        entityType: target,
+                        id: id,
+                        name: entity[targetEntityMetadata.PrimaryNameAttribute]
+                    };
+                }
+            } catch (e) {
+                // try next target
+            }
+        }
+    }
 }

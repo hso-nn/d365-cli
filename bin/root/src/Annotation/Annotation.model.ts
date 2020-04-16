@@ -10,5 +10,4 @@ export interface AnnotationModel extends Model {
         logicalName: string;
     };
     subject?: string;
-    versionnumber?: string;
 }

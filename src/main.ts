@@ -2,11 +2,11 @@ import * as shell from 'shelljs';
 import * as program from 'commander';
 import {Create} from './Create';
 import {Update} from './update';
-import {Generator} from './Generator';
+import {Generator} from './generator/Generator';
 import {Variables} from './Variables';
 
 program
-    .version('1.5.3') // .version(require('../package').version)
+    .version('1.6.0') // .version(require('../package').version)
     .usage('<command> [options]');
 
 program
@@ -94,6 +94,15 @@ program
     .on('--help', () => {
         console.log(`Distributes the project to the D365 environment. You need to run the 'build' command first`);
     });
+
+/* easy debugging/programming
+program
+    .command('deploy')
+    .description('Invokes the deploy builder')
+    .action(() => {
+        console.log(Deploy);
+    });
+*/
 
 program
     .command('update')

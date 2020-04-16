@@ -1,6 +1,6 @@
 import * as colors from 'colors';
 import * as shell from 'shelljs';
-import {Variables} from './Variables';
+import {Variables} from '../Variables';
 
 export class LicenseValidator {
     public static async generateLicenseValidator(licensename: string): Promise<void> {

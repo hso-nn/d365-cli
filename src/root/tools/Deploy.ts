@@ -27,7 +27,7 @@ interface XmlDoc {
     };
 }
 
-class Deploy extends AdalRouter {
+export class Deploy extends AdalRouter {
     private md5 = (contents: string): string => crypto.createHash('md5').update(contents).digest('hex');
 
     protected onAuthenticated(): Promise<void> {
@@ -163,7 +163,6 @@ class Deploy extends AdalRouter {
     }
 
     private async generateWebresourceXmlDoc(webresource: WebresourceModel, data: Buffer): Promise<XmlDoc> {
-        console.log(`generateWebresourceXmlDoc dependencyxml: ${webresource.dependencyxml}`);
         const resxPaths = shell.ls(`dist/**/locales/*.resx`),
             jsonPaths = shell.ls(`dist/**/locales/*.json`),
             filepaths = resxPaths.concat(jsonPaths).map(filepath => filepath.substr(5)); // remove 'dist/'
@@ -249,4 +248,4 @@ class Deploy extends AdalRouter {
         });
     }
 }
-new Deploy().express;
+new Deploy();
