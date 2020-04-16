@@ -1,7 +1,7 @@
 import * as colors from 'colors';
 import * as shell from 'shelljs';
 import * as inquirer from 'inquirer';
-import {Variables} from './Variables';
+import {Variables} from '../Variables';
 
 export class Entity {
     public static generateEntity(entityname: string): Promise<void> {

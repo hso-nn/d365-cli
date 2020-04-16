@@ -6,6 +6,8 @@ import { IncomingMessage } from 'http';
 import {CrmJson} from '../CrmJson';
 import { RequestOptions } from 'https';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 type Method = 'GET' | 'POST' | 'DELETE' | 'PATCH';
 
 interface HttpHeaders {
@@ -26,7 +28,6 @@ interface JsonHttpHeaders extends HttpHeaders {
 }
 
 interface NodeApiResponse {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     body: any;
     getResponseHeader(headerName: string): string | string[];
     statusCode: number;
@@ -79,21 +80,74 @@ export class NodeApi {
         return body;
     }
 
-    public static async getPicklistOptionSet(logicalName: string, attribute: string, bearer: string): Promise<OptionSetOption[]> {
+    public static async getStatusOptionSet(entityLogicalName: string, bearer: string): Promise<OptionSetOption[]> {
         const {crm} = NodeApi.settings,
             {url, version} = crm,
             // eslint-disable-next-line max-len
-            uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${logicalName}')/Attributes(LogicalName='${attribute}')/Microsoft.Dynamics.CRM.PicklistAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=Options)`,
-            result = await NodeApi.request('GET', uri, null, {
+            uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes/Microsoft.Dynamics.CRM.StatusAttributeMetadata?$expand=OptionSet`,
+            {body} = await NodeApi.request('GET', uri, null, {
                 'Authorization': `Bearer ${bearer}`
             });
-        return result.body.OptionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
+        return body.value[0].OptionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
             return {
                 value: option.Value,
                 externalValue: option.ExternalValue,
                 label: option.Label.UserLocalizedLabel.Label
             };
         });
+    }
+
+    public static async getStateOptionSet(entityLogicalName: string, bearer: string): Promise<OptionSetOption[]> {
+        const {crm} = NodeApi.settings,
+            {url, version} = crm,
+            // eslint-disable-next-line max-len
+            uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes/Microsoft.Dynamics.CRM.StateAttributeMetadata?$expand=OptionSet`,
+            {body} = await NodeApi.request('GET', uri, null, {
+                'Authorization': `Bearer ${bearer}`
+            });
+        return body.value[0].OptionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
+            return {
+                value: option.Value,
+                externalValue: option.ExternalValue,
+                label: option.Label.UserLocalizedLabel.Label
+            };
+        });
+    }
+
+    public static async getPicklistOptionSet(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSetOption[]> {
+        const {crm} = NodeApi.settings,
+            {url, version} = crm,
+            // eslint-disable-next-line max-len
+            uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attribute}')/Microsoft.Dynamics.CRM.PicklistAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=Options)`,
+            {body} = await NodeApi.request('GET', uri, null, {
+                'Authorization': `Bearer ${bearer}`
+            });
+        return body.OptionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
+            return {
+                value: option.Value,
+                externalValue: option.ExternalValue,
+                label: option.Label.UserLocalizedLabel.Label
+            };
+        });
+    }
+
+    public static async getBooleanOptionSet(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSetOption[]> {
+        const {crm} = NodeApi.settings,
+            {url, version} = crm,
+            // eslint-disable-next-line max-len
+            uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attribute}')/Microsoft.Dynamics.CRM.BooleanAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=TrueOption,FalseOption)`,
+            {body} = await NodeApi.request('GET', uri, null, {
+                'Authorization': `Bearer ${bearer}`
+            }),
+            optionSet = body.OptionSet,
+            {FalseOption, TrueOption} = optionSet;
+        return [{
+            value: FalseOption.Value,
+            label: FalseOption.Label.UserLocalizedLabel.Label
+        }, {
+            value: TrueOption.Value,
+            label: TrueOption.Label.UserLocalizedLabel.Label
+        }];
     }
 
     private static jsonHeaders: JsonHttpHeaders = {
@@ -103,7 +157,6 @@ export class NodeApi {
         'Content-Type': 'application/json; charset=utf-8'
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public static async executeAction(actionName: string, bearer: string, data?: any, entityLogicalName?: string, id?: string): Promise<any> {
         if (entityLogicalName) {
             return this.executeBoundAction(actionName, bearer, data, entityLogicalName, id);
@@ -112,7 +165,6 @@ export class NodeApi {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private static async executeBoundAction(actionName: string, bearer: string, data: any, entityLogicalName: string, id: string): Promise<any> {
         const metadata = await Xrm.Utility.getEntityMetadata(entityLogicalName),
             {crm} = NodeApi.settings,
@@ -124,7 +176,6 @@ export class NodeApi {
         return body;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private static async executeUnboundAction(actionName: string, bearer: string, data?: any): Promise<JSON> {
         const method: Method = data ? 'POST' : 'GET',
             {crm} = NodeApi.settings,
@@ -180,7 +231,6 @@ export class NodeApi {
         return `${filterParts.join(` ${type} `)}`;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private static request(method: Method, uri: string, data?: any, httpHeaders: HttpHeaders = {}): Promise<NodeApiResponse> {
         return new Promise((resolve, reject): void => {
             const options = NodeApi.getRequestOptions(method, uri, httpHeaders, data);
@@ -206,7 +256,6 @@ export class NodeApi {
         });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private static getRequestOptions(method: Method, uri: string, httpHeaders: HttpHeaders, data?: any): RequestOptions {
         const split = uri.split('/'),
             hostname = split[2],
@@ -270,4 +319,43 @@ export class NodeApi {
             statusCode: response.statusCode
         };
     }
+
+    public static async getEntityDefinition(entityLogicalName: string, bearer: string, select?: string[]): Promise<any> {
+        const {crm} = NodeApi.settings,
+            {url, version} = crm;
+        let uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')`;
+        if (select) {
+            uri += `?$select=${select.join(',')}`;
+        }
+        const {body} = await NodeApi.request('GET', uri, null, {
+            'Authorization': `Bearer ${bearer}`
+        });
+        return body;
+    }
+
+    public static async getManyToOneMetadatas(entityLogicalName: string, bearer: string): Promise<any> {
+        const {crm} = NodeApi.settings,
+            {url, version} = crm;
+        const uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/ManyToOneRelationships`,
+            {body} = await NodeApi.request('GET', uri, null, {
+                'Authorization': `Bearer ${bearer}`
+            });
+        const {value: manyToOneMetadatas} = body;
+        return manyToOneMetadatas;
+    }
+
+    public static async getAttributesMetadata(entityLogicalName: string, bearer: string, select?: string[]): Promise<any> {
+        const {crm} = NodeApi.settings,
+            {url, version} = crm;
+        let uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes?$filter=IsValidODataAttribute eq true`;
+        if (select) {
+            uri += `&$select=${select.join(',')}`;
+        }
+        const {body} = await NodeApi.request('GET', uri, null, {
+            'Authorization': `Bearer ${bearer}`
+        });
+        const {value: attributesMetadata} = body;
+        return attributesMetadata;
+    }
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */

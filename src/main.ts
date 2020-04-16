@@ -2,7 +2,7 @@ import * as shell from 'shelljs';
 import * as program from 'commander';
 import {Create} from './Create';
 import {Update} from './update';
-import {Generator} from './Generator';
+import {Generator} from './generator/Generator';
 import {Variables} from './Variables';
 
 program
