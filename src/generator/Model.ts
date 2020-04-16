@@ -60,7 +60,7 @@ export class Model extends AdalRouter {
     private static defaultModelFields = ['createdonbehalfbyyominame', 'owneridname', 'importsequencenumber', 'modifiedbyyominame', 'utcconversiontimezonecode',
         'createdbyyominame', 'modifiedbyname', 'timezoneruleversionnumber', 'owneridyominame', 'modifiedon', 'modifiedonbehalfbyyominame', 'createdbyname',
         'createdon', 'createdonbehalfbyname', 'modifiedonbehalfbyname', 'versionnumber', 'overriddencreatedon', 'owningbusinessunit', 'owningteam',
-        'modifiedby', 'createdby', 'modifiedonbehalfby', 'owninguser', 'createdonbehalfby', 'ownerid'];
+        'modifiedby', 'createdby', 'modifiedonbehalfby', 'owninguser', 'createdonbehalfby', 'ownerid', 'statecode', 'statuscode'];
 
     private async getAttributesString(): Promise<string> {
         const attributesMetadata = await NodeApi.getEntityAttributes(this.entityLogicalName, this.bearer),
