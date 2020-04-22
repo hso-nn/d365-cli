@@ -47,8 +47,8 @@ export class Model extends AdalRouter {
         return /Model\sextends\sModel\s{([\s\S]*)}/gm;
     }
 
-    private static get modelImportRegex(): RegExp {
-        return /([\s\S]*)export\sinterface\s/gm;
+    private get modelImportRegex(): RegExp {
+        return new RegExp(`([\\s\\S]*)export\\sinterface\\s${this.entityname}`, 'gm');
     }
 
     private async writeModelFile(): Promise<void> {
@@ -59,7 +59,7 @@ export class Model extends AdalRouter {
             const attributeInterfaceTypes = await this.getAttributeInterfaceTypes(),
                 relationshipInterfaceTypes = await this.getRelationshipInterfaceTypes(),
                 importsString = this.getImportStrings(relationshipInterfaceTypes),
-                importMatch = Model.modelImportRegex.exec(filedata);
+                importMatch = this.modelImportRegex.exec(filedata);
             let modelString = await this.getAttributesString(attributeInterfaceTypes, relationshipInterfaceTypes);
             modelString += await Model.getRelationshipsString(relationshipInterfaceTypes, attributeInterfaceTypes);
             modelString += Model.getCombinedAttributeRelationshipString(attributeInterfaceTypes, relationshipInterfaceTypes);
