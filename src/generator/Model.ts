@@ -47,8 +47,8 @@ export class Model extends AdalRouter {
         return /Model\sextends\sModel\s{([\s\S]*)}/gm;
     }
 
-    private static get modelImportRegex(): RegExp {
-        return /([\s\S]*)export\sinterface\s/gm;
+    private get modelImportRegex(): RegExp {
+        return new RegExp(`([\\s\\S]*)export\\sinterface\\s${this.entityname}`, 'gm');
     }
 
     private async writeModelFile(): Promise<void> {
@@ -59,12 +59,14 @@ export class Model extends AdalRouter {
             const attributeInterfaceTypes = await this.getAttributeInterfaceTypes(),
                 relationshipInterfaceTypes = await this.getRelationshipInterfaceTypes(),
                 importsString = this.getImportStrings(relationshipInterfaceTypes),
-                importMatch = Model.modelImportRegex.exec(filedata);
+                typesString = await this.getTypeStrings(),
+                enumsString = await this.getEnumStrings(),
+                importMatch = this.modelImportRegex.exec(filedata);
             let modelString = await this.getAttributesString(attributeInterfaceTypes, relationshipInterfaceTypes);
             modelString += await Model.getRelationshipsString(relationshipInterfaceTypes, attributeInterfaceTypes);
             modelString += Model.getCombinedAttributeRelationshipString(attributeInterfaceTypes, relationshipInterfaceTypes);
             let newFiledata = filedata.replace(modelMatch[1], modelString);
-            newFiledata = newFiledata.replace(importMatch[1], importsString);
+            newFiledata = newFiledata.replace(importMatch[1], importsString + enumsString + typesString);
             shell.ShellString(newFiledata).to(filepath);
         } else {
             this.log(`Model file seems to be corrupt. Please fix ${filepath}`);
@@ -188,8 +190,7 @@ export class Model extends AdalRouter {
             // return options.map(option => option.value).join(' | ');
             return 'boolean';
         } else if (['Picklist'].includes(attributeType)) {
-            const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
-            return options.map(option => option.value).join(' | ');
+            return Model.getTypeName(logicalName) + 'Values';
         } else if (['Integer', 'Double', 'BigInt', 'Decimal', 'Double', 'Money'].includes(attributeType)) {
             return 'number';
         } else if (['Status'].includes(attributeType)) {
@@ -199,6 +200,45 @@ export class Model extends AdalRouter {
             const options = await NodeApi.getStateOptionSet(this.entityLogicalName, this.bearer);
             return options.map(option => option.value).join(' | ');
         }
+    }
+
+    private static getTypeName(logicalName: string): string {
+        const nameSplit = logicalName.split('_');
+        nameSplit.shift();
+        return Model.capitalize(nameSplit.join(''));
+    }
+
+    private async getTypeStrings(): Promise<string> {
+        let typeStrings = '';
+        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
+        for (const attribute of attributesMetadata) {
+            const {AttributeType: attributeType, LogicalName: logicalName} = attribute;
+            if (attributeType === 'Picklist') {
+                const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer),
+                    types = options.map(option => option.value).join(' | ');
+                typeStrings += `type ${Model.getTypeName(logicalName)}Values = ${types};\n`;
+            }
+        }
+        typeStrings += '\n';
+        return typeStrings;
+    }
+
+    private async getEnumStrings(): Promise<string> {
+        let enumStrings = '';
+        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
+        for (const attribute of attributesMetadata) {
+            const {AttributeType: attributeType, LogicalName: logicalName} = attribute;
+            if (attributeType === 'Picklist') {
+                enumStrings += `export enum ${Model.getTypeName(logicalName)} {\n`;
+                const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
+                for (const option of options) {
+                    enumStrings += `    ${option.label.replace(/\s/g, '')} = ${option.value},\n`;
+                }
+                enumStrings += '}';
+            }
+        }
+        enumStrings += '\n';
+        return enumStrings;
     }
 
     private static get logicalNameRegex(): RegExp {
