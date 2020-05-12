@@ -13,7 +13,7 @@ program
     .command('new <project>')
     .alias('n')
     .description('Creates a new workspace and an initial Webresource setup')
-    .action(project => {
+    .action((project: string) => {
         Create.createProject(project);
     })
     .on('--help', () => {
@@ -24,7 +24,7 @@ program
     .command('generate <schematic> [name]')
     .alias('g')
     .description('Generates and/or modifies files bases on a schematic.')
-    .action((schematic, name) => {
+    .action((schematic: string, name: string) => {
         Generator.generate(schematic, name);
     })
     .on('--help', () => {
