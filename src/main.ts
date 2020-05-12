@@ -6,7 +6,7 @@ import {Generator} from './generator/Generator';
 import {Variables} from './Variables';
 
 program
-    .version('1.7.1') // .version(require('../package').version)
+    .version('1.7.2') // .version(require('../package').version)
     .usage('<command> [options]');
 
 program
