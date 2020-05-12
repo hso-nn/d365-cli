@@ -26,7 +26,7 @@ export class Resx {
         return null;
     }
 
-    private static regex = /Translation\.translate\('([^']*)'\)/gm;
+    private static regex = /Translation\.translate\([\s]*([']([^']*)[']|[`]([^`]*)[`])[\s]*\)/gm;
 
     private static getCodeKeys(): string[] {
         const keys = new Set<string>();
@@ -38,7 +38,7 @@ export class Resx {
                 if (match.index === Resx.regex.lastIndex) {
                     Resx.regex.lastIndex += 1;
                 }
-                keys.add(match[1]);
+                keys.add(match[2] || match[3]);
             }
         }
         return Array.from(keys.values());
