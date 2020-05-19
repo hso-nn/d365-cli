@@ -1,6 +1,6 @@
 {
   "name": "@hso/d365-cli",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "author": "HSO Innovation <innovation@hso.com> (http://www.hso.com)",
   "description": "HSO D365 Command Line Interface",
   "repository": {

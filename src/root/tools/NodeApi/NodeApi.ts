@@ -34,11 +34,18 @@ interface NodeApiResponse {
 }
 
 export class NodeApi {
-    private static settings: CrmJson = JSON.parse(fs.readFileSync('tools/crm.json', 'utf8'));
+    private static cachedSettings: CrmJson;
+
+    private static getSettings(): CrmJson {
+        if (!NodeApi.cachedSettings) {
+            NodeApi.cachedSettings = JSON.parse(fs.readFileSync('tools/crm.json', 'utf8'));
+        }
+        return NodeApi.cachedSettings;
+    }
 
     public static async retrieveMultipleRecords(entitySetName: string, options: MultipleSystemQueryOptions, bearer: string): Promise<Model[]> {
         const query = NodeApi.getSystemQueryOptions(options),
-            {crm} = NodeApi.settings,
+            {crm} = NodeApi.getSettings(),
             {url, version} = crm,
             uri = `${url}/api/data/v${version}/${entitySetName}${query}`,
             {body} = await NodeApi.request('GET', uri, null, {
@@ -49,7 +56,7 @@ export class NodeApi {
 
     public static async retrieveRecord(entitySetName: string, id: string, options: SystemQueryOptions, bearer: string): Promise<Model> {
         const query = NodeApi.getSystemQueryOptions(options),
-            {crm} = NodeApi.settings,
+            {crm} = NodeApi.getSettings(),
             {url, version} = crm,
             uri = `${url}/api/data/v${version}/${entitySetName}(${id})${query}`,
             {body} = await NodeApi.request('GET', uri, null, {
@@ -59,7 +66,7 @@ export class NodeApi {
     }
 
     public static async updateRecord(entitySetName: string, id: string, model: Model, bearer: string): Promise<Model> {
-        const {crm} = NodeApi.settings,
+        const {crm} = NodeApi.getSettings(),
             {url, version } = crm,
             uri = `${url}/api/data/v${version}/${entitySetName}(${id})`,
             request = await NodeApi.request('PATCH', uri, model, {
@@ -70,7 +77,7 @@ export class NodeApi {
     }
 
     public static async insertRecord(entitySetName: string, model: Model, bearer: string): Promise<Model> {
-        const {crm} = NodeApi.settings,
+        const {crm} = NodeApi.getSettings(),
             {url, version} = crm,
             uri = `${url}/api/data/v${version}/${entitySetName}`,
             {body} = await NodeApi.request('POST', uri, model, {
@@ -81,7 +88,7 @@ export class NodeApi {
     }
 
     public static async getStatusOptionSet(entityLogicalName: string, bearer: string): Promise<OptionSetOption[]> {
-        const {crm} = NodeApi.settings,
+        const {crm} = NodeApi.getSettings(),
             {url, version} = crm,
             // eslint-disable-next-line max-len
             uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes/Microsoft.Dynamics.CRM.StatusAttributeMetadata?$expand=OptionSet`,
@@ -98,7 +105,7 @@ export class NodeApi {
     }
 
     public static async getStateOptionSet(entityLogicalName: string, bearer: string): Promise<OptionSetOption[]> {
-        const {crm} = NodeApi.settings,
+        const {crm} = NodeApi.getSettings(),
             {url, version} = crm,
             // eslint-disable-next-line max-len
             uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes/Microsoft.Dynamics.CRM.StateAttributeMetadata?$expand=OptionSet`,
@@ -115,7 +122,7 @@ export class NodeApi {
     }
 
     public static async getPicklistOptionSet(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSetOption[]> {
-        const {crm} = NodeApi.settings,
+        const {crm} = NodeApi.getSettings(),
             {url, version} = crm,
             // eslint-disable-next-line max-len
             uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attribute}')/Microsoft.Dynamics.CRM.PicklistAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=Options)`,
@@ -132,7 +139,7 @@ export class NodeApi {
     }
 
     public static async getBooleanOptionSet(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSetOption[]> {
-        const {crm} = NodeApi.settings,
+        const {crm} = NodeApi.getSettings(),
             {url, version} = crm,
             // eslint-disable-next-line max-len
             uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attribute}')/Microsoft.Dynamics.CRM.BooleanAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=TrueOption,FalseOption)`,
@@ -167,7 +174,7 @@ export class NodeApi {
 
     private static async executeBoundAction(actionName: string, bearer: string, data: any, entityLogicalName: string, id: string): Promise<any> {
         const metadata = await Xrm.Utility.getEntityMetadata(entityLogicalName),
-            {crm} = NodeApi.settings,
+            {crm} = NodeApi.getSettings(),
             {url, version} = crm,
             uri = `${url}/api/data/v${version}/${metadata.EntitySetName}(${id})/Microsoft.Dynamics.CRM.${actionName}`,
             {body} = await NodeApi.request('POST', uri, data, {
@@ -178,7 +185,7 @@ export class NodeApi {
 
     private static async executeUnboundAction(actionName: string, bearer: string, data?: any): Promise<JSON> {
         const method: Method = data ? 'POST' : 'GET',
-            {crm} = NodeApi.settings,
+            {crm} = NodeApi.getSettings(),
             {url, version} = crm,
             uri = `${url}/api/data/v${version}/${actionName}`,
             {body} = await NodeApi.request(method, uri, data, {
@@ -321,7 +328,7 @@ export class NodeApi {
     }
 
     public static async getEntityDefinition(entityLogicalName: string, bearer: string, select?: string[]): Promise<any> {
-        const {crm} = NodeApi.settings,
+        const {crm} = NodeApi.getSettings(),
             {url, version} = crm;
         let uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')`;
         if (select) {
@@ -334,7 +341,7 @@ export class NodeApi {
     }
 
     public static async getManyToOneMetadatas(entityLogicalName: string, bearer: string): Promise<any> {
-        const {crm} = NodeApi.settings,
+        const {crm} = NodeApi.getSettings(),
             {url, version} = crm;
         const uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/ManyToOneRelationships`,
             {body} = await NodeApi.request('GET', uri, null, {
@@ -345,7 +352,7 @@ export class NodeApi {
     }
 
     public static async getAttributesMetadata(entityLogicalName: string, bearer: string, select?: string[]): Promise<any> {
-        const {crm} = NodeApi.settings,
+        const {crm} = NodeApi.getSettings(),
             {url, version} = crm;
         let uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes?$filter=IsValidODataAttribute eq true`;
         if (select) {
