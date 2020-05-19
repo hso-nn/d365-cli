@@ -37,7 +37,9 @@ export class NodeApi {
     private static cachedSettings: CrmJson;
 
     private static getSettings(): CrmJson {
-        NodeApi.cachedSettings = JSON.parse(fs.readFileSync('tools/crm.json', 'utf8'));
+        if (!NodeApi.cachedSettings) {
+            NodeApi.cachedSettings = JSON.parse(fs.readFileSync('tools/crm.json', 'utf8'));
+        }
         return NodeApi.cachedSettings;
     }
 
