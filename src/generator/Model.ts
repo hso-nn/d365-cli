@@ -234,7 +234,7 @@ export class Model extends AdalRouter {
                 for (const option of options) {
                     enumStrings += `    ${option.label.replace(/\s/g, '')} = ${option.value},\n`;
                 }
-                enumStrings += '}';
+                enumStrings += '}\n';
             }
         }
         enumStrings += '\n';
