@@ -64,7 +64,7 @@ export class Model extends AdalRouter {
                 importMatch = this.modelImportRegex.exec(filedata);
             let modelString = await this.getAttributesString(attributeInterfaceTypes, relationshipInterfaceTypes);
             modelString += await Model.getRelationshipsString(relationshipInterfaceTypes, attributeInterfaceTypes);
-            modelString += Model.getCombinedAttributeRelationshipString(attributeInterfaceTypes, relationshipInterfaceTypes);
+            modelString += this.getCombinedAttributeRelationshipString(attributeInterfaceTypes, relationshipInterfaceTypes);
             let newFiledata = filedata.replace(modelMatch[1], modelString);
             newFiledata = newFiledata.replace(importMatch[1], importsString + enumsString + typesString);
             shell.ShellString(newFiledata).to(filepath);
@@ -78,7 +78,7 @@ export class Model extends AdalRouter {
         for (const referencingEntityNavigationPropertyName of Object.keys(relationshipInterfaceTypes)) {
             if (!Model.defaultModelAttributes.includes(referencingEntityNavigationPropertyName)) {
                 const referencedEntity = relationshipInterfaceTypes[referencingEntityNavigationPropertyName],
-                    camelReferencedEntity = Model.capitalize(referencedEntity),
+                    camelReferencedEntity = Model.capitalize(this.getTypeName(referencedEntity)),
                     relatedModelFilePath = `src/${camelReferencedEntity}/${camelReferencedEntity}.model.ts`;
                 importStrings += `import {${camelReferencedEntity}Model} from '../${camelReferencedEntity}/${camelReferencedEntity}.model';\n`;
 
@@ -94,14 +94,14 @@ export class Model extends AdalRouter {
         return importStrings;
     }
 
-    private static getCombinedAttributeRelationshipString(attributesInterfaceTypes: InterfaceTypes, relationshipInterfaceTypes: InterfaceTypes): string {
+    private getCombinedAttributeRelationshipString(attributesInterfaceTypes: InterfaceTypes, relationshipInterfaceTypes: InterfaceTypes): string {
         let combinedString = ``;
         const attributeNames = Object.keys(attributesInterfaceTypes);
         for (const referencingEntityNavigationPropertyName of Object.keys(relationshipInterfaceTypes)) {
             if (!Model.defaultModelAttributes.includes(referencingEntityNavigationPropertyName) && attributeNames.includes(referencingEntityNavigationPropertyName)) {
                 const referencedEntity = relationshipInterfaceTypes[referencingEntityNavigationPropertyName],
                     interfaceType = attributesInterfaceTypes[referencingEntityNavigationPropertyName];
-                combinedString += `\n    ${referencingEntityNavigationPropertyName}?: ${interfaceType} | ${Model.capitalize(referencedEntity)}Model;`;
+                combinedString += `\n    ${referencingEntityNavigationPropertyName}?: ${interfaceType} | ${Model.capitalize(this.getTypeName(referencedEntity))}Model;`;
             }
         }
         if (combinedString) {
@@ -190,7 +190,7 @@ export class Model extends AdalRouter {
             // return options.map(option => option.value).join(' | ');
             return 'boolean';
         } else if (['Picklist'].includes(attributeType)) {
-            return Model.getTypeName(logicalName) + 'Values';
+            return this.getTypeName(logicalName) + 'Values';
         } else if (['Integer', 'Double', 'BigInt', 'Decimal', 'Double', 'Money'].includes(attributeType)) {
             return 'number';
         } else if (['Status'].includes(attributeType)) {
@@ -202,10 +202,10 @@ export class Model extends AdalRouter {
         }
     }
 
-    private static getTypeName(logicalName: string): string {
-        const nameSplit = logicalName.split('_');
-        nameSplit.shift();
-        return Model.capitalize(nameSplit.join(''));
+    private getTypeName(logicalName: string): string {
+        const {publisher_prefix} = this.settings.crm,
+            typeName = logicalName.replace(`${publisher_prefix}_`, '');
+        return Model.capitalize(typeName);
     }
 
     private async getTypeStrings(): Promise<string> {
@@ -216,7 +216,7 @@ export class Model extends AdalRouter {
             if (attributeType === 'Picklist') {
                 const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer),
                     types = options.map(option => option.value).join(' | ');
-                typeStrings += `type ${Model.getTypeName(logicalName)}Values = ${types};\n`;
+                typeStrings += `type ${this.getTypeName(logicalName)}Values = ${types};\n`;
             }
         }
         typeStrings += '\n';
@@ -229,7 +229,7 @@ export class Model extends AdalRouter {
         for (const attribute of attributesMetadata) {
             const {AttributeType: attributeType, LogicalName: logicalName} = attribute;
             if (attributeType === 'Picklist') {
-                enumStrings += `export enum ${Model.getTypeName(logicalName)} {\n`;
+                enumStrings += `export enum ${this.getTypeName(logicalName)} {\n`;
                 const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
                 for (const option of options) {
                     enumStrings += `    ${option.label.replace(/\s/g, '')} = ${option.value},\n`;
