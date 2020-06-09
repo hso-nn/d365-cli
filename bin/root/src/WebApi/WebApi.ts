@@ -176,8 +176,7 @@ export class WebApi {
     }
 
     private static async executeUnboundAction(actionName: string, data?: any): Promise<JSON> {
-        const method: Method = data ? 'POST' : 'GET',
-            xmlHttpRequest = await WebApi.request(method, `${actionName}`, data);
+        const xmlHttpRequest = await WebApi.request('POST', `${actionName}`, data);
         return xmlHttpRequest.response && JSON.parse(xmlHttpRequest.response, dateReviver);
     }
 
