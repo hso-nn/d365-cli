@@ -37,7 +37,9 @@
       "always"
     ],
     "brace-style": ["error", "1tbs"],
-    "max-lines-per-function": ["error", 30],
+    "eqeqeq": "error",
+    "max-len": ["error", 170],
+    "max-lines-per-function": ["error", 35],
     "no-underscore-dangle": "error",
     "no-plusplus": "error",
     "no-useless-escape": "error",

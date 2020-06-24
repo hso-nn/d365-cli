@@ -6,14 +6,14 @@ import {Generator} from './generator/Generator';
 import {Variables} from './Variables';
 
 program
-    .version('1.7.6') // .version(require('../package').version)
+    .version('1.8.0') // .version(require('../package').version)
     .usage('<command> [options]');
 
 program
     .command('new <project>')
     .alias('n')
     .description('Creates a new workspace and an initial Webresource setup')
-    .action(project => {
+    .action((project: string) => {
         Create.createProject(project);
     })
     .on('--help', () => {
@@ -24,7 +24,7 @@ program
     .command('generate <schematic> [name]')
     .alias('g')
     .description('Generates and/or modifies files bases on a schematic.')
-    .action((schematic, name) => {
+    .action((schematic: string, name: string) => {
         Generator.generate(schematic, name);
     })
     .on('--help', () => {
@@ -124,6 +124,21 @@ program
     })
     .on('--help', () => {
         console.log(`Sets the Solution forms iscustomizable/canbedeleted true/false`);
+    });
+
+program
+    .command('showFiddlerRule')
+    .alias('fiddler')
+    .description('Show the Fiddler AutoResponder Rule Editor lines')
+    .action(async () => {
+        const variables = await Variables.get(),
+            publisher = variables.publisher,
+            namespace = variables.namespace,
+            regex = `REGEX:(?insx).+\\/${publisher}_\\/${namespace}\\/(?'foldername'[^?]*)\\/(?'fname'[^?]*.js)`,
+            path = process.cwd(),
+            location = `${path}\\dist\\${publisher}_\\${namespace}\\\${foldername}\\\${fname}`;
+        console.log(`Please add to first Rule Editor line (including REGEX:): \n${regex}`);
+        console.log(`Please add to second Rule Editor line: \n${location}`);
     });
 
 program

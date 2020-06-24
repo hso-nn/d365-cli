@@ -52,9 +52,6 @@ export class Update {
         console.log(`Updating tsconfig.json...`);
         shell.cp('-R', `${__dirname}/root/src/tsconfig.json`, './src');
 
-        console.log(`Removing tslint.json...`);
-        shell.rm('-R', `./src/tslint.json`);
-
         console.log(`Updating WebApi...`);
         shell.cp('-R', `${__dirname}/root/src/WebApi`, './src');
         shell.exec('git add src/WebApi/Model.ts');
@@ -77,6 +74,13 @@ export class Update {
         shell.cp('-R', `${__dirname}/root/src/translation`, './src');
         shell.exec('git add src/translation/TranslationI18n.ts');
 
+        Update.cleanSrcFolder();
+    }
+
+    private static cleanSrcFolder(): void {
+        console.log(`Removing tslint.json...`);
+        shell.rm('-R', `./src/tslint.json`);
+
         console.log(`Removing txs...`);
         shell.rm('-R', './src/tsx');
     }
@@ -84,7 +88,10 @@ export class Update {
     private static moveDeploy(): void {
         console.log(`Moving deploy folder...`);
         if (shell.test('-f', 'deploy/deploy.js')) {
-            shell.cp('-R','deploy', 'tools');
+            if (!shell.test('-d', 'tools')) {
+                shell.mkdir('tools');
+            }
+            shell.cp('-R','deploy/*', 'tools');
             if (shell.which('git')) {
                 shell.exec('git rm deploy/deploy.js');
                 shell.exec('git rm deploy/crm.json');

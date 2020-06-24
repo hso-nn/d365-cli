@@ -7,7 +7,7 @@ import {DLFCore, ValidateLicenseResult} from 'dlf-core';
     valid: boolean;
 }*/
 
-class Validator {
+export class Validator {
     static async onLoad(executionContext: Xrm.Events.EventContext): Promise<ValidateLicenseResult> {
         return Validator.validate(executionContext);
     }
