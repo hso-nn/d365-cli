@@ -127,6 +127,21 @@ program
     });
 
 program
+    .command('showFiddlerRule')
+    .alias('fiddler')
+    .description('Show the Fiddler AutoResponder Rule Editor lines')
+    .action(async () => {
+        const variables = await Variables.get(),
+            publisher = variables.publisher,
+            namespace = variables.namespace,
+            regex = `REGEX:(?insx).+\\/${publisher}_\\/${namespace}\\/(?'foldername'[^?]*)\\/(?'fname'[^?]*.js)`,
+            path = process.cwd(),
+            location = `${path}\\dist\\${publisher}_\\${namespace}\\\${foldername}\\\${fname}`;
+        console.log(`Please add to first Rule Editor line (including REGEX:): \n${regex}`);
+        console.log(`Please add to second Rule Editor line: \n${location}`);
+    });
+
+program
     .arguments('<command>')
     .action(() => {
         program.outputHelp();
