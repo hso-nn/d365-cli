@@ -1,10 +1,9 @@
 import {Filter, MultipleSystemQueryOptions, SystemQueryOptions} from '../../../../bin/root/src/WebApi/WebApi';
 import {Model} from '../../../../bin/root/src/WebApi/Model';
-import * as fs from 'fs';
 import * as https from 'https';
 import { IncomingMessage } from 'http';
-import {CrmJson} from '../CrmJson';
 import { RequestOptions } from 'https';
+import {AdalRouterContext} from '../AdalRouter';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -34,18 +33,10 @@ interface NodeApiResponse {
 }
 
 export class NodeApi {
-    private static cachedSettings: CrmJson;
-
-    private static getSettings(): CrmJson {
-        if (!NodeApi.cachedSettings) {
-            NodeApi.cachedSettings = JSON.parse(fs.readFileSync('tools/crm.json', 'utf8'));
-        }
-        return NodeApi.cachedSettings;
-    }
-
-    public static async retrieveMultipleRecords(entitySetName: string, options: MultipleSystemQueryOptions, bearer: string): Promise<Model[]> {
+    public static async retrieveMultipleRecords(entitySetName: string, options: MultipleSystemQueryOptions, context: AdalRouterContext): Promise<Model[]> {
         const query = NodeApi.getSystemQueryOptions(options),
-            {crm} = NodeApi.getSettings(),
+            {settings, bearer} = context,
+            {crm} = settings,
             {url, version} = crm,
             uri = `${url}/api/data/v${version}/${entitySetName}${query}`,
             {body} = await NodeApi.request('GET', uri, null, {
@@ -54,9 +45,10 @@ export class NodeApi {
         return body.value;
     }
 
-    public static async retrieveRecord(entitySetName: string, id: string, options: SystemQueryOptions, bearer: string): Promise<Model> {
+    public static async retrieveRecord(entitySetName: string, id: string, options: SystemQueryOptions, context: AdalRouterContext): Promise<Model> {
         const query = NodeApi.getSystemQueryOptions(options),
-            {crm} = NodeApi.getSettings(),
+            {settings, bearer} = context,
+            {crm} = settings,
             {url, version} = crm,
             uri = `${url}/api/data/v${version}/${entitySetName}(${id})${query}`,
             {body} = await NodeApi.request('GET', uri, null, {
@@ -65,8 +57,9 @@ export class NodeApi {
         return body;
     }
 
-    public static async updateRecord(entitySetName: string, id: string, model: Model, bearer: string): Promise<Model> {
-        const {crm} = NodeApi.getSettings(),
+    public static async updateRecord(entitySetName: string, id: string, model: Model, context: AdalRouterContext): Promise<Model> {
+        const {settings, bearer} = context,
+            {crm} = settings,
             {url, version } = crm,
             uri = `${url}/api/data/v${version}/${entitySetName}(${id})`,
             request = await NodeApi.request('PATCH', uri, model, {
@@ -76,8 +69,9 @@ export class NodeApi {
         return request.body;
     }
 
-    public static async insertRecord(entitySetName: string, model: Model, bearer: string): Promise<Model> {
-        const {crm} = NodeApi.getSettings(),
+    public static async insertRecord(entitySetName: string, model: Model, context: AdalRouterContext): Promise<Model> {
+        const {settings, bearer} = context,
+            {crm} = settings,
             {url, version} = crm,
             uri = `${url}/api/data/v${version}/${entitySetName}`,
             {body} = await NodeApi.request('POST', uri, model, {
@@ -87,8 +81,9 @@ export class NodeApi {
         return body;
     }
 
-    public static async getStatusOptionSet(entityLogicalName: string, bearer: string): Promise<OptionSetOption[]> {
-        const {crm} = NodeApi.getSettings(),
+    public static async getStatusOptionSet(entityLogicalName: string, context: AdalRouterContext): Promise<OptionSetOption[]> {
+        const {settings, bearer} = context,
+            {crm} = settings,
             {url, version} = crm,
             // eslint-disable-next-line max-len
             uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes/Microsoft.Dynamics.CRM.StatusAttributeMetadata?$expand=OptionSet`,
@@ -104,8 +99,9 @@ export class NodeApi {
         });
     }
 
-    public static async getStateOptionSet(entityLogicalName: string, bearer: string): Promise<OptionSetOption[]> {
-        const {crm} = NodeApi.getSettings(),
+    public static async getStateOptionSet(entityLogicalName: string, context: AdalRouterContext): Promise<OptionSetOption[]> {
+        const {settings, bearer} = context,
+            {crm} = settings,
             {url, version} = crm,
             // eslint-disable-next-line max-len
             uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes/Microsoft.Dynamics.CRM.StateAttributeMetadata?$expand=OptionSet`,
@@ -121,8 +117,9 @@ export class NodeApi {
         });
     }
 
-    public static async getPicklistOptionSet(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSetOption[]> {
-        const {crm} = NodeApi.getSettings(),
+    public static async getPicklistOptionSet(entityLogicalName: string, attribute: string, context: AdalRouterContext): Promise<OptionSetOption[]> {
+        const {settings, bearer} = context,
+            {crm} = settings,
             {url, version} = crm,
             // eslint-disable-next-line max-len
             uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attribute}')/Microsoft.Dynamics.CRM.PicklistAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=Options)`,
@@ -138,8 +135,9 @@ export class NodeApi {
         });
     }
 
-    public static async getBooleanOptionSet(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSetOption[]> {
-        const {crm} = NodeApi.getSettings(),
+    public static async getBooleanOptionSet(entityLogicalName: string, attribute: string, context: AdalRouterContext): Promise<OptionSetOption[]> {
+        const {settings, bearer} = context,
+            {crm} = settings,
             {url, version} = crm,
             // eslint-disable-next-line max-len
             uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attribute}')/Microsoft.Dynamics.CRM.BooleanAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=TrueOption,FalseOption)`,
@@ -164,17 +162,18 @@ export class NodeApi {
         'Content-Type': 'application/json; charset=utf-8'
     };
 
-    public static async executeAction(actionName: string, bearer: string, data?: any, entityLogicalName?: string, id?: string): Promise<any> {
+    public static async executeAction(actionName: string, context: AdalRouterContext, data?: any, entityLogicalName?: string, id?: string): Promise<any> {
         if (entityLogicalName) {
-            return this.executeBoundAction(actionName, bearer, data, entityLogicalName, id);
+            return this.executeBoundAction(actionName, context, data, entityLogicalName, id);
         } else {
-            return this.executeUnboundAction(actionName, bearer, data);
+            return this.executeUnboundAction(actionName, context, data);
         }
     }
 
-    private static async executeBoundAction(actionName: string, bearer: string, data: any, entityLogicalName: string, id: string): Promise<any> {
+    private static async executeBoundAction(actionName: string, context: AdalRouterContext, data: any, entityLogicalName: string, id: string): Promise<any> {
         const metadata = await Xrm.Utility.getEntityMetadata(entityLogicalName),
-            {crm} = NodeApi.getSettings(),
+            {settings, bearer} = context,
+            {crm} = settings,
             {url, version} = crm,
             uri = `${url}/api/data/v${version}/${metadata.EntitySetName}(${id})/Microsoft.Dynamics.CRM.${actionName}`,
             {body} = await NodeApi.request('POST', uri, data, {
@@ -183,9 +182,10 @@ export class NodeApi {
         return body;
     }
 
-    private static async executeUnboundAction(actionName: string, bearer: string, data?: any): Promise<JSON> {
+    private static async executeUnboundAction(actionName: string, context: AdalRouterContext, data?: any): Promise<JSON> {
         const method: Method = data ? 'POST' : 'GET',
-            {crm} = NodeApi.getSettings(),
+            {settings, bearer} = context,
+            {crm} = settings,
             {url, version} = crm,
             uri = `${url}/api/data/v${version}/${actionName}`,
             {body} = await NodeApi.request(method, uri, data, {
@@ -327,8 +327,9 @@ export class NodeApi {
         };
     }
 
-    public static async getEntityDefinition(entityLogicalName: string, bearer: string, select?: string[]): Promise<any> {
-        const {crm} = NodeApi.getSettings(),
+    public static async getEntityDefinition(entityLogicalName: string, context: AdalRouterContext, select?: string[]): Promise<any> {
+        const {settings, bearer} = context,
+            {crm} = settings,
             {url, version} = crm;
         let uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')`;
         if (select) {
@@ -340,8 +341,9 @@ export class NodeApi {
         return body;
     }
 
-    public static async getManyToOneMetadatas(entityLogicalName: string, bearer: string): Promise<any> {
-        const {crm} = NodeApi.getSettings(),
+    public static async getManyToOneMetadatas(entityLogicalName: string, context: AdalRouterContext): Promise<any> {
+        const {settings, bearer} = context,
+            {crm} = settings,
             {url, version} = crm;
         const uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/ManyToOneRelationships`,
             {body} = await NodeApi.request('GET', uri, null, {
@@ -351,8 +353,9 @@ export class NodeApi {
         return manyToOneMetadatas;
     }
 
-    public static async getAttributesMetadata(entityLogicalName: string, bearer: string, select?: string[]): Promise<any> {
-        const {crm} = NodeApi.getSettings(),
+    public static async getAttributesMetadata(entityLogicalName: string, context: AdalRouterContext, select?: string[]): Promise<any> {
+        const {settings, bearer} = context,
+            {crm} = settings,
             {url, version} = crm;
         let uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes?$filter=IsValidODataAttribute eq true`;
         if (select) {

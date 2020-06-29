@@ -9,13 +9,33 @@ import * as fs from 'fs';
 import {Request, Response} from 'express-serve-static-core';
 import {CrmJson} from './CrmJson';
 
+export interface AdalRouterContext {
+    bearer?: string;
+    // response?: Response;
+    settings: CrmJson;
+    log: (message: string) => Promise<void>;
+}
+
 export class AdalRouter {
     public express: Express;
+    private response: Response;
     protected httpServer: http.Server;
     protected sockets: Socket[] = [];
-    protected settings: CrmJson = JSON.parse(fs.readFileSync('tools/crm.json', 'utf8'));
-    protected bearer: string;
-    private response: Response;
+    protected context: AdalRouterContext = {
+        log: async (message: string) => {
+            return this.log(message);
+        },
+        settings: JSON.parse(fs.readFileSync('../crm.json', 'utf8')) // project root folder
+    };
+    protected get settings(): CrmJson {
+        return this.context.settings;
+    }
+    protected get bearer(): string {
+        return this.context.bearer;
+    }
+    protected set bearer(bearer: string) {
+        this.context.bearer = bearer;
+    }
 
     constructor() {
         this.express = express();
@@ -61,7 +81,9 @@ export class AdalRouter {
                     <title>test</title>
                 </head>
                 <body>
-                    <script src="adal.min.js"></script>
+                    <!--script src="adal.min.js"></script-->
+                    <script src="https://secure.aadcdn.microsoftonline-p.com/lib/1.0.17/js/adal.min.js"></script>
+                    <script src="https://secure.aadcdn.microsoftonline-p.com/lib/1.0.17/js/adal-angular.min.js"></script>
                     <script>
                         var config = {
                             clientId: "${this.settings.adal.clientId}",
@@ -100,6 +122,7 @@ export class AdalRouter {
             res.setHeader('Transfer-Encoding', 'chunked');
 
             res.flushHeaders();
+            // this.context.response = res;
             this.response = res;
             await this.onAuthenticated();
             setTimeout(() => {

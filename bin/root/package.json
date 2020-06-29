@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run clean && webpack",
     "build:prod": "npm run clean && cross-env NODE_ENV=production webpack --bail --progress",
-    "deploy": "node tools/deploy.js",
+    "deploy": "node tools/deployWebresource.js",
     "resx": "node tools/resx.js",
     "setFormCustomizable:true": "node tools/setFormCustomizable.js --customizable true",
     "setFormCustomizable:false": "node tools/setFormCustomizable.js --customizable false",

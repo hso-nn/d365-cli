@@ -125,7 +125,7 @@ export class Model extends AdalRouter {
     }
 
     private async getRelationshipInterfaceTypes(): Promise<InterfaceTypes> {
-        const manyToOneMetadatas = await NodeApi.getManyToOneMetadatas(this.entityLogicalName, this.bearer),
+        const manyToOneMetadatas = await NodeApi.getManyToOneMetadatas(this.entityLogicalName, this.context),
             relationshipsInterfaces: InterfaceTypes = {};
         for (const relation of manyToOneMetadatas) {
             const {ReferencedEntity, ReferencingEntityNavigationPropertyName} = relation;
@@ -144,7 +144,7 @@ export class Model extends AdalRouter {
         'modifiedby', 'createdby', 'modifiedonbehalfby', 'owninguser', 'createdonbehalfby', 'statecode', 'statuscode', 'ownerid'];
 
     private async getAttributesString(attributesInterfaceTypes: InterfaceTypes, relationshipInterfaceTypes: InterfaceTypes): Promise<string> {
-        const {PrimaryIdAttribute, PrimaryNameAttribute} = await NodeApi.getEntityDefinition(this.entityLogicalName, this.bearer,
+        const {PrimaryIdAttribute, PrimaryNameAttribute} = await NodeApi.getEntityDefinition(this.entityLogicalName, this.context,
                 ['PrimaryIdAttribute', 'PrimaryNameAttribute']),
             relationshipNames = Object.keys(relationshipInterfaceTypes);
         let attributesString = `\n    // Attributes for $select\n`;
@@ -165,7 +165,7 @@ export class Model extends AdalRouter {
     }
 
     private async getAttributeInterfaceTypes(): Promise<InterfaceTypes> {
-        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer),
+        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.context),
             attributesInterfaces: InterfaceTypes = {};
         for (const attribute of attributesMetadata) {
             const {AttributeType, LogicalName} = attribute,
@@ -194,10 +194,10 @@ export class Model extends AdalRouter {
         } else if (['Integer', 'Double', 'BigInt', 'Decimal', 'Double', 'Money'].includes(attributeType)) {
             return 'number';
         } else if (['Status'].includes(attributeType)) {
-            const options = await NodeApi.getStatusOptionSet(this.entityLogicalName, this.bearer);
+            const options = await NodeApi.getStatusOptionSet(this.entityLogicalName, this.context);
             return options.map(option => option.value).join(' | ');
         } else if (['State'].includes(attributeType)) {
-            const options = await NodeApi.getStateOptionSet(this.entityLogicalName, this.bearer);
+            const options = await NodeApi.getStateOptionSet(this.entityLogicalName, this.context);
             return options.map(option => option.value).join(' | ');
         }
     }
@@ -210,11 +210,11 @@ export class Model extends AdalRouter {
 
     private async getTypeStrings(): Promise<string> {
         let typeStrings = '';
-        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
+        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.context);
         for (const attribute of attributesMetadata) {
             const {AttributeType: attributeType, LogicalName: logicalName} = attribute;
             if (attributeType === 'Picklist') {
-                const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer),
+                const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.context),
                     types = options.map(option => option.value).join(' | ');
                 typeStrings += `type ${this.getTypeName(logicalName)}Values = ${types};\n`;
             }
@@ -225,12 +225,12 @@ export class Model extends AdalRouter {
 
     private async getEnumStrings(): Promise<string> {
         let enumStrings = '';
-        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
+        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.context);
         for (const attribute of attributesMetadata) {
             const {AttributeType: attributeType, LogicalName: logicalName} = attribute;
             if (attributeType === 'Picklist') {
                 enumStrings += `export enum ${this.getTypeName(logicalName)} {\n`;
-                const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
+                const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.context);
                 for (const option of options) {
                     enumStrings += `    ${option.label.replace(/\s/g, '')} = ${option.value},\n`;
                 }

@@ -63,7 +63,7 @@ To add an Webresource to the project use following commands:
   hso-d365 generate Webresource MyWebresource
 ```
 
-## Deploy
+## DeployWebresource
 To build and deploy changes made to the Entity and Webresource use following command:
 
 ```powershell

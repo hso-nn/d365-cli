@@ -18,7 +18,7 @@ class SetFormCustomizable extends AdalRouter {
 
     private async setFormCustomizable(customizable: boolean): Promise<void> {
         this.log(`Solution name: ${this.settings.crm.solution_name}`);
-        const solution = await SolutionService.getSolution(['solutionid'], this.bearer);
+        const solution = await SolutionService.getSolution(['solutionid'], this.context);
         this.log(`Solution id: ${solution.solutionid}`);
         this.log(``);
         const solutioncomponents = await this.getSolutionComponents(solution);
@@ -41,7 +41,7 @@ class SetFormCustomizable extends AdalRouter {
                 systemForm.canbedeleted.Value = customizable;
             }
             try {
-                await SystemFormService.updateRecord(systemForm.formid, systemForm, this.bearer);
+                await SystemFormService.updateRecord(systemForm.formid, systemForm, this.context);
                 this.log(`Updated`);
             } catch (e) {
                 this.log(e.message);
@@ -64,12 +64,12 @@ class SetFormCustomizable extends AdalRouter {
                     value: 60
                 }]
             }]
-        }, this.bearer);
+        }, this.context);
     }
 
     private getSystemForm(solutionComponent: SolutionComponentModel): Promise<SystemFormModel> {
         return SystemFormService.getSystemForm(solutionComponent.objectid,
-            ['name', 'objecttypecode', 'iscustomizable', 'canbedeleted'], this.bearer);
+            ['name', 'objecttypecode', 'iscustomizable', 'canbedeleted'], this.context);
     }
 }
 new SetFormCustomizable();

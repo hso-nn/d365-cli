@@ -1,51 +1,56 @@
 import {MultipleSystemQueryOptions, SystemQueryOptions} from '../../../../bin/root/src/WebApi/WebApi';
 import {WebresourceModel} from './Webresource.model';
 import {NodeApi} from '../NodeApi/NodeApi';
+import {ComponentType} from '../Solution/ComponentType';
+import {AdalRouterContext} from '../AdalRouter';
 
 export class WebresourceService {
     private static logicalName = 'webresource';
     private static entitySetName = 'webresourceset';
 
-    public static async retrieveMultipleRecords(multipleSystemQueryOptions: MultipleSystemQueryOptions, bearer: string): Promise<WebresourceModel[]> {
-        return NodeApi.retrieveMultipleRecords(WebresourceService.entitySetName, multipleSystemQueryOptions, bearer);
+    public static async retrieveMultipleRecords(multipleSystemQueryOptions: MultipleSystemQueryOptions, context: AdalRouterContext): Promise<WebresourceModel[]> {
+        return NodeApi.retrieveMultipleRecords(WebresourceService.entitySetName, multipleSystemQueryOptions, context);
     }
 
-    public static async retrieveRecord(id: string, systemQueryOptions: SystemQueryOptions, bearer: string): Promise<WebresourceModel> {
-        return NodeApi.retrieveRecord(WebresourceService.entitySetName, id, systemQueryOptions, bearer);
+    public static async retrieveRecord(id: string, systemQueryOptions: SystemQueryOptions, context: AdalRouterContext): Promise<WebresourceModel> {
+        return NodeApi.retrieveRecord(WebresourceService.entitySetName, id, systemQueryOptions, context);
     }
 
-    public static async upsert(webresource: WebresourceModel, bearer: string): Promise<WebresourceModel> {
+    public static async upsert(webresource: WebresourceModel, context: AdalRouterContext): Promise<WebresourceModel> {
         if (webresource.webresourceid) {
-            await NodeApi.updateRecord(WebresourceService.entitySetName, webresource.webresourceid, webresource, bearer);
+            await NodeApi.updateRecord(WebresourceService.entitySetName, webresource.webresourceid, webresource, context);
             return webresource;
         } else {
             const namesplit = webresource.name.split('.'),
                 extension = namesplit[namesplit.length - 1];
-            webresource.webresourcetype = await WebresourceService.getWebresourcetype(extension, bearer);
-            const newWebresource = await NodeApi.insertRecord(WebresourceService.entitySetName, webresource, bearer);
+            webresource.webresourcetype = await WebresourceService.getWebresourcetype(extension, context);
+            const newWebresource = await NodeApi.insertRecord(WebresourceService.entitySetName, webresource, context);
             return newWebresource;
         }
     }
 
-    public static async publish(webresource: WebresourceModel, bearer: string): Promise<void> {
+    public static async publish(webresource: WebresourceModel, context: AdalRouterContext): Promise<void> {
         const data = {
             ParameterXml: `<importexportxml><webresources><webresource>{${webresource.webresourceid}}</webresource></webresources></importexportxml>`
         };
-        return NodeApi.executeAction('PublishXml', bearer, data);
+        return NodeApi.executeAction('PublishXml', context, data);
     }
 
-    public static async addToSolution(webresource: WebresourceModel, solutionUniqueName: string, bearer: string): Promise<void> {
-        return NodeApi.executeAction('AddSolutionComponent', bearer, {
+    public static async addToSolution(webresource: WebresourceModel, context: AdalRouterContext): Promise<void> {
+        const {settings} = context,
+            {crm} = settings,
+            {solution_name} = crm;
+        return NodeApi.executeAction('AddSolutionComponent', context, {
             ComponentId: webresource.webresourceid,
-            ComponentType: 61,
-            SolutionUniqueName: solutionUniqueName,
+            ComponentType: ComponentType.Webresource, // 61
+            SolutionUniqueName: solution_name,
             AddRequiredComponents: false,
             IncludedComponentSettingsValues: null
         });
     }
 
-    private static async getWebresourcetype(extension: string, bearer: string): Promise<number> {
-        const options = await NodeApi.getPicklistOptionSet(WebresourceService.logicalName, 'webresourcetype', bearer);
+    private static async getWebresourcetype(extension: string, context: AdalRouterContext): Promise<number> {
+        const options = await NodeApi.getPicklistOptionSet(WebresourceService.logicalName, 'webresourcetype', context);
         let webresourcetype: number,
             scriptvalue: number;
         for (const {value, label} of options) {

@@ -1,10 +1,10 @@
 import * as fs from 'fs';
-import {WebresourceService} from './Webresource/Webresource.service';
-import {WebresourceModel} from './Webresource/Webresource.model';
-import {AdalRouter} from './AdalRouter';
-import * as crypto from 'crypto';
+import {WebresourceService} from '../Webresource/Webresource.service';
+import {WebresourceModel} from '../Webresource/Webresource.model';
 import * as xml2js from 'xml2js';
 import * as shell from 'shelljs';
+import {Deploy} from './Deploy';
+import {AdalRouterContext} from '../AdalRouter';
 
 interface LibraryItem {
     name: string;
@@ -27,14 +27,14 @@ interface XmlDoc {
     };
 }
 
-export class Deploy extends AdalRouter {
-    private md5 = (contents: string): string => crypto.createHash('md5').update(contents).digest('hex');
+export interface WebresourceContext extends AdalRouterContext {
+    config: {}; // TODO future
+}
 
-    protected onAuthenticated(): Promise<void> {
-        return this.deploy();
-    }
+export class DeployWebresource extends Deploy {
+    protected context: WebresourceContext;
 
-    private async deploy(): Promise<void> {
+    protected async deploy(): Promise<void> {
         const {publisher_prefix, url} = this.settings.crm;
         this.log(`Deploying to ${url}...<br/>`);
         await this.deployDirectory(`dist/${publisher_prefix}_`);
@@ -82,9 +82,9 @@ export class Deploy extends AdalRouter {
             webresource.content = base64;
             webresource.dependencyxml = dependencyXML;
             try {
-                await WebresourceService.upsert(webresource, this.bearer);
+                await WebresourceService.upsert(webresource, this.context);
                 this.log(` updated...`);
-                await WebresourceService.publish(webresource, this.bearer);
+                await WebresourceService.publish(webresource, this.context);
                 this.log(` and published<br/>`);
             } catch (e) {
                 this.log(` failed ${e.message}<br/>`);
@@ -97,20 +97,19 @@ export class Deploy extends AdalRouter {
     private async insertWebresource(data: Buffer, path: string): Promise<WebresourceModel> {
         const base64 = data.toString('base64');
         try {
-            const solutionUniqueName = this.settings.crm.solution_name,
-                webresourceModel: WebresourceModel = {
-                    content: base64,
-                    name: path,
-                    displayname: path
-                },
+            const webresourceModel: WebresourceModel = {
+                content: base64,
+                name: path,
+                displayname: path
+            },
                 dependencyXML = await this.generateDependencyXML(webresourceModel, data);
             if (dependencyXML) {
                 webresourceModel.dependencyxml = dependencyXML;
             }
-            const webresource = await WebresourceService.upsert(webresourceModel, this.bearer);
+            const webresource = await WebresourceService.upsert(webresourceModel, this.context);
             this.log(` inserted...`);
-            await WebresourceService.addToSolution(webresource, solutionUniqueName, this.bearer);
-            this.log(` and added to solution ${solutionUniqueName}<br/>`);
+            await WebresourceService.addToSolution(webresource, this.context);
+            this.log(` and added to solution ${this.settings.crm.solution_name}<br/>`);
             return webresource;
         } catch (e) {
             this.log(` failed ${e.message}<br/>`);
@@ -127,7 +126,7 @@ export class Deploy extends AdalRouter {
                 }]
             }],
             top: 1
-        }, this.bearer);
+        }, this.context);
         return webresources[0];
     }
 
@@ -147,8 +146,8 @@ export class Deploy extends AdalRouter {
 
     private async getDependencyXML(webresource: WebresourceModel, data: Buffer): Promise<string> {
         const xmlDoc = await this.generateWebresourceXmlDoc(webresource, data);
-        const xml = Deploy.xmlBuilder.buildObject(xmlDoc);
-        let trimmedXml = xml.replace(Deploy.xmlRegex, '');
+        const xml = DeployWebresource.xmlBuilder.buildObject(xmlDoc);
+        let trimmedXml = xml.replace(DeployWebresource.xmlRegex, '');
         const index = trimmedXml.indexOf('?>');
         trimmedXml = trimmedXml.substr(index + 2);
         return trimmedXml;
@@ -169,8 +168,8 @@ export class Deploy extends AdalRouter {
         if (filepaths.length === 0 && webresource.dependencyxml === null) {
             return null;
         }
-        const xmlDoc: XmlDoc = await xml2js.parseStringPromise(webresource.dependencyxml || Deploy.defaultDependencyxml),
-            hasTranslation = Deploy.translationRegex.test(String(data));
+        const xmlDoc: XmlDoc = await xml2js.parseStringPromise(webresource.dependencyxml || DeployWebresource.defaultDependencyxml),
+            hasTranslation = DeployWebresource.translationRegex.test(String(data));
         if (hasTranslation) {
             this.addLibraries(xmlDoc, filepaths);
             this.cleanLibraries(xmlDoc, filepaths);
@@ -190,7 +189,7 @@ export class Deploy extends AdalRouter {
             if (!library) {
                 this.log(`Adding dependency: ${filepath}`);
                 dependency.Library.push({
-                    $: Deploy.createLibraryItem(filepath)
+                    $: DeployWebresource.createLibraryItem(filepath)
                 });
             }
         }
@@ -212,7 +211,7 @@ export class Deploy extends AdalRouter {
         for (let i = dependency.Library.length - 1; i >= 0; i -= 1) {
             const library = dependency.Library[i],
                 name = library.$.name;
-            if (Deploy.localesResxRegex.test(name) || Deploy.localesJsonRegex.test(name)) {
+            if (DeployWebresource.localesResxRegex.test(name) || DeployWebresource.localesJsonRegex.test(name)) {
                 if (!keepFilepaths.includes(name)) {
                     this.log(`Removing dependency: ${name}`);
                     dependency.Library.splice(i, 1);
@@ -225,18 +224,18 @@ export class Deploy extends AdalRouter {
         return {
             name: filepath,
             displayName: filepath,
-            languagecode: Deploy.getLanguageCode(filepath),
+            languagecode: DeployWebresource.getLanguageCode(filepath),
             description: '',
-            libraryUniqueId: Deploy.guid()
+            libraryUniqueId: DeployWebresource.guid()
         };
     }
 
     private static getLanguageCode(filepath: string): string {
         let match;
         if (filepath.endsWith('.resx')) {
-            match = Deploy.localesResxRegex.exec(filepath);
+            match = DeployWebresource.localesResxRegex.exec(filepath);
         } else if(filepath.endsWith('.json')) {
-            match = Deploy.localesJsonRegex.exec(filepath);
+            match = DeployWebresource.localesJsonRegex.exec(filepath);
         }
         return match && match[1] || '';
     }
@@ -248,4 +247,4 @@ export class Deploy extends AdalRouter {
         });
     }
 }
-new Deploy();
+new DeployWebresource();

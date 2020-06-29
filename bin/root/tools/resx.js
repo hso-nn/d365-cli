@@ -1,1 +1,310 @@
-/*! HSO D365 CLI 1.8.0 | (c) HSO Innovation */!function(e){var t={};function r(n){if(t[n])return t[n].exports;var o=t[n]={i:n,l:!1,exports:{}};return e[n].call(o.exports,o,o.exports,r),o.l=!0,o.exports}r.m=e,r.c=t,r.d=function(e,t,n){r.o(e,t)||Object.defineProperty(e,t,{enumerable:!0,get:n})},r.r=function(e){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})},r.t=function(e,t){if(1&t&&(e=r(e)),8&t)return e;if(4&t&&"object"==typeof e&&e&&e.__esModule)return e;var n=Object.create(null);if(r.r(n),Object.defineProperty(n,"default",{enumerable:!0,value:e}),2&t&&"string"!=typeof e)for(var o in e)r.d(n,o,function(t){return e[t]}.bind(null,o));return n},r.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return r.d(t,"a",t),t},r.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},r.p="",r(r.s=16)}({0:function(e,t){e.exports=require("fs")},1:function(e,t){e.exports=require("shelljs")},16:function(e,t,r){e.exports=r(17)},17:function(e,t,r){"use strict";var n=this&&this.__awaiter||function(e,t,r,n){return new(r||(r=Promise))((function(o,a){function l(e){try{c(n.next(e))}catch(e){a(e)}}function s(e){try{c(n.throw(e))}catch(e){a(e)}}function c(e){var t;e.done?o(e.value):(t=e.value,t instanceof r?t:new r((function(e){e(t)}))).then(l,s)}c((n=n.apply(e,t||[])).next())}))},o=this&&this.__generator||function(e,t){var r,n,o,a,l={label:0,sent:function(){if(1&o[0])throw o[1];return o[1]},trys:[],ops:[]};return a={next:s(0),throw:s(1),return:s(2)},"function"==typeof Symbol&&(a[Symbol.iterator]=function(){return this}),a;function s(a){return function(s){return function(a){if(r)throw new TypeError("Generator is already executing.");for(;l;)try{if(r=1,n&&(o=2&a[0]?n.return:a[0]?n.throw||((o=n.return)&&o.call(n),0):n.next)&&!(o=o.call(n,a[1])).done)return o;switch(n=0,o&&(a=[2&a[0],o.value]),a[0]){case 0:case 1:o=a;break;case 4:return l.label++,{value:a[1],done:!1};case 5:l.label++,n=a[1],a=[0];continue;case 7:a=l.ops.pop(),l.trys.pop();continue;default:if(!(o=l.trys,(o=o.length>0&&o[o.length-1])||6!==a[0]&&2!==a[0])){l=0;continue}if(3===a[0]&&(!o||a[1]>o[0]&&a[1]<o[3])){l.label=a[1];break}if(6===a[0]&&l.label<o[1]){l.label=o[1],o=a;break}if(o&&l.label<o[2]){l.label=o[2],l.ops.push(a);break}o[2]&&l.ops.pop(),l.trys.pop();continue}a=t.call(e,l)}catch(e){a=[6,e],n=0}finally{r=o=0}if(5&a[0])throw a[1];return{value:a[0]?a[1]:void 0,done:!0}}([a,s])}}};Object.defineProperty(t,"__esModule",{value:!0});var a=r(1),l=r(0),s=r(9),c=function(){function e(){}return e.extract=function(){return n(this,void 0,void 0,(function(){var t;return o(this,(function(r){switch(r.label){case 0:return(t=e.getCodeKeys()).length>0&&e.addLocalesFile(),[4,e.processCodeKeys(t)];case 1:return r.sent(),[2,null]}}))}))},e.getCodeKeys=function(){for(var t=new Set,r=0,n=a.ls("src/**/*.ts*");r<n.length;r++)for(var o=n[r],s=String(l.readFileSync(o)),c=null;null!==(c=e.regex.exec(s));)c.index===e.regex.lastIndex&&(e.regex.lastIndex+=1),t.add(c[2]||c[3]);return Array.from(t.values())},e.addLocalesFile=function(){a.test("-d","src/translation/locales")||a.mkdir("src/translation/locales"),a.test("-f","src/translation/locales/locales.resx")||(a.cp("-R",__dirname+"/locales.resx","./src/translation/locales"),a.exec("git add src/translation/locales/locales.resx")),a.test("-f","src/translation/locales/locales.1033.resx")||(a.cp("-r",__dirname+"/locales.resx","./src/translation/locales/locales.1033.resx"),a.exec("git add src/translation/locales/locales.1033.resx"))},e.processCodeKeys=function(t){return n(this,void 0,void 0,(function(){var r,n,l,s,c;return o(this,(function(o){switch(o.label){case 0:r=a.ls("src/translation/locales/*.resx"),n=0,l=r,o.label=1;case 1:return n<l.length?(s=l[n],[4,e.getResxDocument(s)]):[3,4];case 2:c=o.sent(),e.processXmlDoc(c,t),e.writeXmlDoc(c,s),o.label=3;case 3:return n++,[3,1];case 4:return[2]}}))}))},e.getResxDocument=function(e){var t=String(l.readFileSync(e));return s.parseStringPromise(t)},e.processXmlDoc=function(e,t){for(var r=e.root.data.map((function(e){return e.$.name})),n=function(r){if(!t.includes(r)){var n=e.root.data.find((function(e){return e.$.name===r})),o=e.root.data.indexOf(n);e.root.data.splice(o,1),console.log("remove "+r)}},o=0,a=r;o<a.length;o++){n(a[o])}for(var l=0,s=t;l<s.length;l++){var c=s[l];r.includes(c)||(e.root.data.push({$:{name:c,"xml-space":"preserve"},value:[c]}),console.log("add "+c))}},e.writeXmlDoc=function(e,t){var r=(new s.Builder).buildObject(e);a.ShellString(r).to(t)},e.regex=/Translation\.translate\([\s]*([']([^']*)[']|[`]([^`]*)[`])[\s]*\)/gm,e}();t.Resx=c,c.extract()},9:function(e,t){e.exports=require("xml2js")}});
+/*! HSO D365 CLI 1.8.0 | (c) HSO Innovation */
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ })
+/************************************************************************/
+/******/ ({
+
+/***/ "./src/root/tools/Resx.ts":
+/*!********************************!*\
+  !*** ./src/root/tools/Resx.ts ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var shell = __webpack_require__(/*! shelljs */ "shelljs");
+var fs = __webpack_require__(/*! fs */ "fs");
+var xml2js = __webpack_require__(/*! xml2js */ "xml2js");
+var Resx = /** @class */ (function () {
+    function Resx() {
+    }
+    Resx.extract = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var codeKeys;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        codeKeys = Resx.getCodeKeys();
+                        if (codeKeys.length > 0) {
+                            Resx.addLocalesFile();
+                        }
+                        return [4 /*yield*/, Resx.processCodeKeys((codeKeys))];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/, null];
+                }
+            });
+        });
+    };
+    Resx.getCodeKeys = function () {
+        var keys = new Set();
+        var filepaths = shell.ls("src/**/*.ts*");
+        for (var _i = 0, filepaths_1 = filepaths; _i < filepaths_1.length; _i++) {
+            var filepath = filepaths_1[_i];
+            var filedata = String(fs.readFileSync(filepath));
+            var match = null;
+            while ((match = Resx.regex.exec(filedata)) !== null) {
+                if (match.index === Resx.regex.lastIndex) {
+                    Resx.regex.lastIndex += 1;
+                }
+                keys.add(match[2] || match[3]);
+            }
+        }
+        return Array.from(keys.values());
+    };
+    Resx.addLocalesFile = function () {
+        if (!shell.test('-d', 'src/translation/locales')) {
+            shell.mkdir("src/translation/locales");
+        }
+        if (!shell.test('-f', 'src/translation/locales/locales.resx')) {
+            shell.cp('-R', __dirname + "/locales.resx", './src/translation/locales');
+            // shell.cp('-R', `${__dirname}/Locales/locales.resx`, './src/translation/locales');
+            shell.exec('git add src/translation/locales/locales.resx');
+        }
+        if (!shell.test('-f', 'src/translation/locales/locales.1033.resx')) {
+            shell.cp('-r', __dirname + "/locales.resx", './src/translation/locales/locales.1033.resx');
+            shell.exec('git add src/translation/locales/locales.1033.resx');
+        }
+    };
+    Resx.processCodeKeys = function (codeKeys) {
+        return __awaiter(this, void 0, void 0, function () {
+            var resxpaths, _i, resxpaths_1, resxpath, xmlDoc;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        resxpaths = shell.ls("src/translation/locales/*.resx");
+                        _i = 0, resxpaths_1 = resxpaths;
+                        _a.label = 1;
+                    case 1:
+                        if (!(_i < resxpaths_1.length)) return [3 /*break*/, 4];
+                        resxpath = resxpaths_1[_i];
+                        return [4 /*yield*/, Resx.getResxDocument(resxpath)];
+                    case 2:
+                        xmlDoc = _a.sent();
+                        Resx.processXmlDoc(xmlDoc, codeKeys);
+                        Resx.writeXmlDoc(xmlDoc, resxpath);
+                        _a.label = 3;
+                    case 3:
+                        _i++;
+                        return [3 /*break*/, 1];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Resx.getResxDocument = function (filepath) {
+        var filedata = String(fs.readFileSync(filepath));
+        return xml2js.parseStringPromise(filedata);
+    };
+    Resx.processXmlDoc = function (xmlDoc, codeKeys) {
+        var resxKeys = xmlDoc.root.data.map(function (item) { return item.$.name; });
+        var _loop_1 = function (resxKey) {
+            if (!codeKeys.includes(resxKey)) {
+                var xmlItem = xmlDoc.root.data.find(function (item) { return item.$.name === resxKey; }), index = xmlDoc.root.data.indexOf(xmlItem);
+                xmlDoc.root.data.splice(index, 1);
+                console.log("remove " + resxKey);
+            }
+        };
+        for (var _i = 0, resxKeys_1 = resxKeys; _i < resxKeys_1.length; _i++) {
+            var resxKey = resxKeys_1[_i];
+            _loop_1(resxKey);
+        }
+        for (var _a = 0, codeKeys_1 = codeKeys; _a < codeKeys_1.length; _a++) {
+            var codeKey = codeKeys_1[_a];
+            if (!resxKeys.includes(codeKey)) {
+                xmlDoc.root.data.push({
+                    $: {
+                        name: codeKey,
+                        'xml-space': 'preserve'
+                    },
+                    value: [codeKey]
+                });
+                console.log("add " + codeKey);
+            }
+        }
+        // console.log(xmlDoc);
+        // console.log(xmlDoc.root.data);
+    };
+    Resx.writeXmlDoc = function (xmlDoc, resxpath) {
+        var builder = new xml2js.Builder();
+        var xml = builder.buildObject(xmlDoc);
+        // console.log(`Xml: ${xml}`);
+        shell.ShellString(xml).to(resxpath);
+    };
+    Resx.regex = /Translation\.translate\([\s]*([']([^']*)[']|[`]([^`]*)[`])[\s]*\)/gm;
+    return Resx;
+}());
+exports.Resx = Resx;
+Resx.extract();
+
+
+/***/ }),
+
+/***/ 1:
+/*!**************************************!*\
+  !*** multi ./src/root/tools/Resx.ts ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(/*! C:\git\P030-CE-CLI\src\root\tools\Resx.ts */"./src/root/tools/Resx.ts");
+
+
+/***/ }),
+
+/***/ "fs":
+/*!*********************!*\
+  !*** external "fs" ***!
+  \*********************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("fs");
+
+/***/ }),
+
+/***/ "shelljs":
+/*!**************************!*\
+  !*** external "shelljs" ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("shelljs");
+
+/***/ }),
+
+/***/ "xml2js":
+/*!*************************!*\
+  !*** external "xml2js" ***!
+  \*************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("xml2js");
+
+/***/ })
+
+/******/ });
+//# sourceMappingURL=resx.js.map

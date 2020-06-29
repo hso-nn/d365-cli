@@ -4,6 +4,7 @@ import {Create} from './Create';
 import {Update} from './update';
 import {Generator} from './generator/Generator';
 import {Variables} from './Variables';
+import {DeployAssembly} from './root/tools/deploy/DeployAssembly';
 
 program
     .version('1.8.0') // .version(require('../package').version)
@@ -84,25 +85,31 @@ program
         console.log(`The command can be used to build the project to be distributed to the D365 environment using the 'deploy' command`);
     });
 
+/*
 program
-    .command('deploy')
+    .command('deploy <type>')
     .alias('d')
     .description('Invokes the deploy builder')
-    .action(() => {
+    .action((type: string) => {
         shell.exec('npm run deploy');
     })
     .on('--help', () => {
         console.log(`Distributes the project to the D365 environment. You need to run the 'build' command first`);
     });
-
-/* easy debugging/programming
-program
-    .command('deploy')
-    .description('Invokes the deploy builder')
-    .action(() => {
-        console.log(Deploy);
-    });
 */
+
+// easy debugging/programming
+program
+    .command('deploy [type]')
+    .description('Invokes the deploy builder')
+    .action((type: string) => {
+        if (!type || type.toLowerCase() === 'webresource') {
+            shell.exec('npm run deploy');
+        } else {
+            new DeployAssembly();
+        }
+    });
+//
 
 program
     .command('update')
