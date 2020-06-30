@@ -6,25 +6,25 @@ import {AdalRouterContext} from '../AdalRouter';
 
 export class WebresourceService {
     private static logicalName = 'webresource';
-    private static entitySetName = 'webresourceset';
+    // private static entitySetName = 'webresourceset';
 
     public static async retrieveMultipleRecords(multipleSystemQueryOptions: MultipleSystemQueryOptions, context: AdalRouterContext): Promise<WebresourceModel[]> {
-        return NodeApi.retrieveMultipleRecords(WebresourceService.entitySetName, multipleSystemQueryOptions, context);
+        return NodeApi.retrieveMultipleRecords(WebresourceService.logicalName, multipleSystemQueryOptions, context);
     }
 
     public static async retrieveRecord(id: string, systemQueryOptions: SystemQueryOptions, context: AdalRouterContext): Promise<WebresourceModel> {
-        return NodeApi.retrieveRecord(WebresourceService.entitySetName, id, systemQueryOptions, context);
+        return NodeApi.retrieveRecord(WebresourceService.logicalName, id, systemQueryOptions, context);
     }
 
     public static async upsert(webresource: WebresourceModel, context: AdalRouterContext): Promise<WebresourceModel> {
         if (webresource.webresourceid) {
-            await NodeApi.updateRecord(WebresourceService.entitySetName, webresource.webresourceid, webresource, context);
+            await NodeApi.updateRecord(WebresourceService.logicalName, webresource.webresourceid, webresource, context);
             return webresource;
         } else {
             const namesplit = webresource.name.split('.'),
                 extension = namesplit[namesplit.length - 1];
             webresource.webresourcetype = await WebresourceService.getWebresourcetype(extension, context);
-            const newWebresource = await NodeApi.insertRecord(WebresourceService.entitySetName, webresource, context);
+            const newWebresource = await NodeApi.insertRecord(WebresourceService.logicalName, webresource, context);
             return newWebresource;
         }
     }

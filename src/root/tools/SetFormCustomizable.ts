@@ -57,7 +57,7 @@ class SetFormCustomizable extends AdalRouter {
             select: ['objectid'],
             filters: [{
                 conditions: [{
-                    attribute: '_solutionid_value',
+                    attribute: 'solutionid',
                     value: solution.solutionid
                 }, {
                     attribute: 'componenttype',

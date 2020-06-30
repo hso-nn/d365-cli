@@ -34,8 +34,8 @@ export class DeploySdkMessageProcessingStep {
         const sdkMessage = await this.getSdkMessage(step),
             sdkMessageFilter = await this.getSdkMessageFilter(step, sdkMessage);
         if (sdkMessage && sdkMessageFilter) {
-            await this.context.log(`Sdk Message ${sdkMessage.name} found`);
-            await this.context.log(`Sdk Message Filter ${sdkMessageFilter.primaryobjecttypecode} found`);
+            await this.context.log(`Sdk Message '${sdkMessage.name}' found`);
+            await this.context.log(`Sdk Message Filter '${sdkMessageFilter.primaryobjecttypecode}' found`);
             if (deployedStep) {
                 return this.updateStep(deployedStep, step, sdkMessage, sdkMessageFilter);
             } else {
@@ -81,7 +81,7 @@ export class DeploySdkMessageProcessingStep {
             select: ['sdkmessagefilterid', 'primaryobjecttypecode'],
             filters: [{
                 conditions: [{
-                    attribute: '_sdkmessageid_value', // NodeApi supports no sdkmessageid yet
+                    attribute: 'sdkmessageid',
                     value: sdkMessage.sdkmessageid
                 }, {
                     attribute: 'primaryobjecttypecode',

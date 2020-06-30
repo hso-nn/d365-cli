@@ -411,7 +411,7 @@ export class WebApi {
         return relationMetadata ? relationMetadata : null;
     }
 
-    private static async getManyToOneMetadatas(metadata: Xrm.Metadata.EntityMetadata | any): Promise<any> {
+    private static async getManyToOneMetadatas(metadata: Xrm.Metadata.EntityMetadata | any): Promise<any[]> {
         if (metadata.ManyToOneRelationships) {
             return metadata.ManyToOneRelationships.getAll();
         } else {

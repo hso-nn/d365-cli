@@ -40,7 +40,7 @@ export class DeployPluginType {
             select: ['plugintypeid', 'version'],
             filters: [{
                 conditions: [{
-                    attribute: '_pluginassemblyid_value', // NodeApi supports no pluginassemblyid yet
+                    attribute: 'pluginassemblyid',
                     value: pluginAssembly.pluginassemblyid
                 },{
                     attribute: 'name',

@@ -4,15 +4,15 @@ import {SystemFormModel} from './SystemForm.model';
 import {AdalRouterContext} from '../AdalRouter';
 
 export class SystemFormService {
-    // private static logicalName = 'systemform';
-    private static entitySetName = 'systemforms';
+    private static logicalName = 'systemform';
+    // private static entitySetName = 'systemforms';
 
     public static async retrieveMultipleRecords(multipleSystemQueryOptions: MultipleSystemQueryOptions, context: AdalRouterContext): Promise<SystemFormModel[]> {
-        return NodeApi.retrieveMultipleRecords(SystemFormService.entitySetName, multipleSystemQueryOptions, context);
+        return NodeApi.retrieveMultipleRecords(SystemFormService.logicalName, multipleSystemQueryOptions, context);
     }
 
     public static async updateRecord(id: string, systemFormModel: SystemFormModel, context: AdalRouterContext): Promise<SystemFormModel> {
-        return NodeApi.updateRecord(SystemFormService.entitySetName, id, systemFormModel, context);
+        return NodeApi.updateRecord(SystemFormService.logicalName, id, systemFormModel, context);
     }
 
     public static async getSystemForm(formid: string, select: string[], context: AdalRouterContext): Promise<SystemFormModel> {

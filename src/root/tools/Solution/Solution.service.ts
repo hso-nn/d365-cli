@@ -4,11 +4,11 @@ import {SolutionModel} from './Solution.model';
 import {AdalRouterContext} from '../AdalRouter';
 
 export class SolutionService {
-    // private static logicalName = 'solution';
-    private static entitySetName = 'solutions';
+    private static logicalName = 'solution';
+    // private static entitySetName = 'solutions';
 
     public static async retrieveMultipleRecords(multipleSystemQueryOptions: MultipleSystemQueryOptions, context: AdalRouterContext): Promise<SolutionModel[]> {
-        return NodeApi.retrieveMultipleRecords(SolutionService.entitySetName, multipleSystemQueryOptions, context);
+        return NodeApi.retrieveMultipleRecords(SolutionService.logicalName, multipleSystemQueryOptions, context);
     }
 
     public static async getSolution(select: string[], context: AdalRouterContext): Promise<SolutionModel> {

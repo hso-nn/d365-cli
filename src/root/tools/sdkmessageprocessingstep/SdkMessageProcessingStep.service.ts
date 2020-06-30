@@ -5,20 +5,21 @@ import {ComponentType} from '../Solution/ComponentType';
 import {AdalRouterContext} from '../AdalRouter';
 
 export class SdkMessageProcessingStepService {
-    private static entitySetName = 'sdkmessageprocessingsteps';
+    private static logicalName = 'sdkmessageprocessingstep';
+    // private static entitySetName = 'sdkmessageprocessingsteps';
 
     public static async retrieveMultipleRecords(multipleSystemQueryOptions: MultipleSystemQueryOptions,
         context: AdalRouterContext): Promise<SdkMessageProcessingStepModel[]> {
-        return NodeApi.retrieveMultipleRecords(SdkMessageProcessingStepService.entitySetName, multipleSystemQueryOptions, context);
+        return NodeApi.retrieveMultipleRecords(SdkMessageProcessingStepService.logicalName, multipleSystemQueryOptions, context);
     }
 
     public static async upsert(sdkMessageProcessingStepModel: SdkMessageProcessingStepModel, context: AdalRouterContext): Promise<SdkMessageProcessingStepModel> {
         if (sdkMessageProcessingStepModel.sdkmessageprocessingstepid) {
-            await NodeApi.updateRecord(SdkMessageProcessingStepService.entitySetName, sdkMessageProcessingStepModel.sdkmessageprocessingstepid,
+            await NodeApi.updateRecord(SdkMessageProcessingStepService.logicalName, sdkMessageProcessingStepModel.sdkmessageprocessingstepid,
                 sdkMessageProcessingStepModel, context);
             return sdkMessageProcessingStepModel;
         } else {
-            const newWebresource = await NodeApi.insertRecord(SdkMessageProcessingStepService.entitySetName, sdkMessageProcessingStepModel, context);
+            const newWebresource = await NodeApi.insertRecord(SdkMessageProcessingStepService.logicalName, sdkMessageProcessingStepModel, context);
             return newWebresource;
         }
     }
