@@ -9,6 +9,7 @@ import {SdkMessageService} from '../SdkMessage/SdkMessage.service';
 import {SdkMessageModel} from '../SdkMessage/SdkMessage.model';
 import {SdkMessageFilterModel} from '../SdkMessageFilter/SdkMessageFilter.model';
 import {SdkMessageFilterService} from '../SdkMessageFilter/SdmMessageFilter.service';
+import {DeploySdkMessageProcessingStepImage} from './DeploySdkMessageProcessingStepImage';
 
 export class DeploySdkMessageProcessingStep {
     private readonly context: AdalRouterContext;
@@ -21,16 +22,19 @@ export class DeploySdkMessageProcessingStep {
         await this.context.log(`<b>Sdkmessageprocessingsteps</b><br/>${pluginType.name}`);
         const sdkMessageProcessingSteps = pluginType.sdkmessageprocessingsteps;
         if (sdkMessageProcessingSteps?.length > 0) {
+            const deploySdkMessageProcessingStepImage = new DeploySdkMessageProcessingStepImage(this.context);
             for (const sdkMessageProcessingStep of sdkMessageProcessingSteps) {
-                await this.upsertStep(sdkMessageProcessingStep, pluginType);
+                const deployedStep = await this.upsertStep(sdkMessageProcessingStep, pluginType);
+                await deploySdkMessageProcessingStepImage.deployImage(deployedStep);
+                await this.context.log(``);
             }
         } else {
             this.context.log('No SDK Message Processing steps configured');
         }
     }
 
-    private async upsertStep(step: SdkMessageProcessingStepConfig, pluginType: PluginTypeModel): Promise<SdkMessageProcessingStepModel> {
-        let deployedStep = await this.getDeployedStep(step);
+    private async upsertStep(step: SdkMessageProcessingStepConfig, pluginType: PluginTypeModel): Promise<SdkMessageProcessingStepConfig> {
+        let deployedStep = await this.getDeployedStep(step) as SdkMessageProcessingStepConfig;
         const sdkMessage = await this.getSdkMessage(step),
             sdkMessageFilter = await this.getSdkMessageFilter(step, sdkMessage);
         if (sdkMessage && sdkMessageFilter) {
@@ -50,7 +54,7 @@ export class DeploySdkMessageProcessingStep {
         }
     }
 
-    private async getDeployedStep(step: SdkMessageProcessingStepModel): Promise<SdkMessageProcessingStepModel> {
+    private async getDeployedStep(step: SdkMessageProcessingStepConfig): Promise<SdkMessageProcessingStepModel> {
         const deployedSteps = await SdkMessageProcessingStepService.retrieveMultipleRecords({
             select: ['sdkmessageprocessingstepid', 'name', 'description', 'supporteddeployment', 'mode', 'rank'],
             filters: [{
@@ -92,8 +96,8 @@ export class DeploySdkMessageProcessingStep {
         return sdkMessageFilters[0];
     }
 
-    private async updateStep(deployedStep: SdkMessageProcessingStepModel, step: SdkMessageProcessingStepModel,
-        sdkMessage: SdkMessageModel, sdkMessageFilter: SdkMessageFilterModel): Promise<SdkMessageProcessingStepModel> {
+    private async updateStep(deployedStep: SdkMessageProcessingStepModel, step: SdkMessageProcessingStepConfig,
+        sdkMessage: SdkMessageModel, sdkMessageFilter: SdkMessageFilterModel): Promise<SdkMessageProcessingStepConfig> {
         // step.plugintypeid = pluginType.plugintypeid;
         const {description, supporteddeployment, mode, rank} = deployedStep,
             mergedStep = Object.assign(deployedStep, step);
@@ -109,13 +113,13 @@ export class DeploySdkMessageProcessingStep {
         return mergedStep;
     }
 
-    private async createStep(step: SdkMessageProcessingStepModel, sdkMessage: SdkMessageModel,
-        sdkMessageFilter: SdkMessageFilterModel, pluginType: PluginTypeModel): Promise<SdkMessageProcessingStepModel> {
+    private async createStep(step: SdkMessageProcessingStepConfig, sdkMessage: SdkMessageModel,
+        sdkMessageFilter: SdkMessageFilterModel, pluginType: PluginTypeModel): Promise<SdkMessageProcessingStepConfig> {
         const createStep = Object.assign({
             sdkmessageid: sdkMessage.sdkmessageid,
             sdkmessagefilterid: sdkMessageFilter.sdkmessagefilterid,
             plugintypeid: pluginType.plugintypeid
-        }, step) as SdkMessageProcessingStepModel;
+        }, step);
         // await SdkMessageProcessingStepService.upsert(createStep, this.bearer); // TODO aanzetten
         // const deployedStep = await this.getDeployedStep(createStep); // TODO aanzetten
         return createStep; // TODO vervangen met: return deployedStep;
