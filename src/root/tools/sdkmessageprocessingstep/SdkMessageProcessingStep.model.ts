@@ -7,6 +7,7 @@ import {SdkMessageFilterModel} from '../SdkMessageFilter/SdkMessageFilter.model'
 import {SdkMessageModel} from '../SdkMessage/SdkMessage.model';
 // import {SdkmessageprocessingstepsecureconfigModel} from '../Sdkmessageprocessingstepsecureconfig/Sdkmessageprocessingstepsecureconfig.model';
 import {PluginTypeModel} from '../PluginType/PluginType.model';
+import {SdkMessageProcessingStepImageModel} from '../sdkmessageprocessingstepimage/SdkMessageProcessingStepImage.model';
 
 export enum Componentstate {
     Published = 0,
@@ -82,4 +83,5 @@ export interface SdkMessageProcessingStepModel extends Model {
 
 export interface SdkMessageProcessingStepConfig extends SdkMessageProcessingStepModel {
     sdkmessage: string; // Create, Update, etc
+    image: SdkMessageProcessingStepImageModel;
 }
