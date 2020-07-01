@@ -61,7 +61,10 @@ export interface PluginAssemblyModel extends Model {
     // organizationid?: string | OrganizationModel;
 }
 
-export interface PluginAssemblyConfig {
-    pluginassembly: PluginAssemblyModel;
+export interface PluginAssembliesConfig {
+    pluginassemblies: PluginAssemblyConfig[];
+}
+
+export interface PluginAssemblyConfig extends PluginAssemblyModel{
     plugintypes: PluginTypeConfig[];
 }

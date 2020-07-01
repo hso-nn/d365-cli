@@ -399,21 +399,21 @@ export class NodeApi {
     }
 
     private static handleNodeHttpsResponse(response: IncomingMessage, bodyString: string): NodeApiResponse {
-        const statusHandlers: {[index: number]: Function} = {
-            200: () => {
+        const statusHandlers: {[index: number]: () => NodeApiResponse} = {
+            200: (): NodeApiResponse => {
                 return NodeApi.dataHandler(response, bodyString);
             },
-            201: () => {
+            201: (): NodeApiResponse => {
                 return NodeApi.dataHandler(response, bodyString);
             },
-            204: () => {
+            204: (): NodeApiResponse => {
                 return {
                     body: '',
                     getResponseHeader: (headerName: string): string | string[] => {
                         return response.headers[headerName];
                     },
                     statusCode: response.statusCode
-                };
+                } as NodeApiResponse;
             }
         };
 
@@ -501,7 +501,7 @@ export class NodeApi {
     }
 
     public static async getAttributeMetadata(attributeLogicalName: string,
-        entityLogicalName: string, context: AdalRouterContext, select?: string[]): Promise<any> {
+                                             entityLogicalName: string, context: AdalRouterContext, select?: string[]): Promise<any> {
         const {settings, bearer} = context,
             {crm} = settings,
             {url, version} = crm;

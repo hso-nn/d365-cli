@@ -4,7 +4,6 @@ import {WebresourceModel} from '../Webresource/Webresource.model';
 import * as xml2js from 'xml2js';
 import * as shell from 'shelljs';
 import {Deploy} from './Deploy';
-import {AdalRouterContext} from '../AdalRouter';
 
 interface LibraryItem {
     name: string;
@@ -27,13 +26,7 @@ interface XmlDoc {
     };
 }
 
-export interface WebresourceContext extends AdalRouterContext {
-    config: {}; // TODO future
-}
-
 export class DeployWebresource extends Deploy {
-    protected context: WebresourceContext;
-
     protected async deploy(): Promise<void> {
         const {publisher_prefix, url} = this.settings.crm;
         this.log(`Deploying to ${url}...<br/>`);

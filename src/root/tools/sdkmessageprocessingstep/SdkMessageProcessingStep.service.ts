@@ -9,7 +9,7 @@ export class SdkMessageProcessingStepService {
     // private static entitySetName = 'sdkmessageprocessingsteps';
 
     public static async retrieveMultipleRecords(multipleSystemQueryOptions: MultipleSystemQueryOptions,
-        context: AdalRouterContext): Promise<SdkMessageProcessingStepModel[]> {
+                                                context: AdalRouterContext): Promise<SdkMessageProcessingStepModel[]> {
         return NodeApi.retrieveMultipleRecords(SdkMessageProcessingStepService.logicalName, multipleSystemQueryOptions, context);
     }
 

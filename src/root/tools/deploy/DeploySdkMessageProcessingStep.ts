@@ -25,15 +25,15 @@ export class DeploySdkMessageProcessingStep {
             const deploySdkMessageProcessingStepImage = new DeploySdkMessageProcessingStepImage(this.context);
             for (const sdkMessageProcessingStep of sdkMessageProcessingSteps) {
                 const deployedStep = await this.upsertStep(sdkMessageProcessingStep, pluginType);
-                await deploySdkMessageProcessingStepImage.deployImage(deployedStep);
+                await deploySdkMessageProcessingStepImage.deployImage(Object.assign({}, sdkMessageProcessingStep, deployedStep));
                 await this.context.log(``);
             }
         } else {
-            this.context.log('No SDK Message Processing steps configured');
+            await this.context.log('No SDK Message Processing steps configured');
         }
     }
 
-    private async upsertStep(step: SdkMessageProcessingStepConfig, pluginType: PluginTypeModel): Promise<SdkMessageProcessingStepConfig> {
+    private async upsertStep(step: SdkMessageProcessingStepConfig, pluginType: PluginTypeModel): Promise<SdkMessageProcessingStepModel> {
         let deployedStep = await this.getDeployedStep(step) as SdkMessageProcessingStepConfig;
         const sdkMessage = await this.getSdkMessage(step),
             sdkMessageFilter = await this.getSdkMessageFilter(step, sdkMessage);
@@ -73,7 +73,7 @@ export class DeploySdkMessageProcessingStep {
             filters: [{
                 conditions: [{
                     attribute: 'name',
-                    value: step.sdkmessage
+                    value: (step.sdkmessageid as SdkMessageModel).name
                 }]
             }]
         }, this.context);
@@ -97,10 +97,10 @@ export class DeploySdkMessageProcessingStep {
     }
 
     private async updateStep(deployedStep: SdkMessageProcessingStepModel, step: SdkMessageProcessingStepConfig,
-        sdkMessage: SdkMessageModel, sdkMessageFilter: SdkMessageFilterModel): Promise<SdkMessageProcessingStepConfig> {
+                             sdkMessage: SdkMessageModel, sdkMessageFilter: SdkMessageFilterModel): Promise<SdkMessageProcessingStepModel> {
         // step.plugintypeid = pluginType.plugintypeid;
         const {description, supporteddeployment, mode, rank} = deployedStep,
-            mergedStep = Object.assign(deployedStep, step);
+            mergedStep = Object.assign({}, deployedStep, step);
         if (step.description !== description || step.supporteddeployment !== supporteddeployment || step.mode !== mode || step.rank !== rank) {
             step.sdkmessageid = sdkMessage.sdkmessageid;
             step.sdkmessagefilterid = sdkMessageFilter.sdkmessagefilterid;
@@ -114,8 +114,8 @@ export class DeploySdkMessageProcessingStep {
     }
 
     private async createStep(step: SdkMessageProcessingStepConfig, sdkMessage: SdkMessageModel,
-        sdkMessageFilter: SdkMessageFilterModel, pluginType: PluginTypeModel): Promise<SdkMessageProcessingStepConfig> {
-        const createStep = Object.assign({
+                             sdkMessageFilter: SdkMessageFilterModel, pluginType: PluginTypeModel): Promise<SdkMessageProcessingStepConfig> {
+        const createStep = Object.assign({},{
             sdkmessageid: sdkMessage.sdkmessageid,
             sdkmessagefilterid: sdkMessageFilter.sdkmessagefilterid,
             plugintypeid: pluginType.plugintypeid

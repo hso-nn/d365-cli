@@ -82,6 +82,5 @@ export interface SdkMessageProcessingStepModel extends Model {
 }
 
 export interface SdkMessageProcessingStepConfig extends SdkMessageProcessingStepModel {
-    sdkmessage: string; // Create, Update, etc
-    image: SdkMessageProcessingStepImageModel;
+    sdkmessageprocessingstepimage: SdkMessageProcessingStepImageModel;
 }

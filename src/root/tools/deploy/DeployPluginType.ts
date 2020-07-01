@@ -1,4 +1,4 @@
-import {PluginAssemblyModel} from '../PluginAssembly/PluginAssembly.model';
+import {PluginAssemblyConfig, PluginAssemblyModel} from '../PluginAssembly/PluginAssembly.model';
 import {PluginTypeConfig, PluginTypeModel} from '../PluginType/PluginType.model';
 import {PluginTypeService} from '../PluginType/PluginType.service';
 import {DeploySdkMessageProcessingStep} from './DeploySdkMessageProcessingStep';
@@ -11,13 +11,13 @@ export class DeployPluginType {
         this.context = context;
     }
 
-    public async deployPluginTypes(pluginAssembly: PluginAssemblyModel): Promise<void> {
-        const pluginTypes = this.context.config.plugintypes;
+    public async deployPluginTypes(pluginAssembly: PluginAssemblyConfig): Promise<void> {
+        const pluginTypes = pluginAssembly.plugintypes;
         if (pluginTypes.length > 0) {
             const deploySdkMessageProcessingStep = new DeploySdkMessageProcessingStep(this.context);
             for (const pluginType of pluginTypes) {
-                await this.upsertPluginType(pluginType, pluginAssembly);
-                await deploySdkMessageProcessingStep.deploySteps(pluginType);
+                const deployedPluginType = await this.upsertPluginType(pluginType, pluginAssembly);
+                await deploySdkMessageProcessingStep.deploySteps(Object.assign({}, pluginType, deployedPluginType));
                 await this.context.log(``);
             }
         } else {
@@ -51,8 +51,9 @@ export class DeployPluginType {
         return deployedPluginTypes[0];
     }
 
-    private async updatePluginType(deployedPluginType: PluginTypeModel, pluginType: PluginTypeModel/*, pluginAssembly: PluginAssemblyModel*/): Promise<PluginTypeModel> {
-        const mergedPluginType = Object.assign(deployedPluginType, pluginType);
+    private async updatePluginType(deployedPluginType: PluginTypeModel, pluginType: PluginTypeConfig/*, pluginAssembly: PluginAssemblyModel*/): Promise<PluginTypeModel> {
+        const mergedPluginType = Object.assign({}, deployedPluginType, pluginType);
+        delete mergedPluginType.sdkmessageprocessingsteps;
         if (deployedPluginType.version !== pluginType.version) {
             // pluginType.pluginassemblyid = pluginAssembly.pluginassemblyid;
             await this.context.log(`Updating PluginType ${pluginType.name}`);
@@ -67,19 +68,12 @@ export class DeployPluginType {
     }
 
     private async createPluginType(pluginType: PluginTypeModel, pluginAssembly: PluginAssemblyModel): Promise<PluginTypeModel> {
-        const {description, friendlyname, name, typename, version, workflowactivitygroupname} = pluginType,
-            createPluginType = {
-                name: name,
-                friendlyname: friendlyname,
-                typename: typename || name,
-                pluginassemblyid: pluginAssembly.pluginassemblyid,
-                workflowactivitygroupname: workflowactivitygroupname || `${pluginAssembly.name} (${version})`,
-                version: version,
-                description: description
-            } as PluginTypeModel;
-        // await PluginTypeService.upsert(createPluginType, this.bearer); // TODO aanzetten
+        const mergedPluginType = Object.assign({}, {
+            pluginassemblyid: pluginAssembly.pluginassemblyid
+        }, pluginType);
+        // await PluginTypeService.upsert(mergedPluginType, this.bearer); // TODO aanzetten
         // const deployedPluginType = await this.getDeployedPluginType(createPluginType); // TODO aanzetten
         // pluginType.plugintypeid = deployedPluginType.plugintypeid; // TODO aanzetten
-        return createPluginType; // TODO vervangen met: return deployedPluginType;
+        return mergedPluginType; // TODO vervangen met: return deployedPluginType;
     }
 }

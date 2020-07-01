@@ -8,12 +8,12 @@ export class SdkMessageProcessingStepImageService {
     private static logicalName = 'sdkmessageprocessingstepimage';
 
     public static async retrieveMultipleRecords(multipleSystemQueryOptions: MultipleSystemQueryOptions,
-        context: AdalRouterContext): Promise<SdkMessageProcessingStepImageModel[]> {
+                                                context: AdalRouterContext): Promise<SdkMessageProcessingStepImageModel[]> {
         return NodeApi.retrieveMultipleRecords(SdkMessageProcessingStepImageService.logicalName, multipleSystemQueryOptions, context);
     }
 
     public static async upsert(sdkMessageProcessingStepImageModel: SdkMessageProcessingStepImageModel,
-        context: AdalRouterContext): Promise<SdkMessageProcessingStepImageModel> {
+                               context: AdalRouterContext): Promise<SdkMessageProcessingStepImageModel> {
         if (sdkMessageProcessingStepImageModel.sdkmessageprocessingstepimageid) {
             await NodeApi.updateRecord(SdkMessageProcessingStepImageService.logicalName, sdkMessageProcessingStepImageModel.sdkmessageprocessingstepimageid,
                 sdkMessageProcessingStepImageModel, context);

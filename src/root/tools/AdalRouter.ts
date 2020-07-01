@@ -1,6 +1,4 @@
 import * as express from 'express';
-// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-// @ts-ignore
 import * as open from 'open';
 import {Express, Router} from 'express';
 import * as http from 'http';
@@ -25,8 +23,9 @@ export class AdalRouter {
         log: async (message: string) => {
             return this.log(message);
         },
-        settings: JSON.parse(fs.readFileSync('../crm.json', 'utf8')) // project root folder
+        settings: JSON.parse(fs.readFileSync(AdalRouter.getCrmJsonPath(), 'utf8')) // project root folder
     };
+
     protected get settings(): CrmJson {
         return this.context.settings;
     }
@@ -148,5 +147,13 @@ export class AdalRouter {
                 resolve();
             });
         });
+    }
+
+    private static getCrmJsonPath(): string {
+        if (fs.existsSync('crm.json')) {
+            return 'crm.json';
+        } else {
+            return '../crm.json';
+        }
     }
 }

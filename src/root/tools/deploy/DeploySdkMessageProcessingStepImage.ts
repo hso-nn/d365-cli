@@ -11,7 +11,7 @@ export class DeploySdkMessageProcessingStepImage {
     }
 
     public async deployImage(step: SdkMessageProcessingStepConfig): Promise<void> {
-        const {image} = step;
+        const {sdkmessageprocessingstepimage: image} = step;
         if (image) {
             await this.context.log(`<b>Sdkmessageprocessingstepimage</b><br/>${image.name}`);
             await this.upsertImage(image, step);
@@ -49,7 +49,7 @@ export class DeploySdkMessageProcessingStepImage {
 
     private async updateImage(deployedImage: SdkMessageProcessingStepImageModel, image: SdkMessageProcessingStepImageModel): Promise<SdkMessageProcessingStepImageModel> {
         const {entityalias, imagetype} = deployedImage,
-            mergedImage = Object.assign(deployedImage, image);
+            mergedImage = Object.assign({}, deployedImage, image);
         if (image.entityalias !== entityalias || image.imagetype !== imagetype) {
 
             // SdkMessageProcessingStepImageService.upsert(mergedImage, this.bearer); // TODO aanzetten
@@ -61,7 +61,7 @@ export class DeploySdkMessageProcessingStepImage {
     }
 
     private async createImage(image: SdkMessageProcessingStepImageModel, step: SdkMessageProcessingStepConfig): Promise<SdkMessageProcessingStepImageModel> {
-        const createImage = Object.assign({
+        const createImage = Object.assign({}, {
             sdkmessageprocessingstepid: step.sdkmessageprocessingstepid
         }, image) as SdkMessageProcessingStepImageModel;
         // await SdkMessageProcessingStepImageService.upsert(createImage, this.bearer); // TODO aanzetten
