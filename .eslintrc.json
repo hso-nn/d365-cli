@@ -21,10 +21,8 @@
   },
   "rules": {
     "@typescript-eslint/camelcase": "off",
-    "indent": [
-      "error",
-      4
-    ],
+    "@typescript-eslint/no-var-requires": 0,
+    "indent": ["error", 4, {"FunctionExpression": {"parameters": "first"}}],
     "quotes": [
       "error",
       "single",
