@@ -54,7 +54,9 @@ export class AdalRouter {
         });
     }
 
+    // eslint-disable-next-line max-lines-per-function
     private mountAuthRoute(router: Router): void {
+        // eslint-disable-next-line max-lines-per-function
         router.get('/auth', (req: Request, res: Response) => {
             res.send(`
                 <head>
@@ -70,11 +72,13 @@ export class AdalRouter {
                                 authContext.acquireToken('${this.settings.crm.url}', function (errorDesc, token, error) {
                                     if (!error) {
                                         window.location.href = "/token/" + token;
+                                    } else {
+                                        console.log("Error during login: " + error);
                                     }
                                 });
                             }
                         }
-                        var tenant = "${this.settings.adal.tenant}";
+                        var tenant = ${this.settings.adal.tenant};
                         if (tenant) {
                             config.tenant = tenant;
                         }
