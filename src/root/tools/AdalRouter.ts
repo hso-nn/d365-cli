@@ -95,9 +95,12 @@ export class AdalRouter {
                                 });
                             }
                         }
+                        if (this.settings.adal.tenant) {
+                            config.tenant = "${this.settings.adal.tenant}";
+                        }
                         var authContext = new AuthenticationContext(config);
                         if (authContext.isCallback(window.location.hash)) {
-                            authContext.handleWindowCallback();
+                            authContext.handleWindowCallback(window.location.hash);
                         } else {
                             authContext.login();
                         }
