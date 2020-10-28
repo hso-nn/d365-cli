@@ -73,6 +73,7 @@ export class AdalRouter {
         });
     }
 
+    // eslint-disable-next-line max-lines-per-function
     private mountAuthRoute(router: Router): void {
         router.get('/auth', (req: Request, res: Response) => {
             res.send(`
