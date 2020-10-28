@@ -74,6 +74,10 @@ export class AdalRouter {
                                 });
                             }
                         }
+                        var tenant = "${this.settings.adal.tenant}";
+                        if (tenant) {
+                            config.tenant = tenant;
+                        }
                         var authContext = new AuthenticationContext(config);
                         if (authContext.isCallback(window.location.hash)) {
                             authContext.handleWindowCallback();

@@ -15,5 +15,6 @@ export interface CrmJson {
     adal: {
         clientId: string;
         redirectUri: string;
+        tenant: string;
     };
 }
