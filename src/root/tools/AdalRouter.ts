@@ -68,18 +68,20 @@ export class AdalRouter {
                         var config = {
                             clientId: "${this.settings.adal.clientId}",
                             popUp: true,
-                            callback: function (errorDesc, token, error, tokenType) {
-                                authContext.acquireToken('${this.settings.crm.url}', function (errorDesc, token, error) {
+                            callback: function (errorDesc, id_token, error, tokenType) {
+                                authContext.acquireToken('${this.settings.crm.url}', function (errorDesc, access_token, error, tokenType) {
                                     if (!error) {
-                                        window.location.href = "/token/" + token;
+                                        window.location.href = "/token/" + access_token;
                                     } else {
-                                        console.log("Error during login: " + error);
+                                        var errorSpan = document.createElement("span");
+                                        errorSpan.innerHTML = "<b>Error during acquireToken (access_token):</b><br/>" + errorDesc;
+                                        document.body.appendChild(errorSpan);
                                     }
                                 });
                             }
                         }
-                        var tenant = ${this.settings.adal.tenant};
-                        if (tenant) {
+                        var tenant = "${this.settings.adal.tenant}";
+                        if (tenant !== "undefined") {
                             config.tenant = tenant;
                         }
                         var authContext = new AuthenticationContext(config);
