@@ -54,7 +54,9 @@ export class AdalRouter {
         });
     }
 
+    // eslint-disable-next-line max-lines-per-function
     private mountAuthRoute(router: Router): void {
+        // eslint-disable-next-line max-lines-per-function
         router.get('/auth', (req: Request, res: Response) => {
             res.send(`
                 <head>
@@ -66,13 +68,21 @@ export class AdalRouter {
                         var config = {
                             clientId: "${this.settings.adal.clientId}",
                             popUp: true,
-                            callback: function (errorDesc, token, error, tokenType) {
-                                authContext.acquireToken('${this.settings.crm.url}', function (errorDesc, token, error) {
+                            callback: function (errorDesc, id_token, error, tokenType) {
+                                authContext.acquireToken('${this.settings.crm.url}', function (errorDesc, access_token, error, tokenType) {
                                     if (!error) {
-                                        window.location.href = "/token/" + token;
+                                        window.location.href = "/token/" + access_token;
+                                    } else {
+                                        var errorSpan = document.createElement("span");
+                                        errorSpan.innerHTML = "<b>Error during acquireToken (access_token):</b><br/>" + errorDesc;
+                                        document.body.appendChild(errorSpan);
                                     }
                                 });
                             }
+                        }
+                        var tenant = "${this.settings.adal.tenant}";
+                        if (tenant !== "undefined") {
+                            config.tenant = tenant;
                         }
                         var authContext = new AuthenticationContext(config);
                         if (authContext.isCallback(window.location.hash)) {
