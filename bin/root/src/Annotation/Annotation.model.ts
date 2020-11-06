@@ -1,5 +1,5 @@
-import {Model} from '../WebApi/Model';
-export interface AnnotationModel extends Model {
+
+interface AnnotationModel extends Model {
     annotationid?: string;
     documentbody?: string;
     filename?: string;

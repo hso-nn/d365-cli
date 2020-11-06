@@ -1,7 +1,6 @@
-import {Filter, MultipleSystemQueryOptions, SystemQueryOptions, WebApi} from '../WebApi/WebApi';
-import {AnnotationModel} from './Annotation.model';
+import {WebApi} from '../WebApi/WebApi';
 import {Base64} from '../util/Base64';
-import {Model, ModelValidation} from '../WebApi/Model';
+import {Service} from '../WebApi/Service';
 
 export class AnnotationService {
     private static logicalName = 'annotation';
@@ -82,10 +81,10 @@ export class AnnotationService {
 
     public static async retrieveClone(id: string): Promise<AnnotationModel> {
         const origRecord = await Xrm.WebApi.retrieveRecord(AnnotationService.logicalName, id);
-        return Model.parseCreateModel(AnnotationService.logicalName, origRecord);
+        return Service.parseCreateModel(AnnotationService.logicalName, origRecord);
     }
 
     public static async validateRecord(annotationModel: AnnotationModel): Promise<ModelValidation> {
-        return Model.validateRecord(AnnotationService.logicalName, annotationModel);
+        return Service.validateRecord(AnnotationService.logicalName, annotationModel);
     }
 }
