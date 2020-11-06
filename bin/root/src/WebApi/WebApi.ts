@@ -1,53 +1,6 @@
-import {Model} from './Model';
-import {Http, JsonHttpHeaders, jsonHttpHeaders, Method} from '../Http/Http';
+import {Http, jsonHttpHeaders} from '../Http/Http';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Expand {
-    attribute: string;
-    select: string[];
-}
-
-// https://docs.microsoft.com/en-us/dynamics365/customer-engagement/web-api/tomorrow?view=dynamics-ce-odata-9
-type QueryFunction = 'Above' | 'AboveOrEqual' | 'Between' | 'Contains' | 'ContainValues' | 'DoesNotContainValues' | 'EqualBusinessId' | 'EqualUserId' |
-    'EqualUserLanguage' | 'EqualUserOrUserHierarchy' | 'EqualUserOrHierarchyAndTeams' | 'EqualUserOrUserTeams' | 'EqualUserTeams' | 'In' | 'InFiscalPeriod' |
-    'InFiscalPeriodAndYear' | 'InFiscalYear' | 'InOrAfterFiscalPeriodAndYear' | 'InOrBeforeFiscalPeriodAndYear' | 'Last7Days' | 'LastFiscalPeriod' | 'LastFiscalYear' |
-    'LastMonth' | 'LastWeek' | 'LastXDays' | 'LastXFiscalPeriods' | 'LastXFiscalYears' | 'LastXHours' | 'LastXMonths' | 'LastXWeeks' | 'LastXYears' | 'LastYear' |
-    'Next7Days' | 'NextFiscalPeriod' | 'NextFiscalYear' | 'NextMonth' | 'NextWeek' | 'NextXDays' | 'NextXFiscalPeriods' | 'NextXFiscalYears' | 'NextXHours' |
-    'NextXMonths' | 'NextXWeeks' | 'NextXYears' | 'NextYear' | 'NotBetween' | 'NotEqualBusinessId' | 'NotEqualUserId' | 'NotIn' | 'NotUnder' | 'OlderThanXDays' |
-    'OlderThanXHours' | 'OlderThanXMinutes' | 'OlderThanXMonths' | 'OlderThanXWeeks' | 'OlderThanXYears' | 'On' | 'OnOrAfter' | 'OnOrBefore' | 'ThisFiscalPerios' |
-    'ThisFiscalYear' | 'ThisMonth' | 'ThisWeek' | 'ThisYear' | 'Today' | 'Tomorrow' | 'Under' | 'UnderOrEqual' | 'Yesterday';
-const filterConditions = ['eq' , 'ne', 'gt', 'ge', 'lt', 'le'] as const;
-type FilterCondition = typeof filterConditions[number]; // 'eq' | 'ne' | 'gt' | 'ge' | 'lt' | 'le';
-interface Condition {
-    attribute: string;
-    operator?: FilterCondition | QueryFunction;
-    value?: any;
-}
-
-type FilterType = 'and' | 'or' | 'not';
-export interface Filter {
-    type?: FilterType;
-    conditions: Condition[];
-    filters?: Filter[];
-}
-
-type Order = 'asc' | 'desc';
-interface OrderBy {
-    attribute: string;
-    order?: Order;
-}
-
-export interface SystemQueryOptions {
-    select: string[];
-    expands?: Expand[];
-}
-
-export interface MultipleSystemQueryOptions extends SystemQueryOptions {
-    filters?: Filter[];
-    orders?: OrderBy[];
-    top?: number;
-}
-
 const dateReviver = (key: string, value: any): any => {
     if (typeof value === 'string') {
         const d = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?::(\d*))?Z$/.exec(value);

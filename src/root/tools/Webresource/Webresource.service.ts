@@ -1,4 +1,3 @@
-import {MultipleSystemQueryOptions, SystemQueryOptions} from '../../../../bin/root/src/WebApi/WebApi';
 import {WebresourceModel} from './Webresource.model';
 import {NodeApi} from '../NodeApi/NodeApi';
 

@@ -1,4 +1,3 @@
-import {Model} from '../../../../bin/root/src/WebApi/Model';
 
 type ComponentType = 'WebResource';
 

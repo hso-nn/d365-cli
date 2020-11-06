@@ -60,7 +60,7 @@ export class AdalRouter {
         router.get('/auth', (req: Request, res: Response) => {
             res.send(`
                 <head>
-                    <title>test</title>
+                    <title>Login</title>
                 </head>
                 <body>
                     <script src="adal.min.js"></script>

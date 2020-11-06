@@ -1,4 +1,3 @@
-import {MultipleSystemQueryOptions} from '../../../../bin/root/src/WebApi/WebApi';
 import {NodeApi} from '../NodeApi/NodeApi';
 import {SolutionModel} from './Solution.model';
 import {CrmJson} from '../CrmJson';

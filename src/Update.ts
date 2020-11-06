@@ -18,15 +18,12 @@ export class Update {
 
     private static async update(): Promise<void> {
         console.log(`Updating D365 Project...`);
-        Update.moveDeploy();
         const variables = await Variables.get();
         Update.updateProjectRootFolder();
-        Update.updateDeploy(variables);
         Update.updateSrcFolder();
         Update.updatePackageJson(variables);
         Update.updateServiceFiles();
         Update.updateModelFiles();
-        Update.updateFormFiles(variables);
         Update.updateEntityFiles();
         Update.updateWebpackConfig(variables);
         console.log(`Updating D365 Project done`);
@@ -44,8 +41,6 @@ export class Update {
 
         console.log(`Updating postcss.config.js`);
         shell.cp('-R', `${__dirname}/root/postcss.config.js`, '.');
-        shell.exec('git add postcss.config.js');
-
     }
 
     private static updateSrcFolder(): void {
@@ -54,71 +49,21 @@ export class Update {
 
         console.log(`Updating WebApi...`);
         shell.cp('-R', `${__dirname}/root/src/WebApi`, './src');
-        shell.exec('git add src/WebApi/Model.ts');
+        shell.exec('git add src/WebApi/SystemQueryOptions.ts');
+        shell.exec('git add src/WebApi/Service.ts');
 
         console.log(`Updating Http...`);
         shell.cp('-R', `${__dirname}/root/src/Http`, './src');
-        shell.exec('git add src/Http/Http.ts');
+        shell.exec('git add src/Http/HttpHeaders.ts');
 
         console.log(`Updating util...`);
         shell.cp('-R', `${__dirname}/root/src/util`, './src');
-        shell.exec('git add src/util/Base64.ts');
-        shell.exec('git add src/util/FormUtil.ts');
 
         console.log(`Updating Annotation...`);
         shell.cp('-R', `${__dirname}/root/src/Annotation`, './src');
-        shell.exec('git add src/Annotation/Annotation.model.ts');
-        shell.exec('git add src/Annotation/Annotation.service.ts');
 
         console.log(`Updating Translation...`);
         shell.cp('-R', `${__dirname}/root/src/translation`, './src');
-        shell.exec('git add src/translation/TranslationI18n.ts');
-
-        Update.cleanSrcFolder();
-    }
-
-    private static cleanSrcFolder(): void {
-        console.log(`Removing tslint.json...`);
-        shell.rm('-R', `./src/tslint.json`);
-
-        console.log(`Removing txs...`);
-        shell.rm('-R', './src/tsx');
-    }
-
-    private static moveDeploy(): void {
-        console.log(`Moving deploy folder...`);
-        if (shell.test('-f', 'deploy/deploy.js')) {
-            if (!shell.test('-d', 'tools')) {
-                shell.mkdir('tools');
-            }
-            shell.cp('-R','deploy/*', 'tools');
-            if (shell.which('git')) {
-                shell.exec('git rm deploy/deploy.js');
-                shell.exec('git rm deploy/crm.json');
-            }
-        }
-    }
-
-    private static updateDeploy(variables: AllVariables): void {
-        console.log(`Updating deploy folder...`);
-        if (!shell.test('-d', 'tools')) {
-            shell.mkdir('tools');
-        }
-        shell.cp('-R', `${__dirname}/root/tools/*.js`, './tools');
-        shell.cp('-R', `${__dirname}/root/tools/*.resx`, './tools');
-        shell.exec('git add tools');
-        const checkClientSecret = shell.grep(`clientSecret`, './tools/crm.json'),
-            checkTranslation = shell.grep('translation', './tools/crm.json'),
-            {publisher, solution, environment, namespace, translationtype} = variables;
-        if (checkClientSecret.stdout !== '\n' || checkTranslation.stdout === '\n') {
-            shell.cp('-R', `${__dirname}/root/tools/crm.json`, './tools');
-            const crmJsonFile = shell.ls('./tools/crm.json')[0];
-            shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, crmJsonFile);
-            shell.sed('-i', new RegExp('<%= solution %>', 'ig'), solution, crmJsonFile);
-            shell.sed('-i', new RegExp('<%= environment %>', 'ig'), environment, crmJsonFile);
-            shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), namespace, crmJsonFile);
-            shell.sed('-i', new RegExp('<%= translationtype %>', 'ig'), translationtype || 'i18n', crmJsonFile);
-        }
     }
 
     private static updatePackageJson(variables: AllVariables): void {
@@ -144,113 +89,58 @@ export class Update {
     }
 
     private static updateServiceFiles(): void {
-        console.log(`Updating Service files`);
+        console.log(`Updating Service files...`);
         shell.ls(`src/**/*.service.ts*`).forEach(function (filepath) {
-            Update.updateServiceFileCount(filepath);
-            Update.updateServiceFileCloneValidation(filepath);
+            Update.updateServiceModel(filepath);
         });
     }
 
-    private static serviceFileSnippetCount = `public static async count(filters?: Filter[]): Promise<number> {
-        return WebApi.count(EntityService.logicalName, filters);
-    }`;
-
-    private static updateServiceFileCount(filepath: string): void {
-        console.log(`Updating Service files Count code`);
-        const countCheck = shell.grep(`public static async count`, filepath);
-        if (countCheck.stdout === '\n') {
-            const split = filepath.split('/'),
-                entityname = split[1],
-                file = shell.ls(filepath)[0];
-            shell.sed('-i', `import {MultipleSystemQueryOptions, SystemQueryOptions, WebApi} from '../WebApi/WebApi';`,
-                `import {Filter, MultipleSystemQueryOptions, SystemQueryOptions, WebApi} from '../WebApi/WebApi';`, file);
-            shell.sed('-i', `export class ${entityname}Service {`,
-                `export class ${entityname}Service {\n    ` + Update.serviceFileSnippetCount
-                    .replace(/EntityService/g, `${entityname}Service`) + '\n', file);
-            console.log(`Modified ${filepath}`);
+    private static updateServiceModel(filepath: string): void {
+        const file = shell.ls(filepath)[0];
+        const serviceCheck = shell.grep(`Model.`, filepath);
+        if (serviceCheck.stdout !== '\n') {
+            shell.sed('-i', new RegExp(` Model\\.`, 'ig'), ' Service.', file);
+            shell.sed('-i', new RegExp(`export class`, 'i'), `import {Service} from '../WebApi/Service';\nexport class`, file);
         }
-    }
-
-    private static serviceFileSnippetCloneValidation = `public static async retrieveClone(id: string): Promise<EntityModel> {
-        const origRecord = await Xrm.WebApi.retrieveRecord(EntityService.logicalName, id);
-        return Model.parseCreateModel(EntityService.logicalName, origRecord);
-    }
-
-    public static async validateRecord(entityModel: EntityModel): Promise<ModelValidation> {
-        return Model.validateRecord(EntityService.logicalName, entityModel);
-    }`;
-
-    private static updateServiceFileCloneValidation(filepath: string): void {
-        console.log(`Updating Service files Clone and Validation code`);
-        const cloneCheck = shell.grep(`retrieveClone`, filepath);
-        if (cloneCheck.stdout === '\n') {
-            const split = filepath.split('/'),
-                entityname = split[1],
-                entitynameCamelCase = entityname.charAt(0).toLowerCase() + entityname.slice(1),
-                file = shell.ls(filepath)[0];
-            shell.sed('-i', `export class ${entityname}Service {`,
-                `export class ${entityname}Service {\n    ` + Update.serviceFileSnippetCloneValidation
-                    .replace(/EntityService/g, `${entityname}Service`)
-                    .replace(/EntityModel/g, `${entityname}Model`)
-                    .replace(/entityModel/g, `${entitynameCamelCase}Model`) + '\n', file);
-            shell.sed('-i', `import {Model}`,
-                `import {Model, ModelValidation}`, file);
-            shell.sed('-i', `export class`,
-                `import {Model, ModelValidation} from '../WebApi/Model';\n\nexport class`, file);
-            console.log(`Modified ${filepath}`);
-        }
+        shell.sed('-i', `import {Model} from '../WebApi/Model';`, ``, file);
     }
 
     private static updateModelFiles(): void {
-        console.log(`Updating Model files`);
+        console.log(`Updating Model files...`);
         shell.ls(`src/**/*.model.ts*`).forEach(function (filepath) {
-            const check = shell.grep(`import {Model}`, filepath);
-            if (check.stdout === '\n') {
+            const filedata = String(fs.readFileSync(filepath));
+            if (filedata.includes('enum')) {
                 const split = filepath.split('/'),
                     entityname = split[1],
-                    file = shell.ls(filepath)[0];
-                shell.sed('-i', `export`, `import {Model} from '../WebApi/Model';\nexport`, file);
-                shell.sed('-i', `interface ${entityname}Model`, `interface ${entityname}Model extends Model`, file);
+                    newFilepath = `src/${entityname}/${entityname}.enum.ts`;
+                shell.cp('-r', `${__dirname}/Entity/Entity.enum.ts`, `src/${entityname}`);
+                shell.cp('-r', `src/${entityname}/Entity.enum.ts`, newFilepath);
+                shell.rm('-rf', `src/${entityname}/Entity.enum.ts`);
+                shell.exec(`git add ${newFilepath}`);
+                const enumRegExp = new RegExp(`export enum\\s[a-zA-Z]*\\s{[a-zA-Z0-9\\s=,]*}`, 'gm');
+                shell.ShellString(filedata.match(enumRegExp).join('\n')).to(newFilepath);
+                shell.ShellString(filedata.replace(enumRegExp, '')).to(filepath);
+            }
+            const exportCheck = shell.grep('export', filepath);
+            if (exportCheck.stdout !== '\n') {
+                const file = shell.ls(filepath)[0];
+                shell.sed('-i', `import {Model} from '../WebApi/Model';`, ``, file);
+                shell.sed('-i', `export `, ``, file);
                 console.log(`Modified ${filepath}`);
             }
         });
     }
 
-    private static getTranslationInitRegex(variables: AllVariables): RegExp {
-        const {publisher, namespace} = variables;
-        return new RegExp(`await Translation\\.init\\({\\s*relativePath:\\s'${publisher}_/${namespace}/locales'\\s*}\\);\\s*`, 'gm');
-        // return /await Translation\.init\({\s*relativePath:\s'hds_\/ces\/locales'\s*}\);\s*/gm;
-    }
-    private static updateFormFiles(variables: AllVariables): void {
-        console.log('Updating Entity files');
-        const filepaths = shell.ls(`src/**/*.form.ts`);
-        for (const filepath of filepaths) {
-            const check = shell.grep(`Translation.init`, filepath);
-            if (check.stdout !== '\n') {
-                const filedata = String(fs.readFileSync(filepath));
-                shell.ShellString(filedata.replace(Update.getTranslationInitRegex(variables), '')).to(filepath);
-                console.log(`Modified ${filepath}`);
-            }
-        }
-    }
-
     private static updateEntityFiles(): void {
-        console.log('Updating Entity files');
+        console.log('Updating Entity files...');
         shell.ls(`src/**/*.ts*`).forEach(function (filepath) {
-            const split = filepath.split('/'),
-                entityname = split[1],
-                file = shell.ls(filepath)[0];
-            if (`${entityname}.ts` === split[2]) {
-                const check = shell.grep(`export namespace`, filepath);
-                if (check.stdout === '\n') {
-                    shell.sed('-i', `export namespace Form`, `export const Form =`, file);
-                    shell.sed('-i', `export namespace Ribbon`, `export const Ribbon =`, file);
-                    // eslint-disable-next-line max-len
-                    shell.sed('-i', `export function onLoad(executionContext: Xrm.Events.EventContext) {`, `onLoad: (executionContext: Xrm.Events.EventContext): void => {`, file);
-                    shell.sed('-i', `\\(formContext: Xrm.FormContext\\) {`, `: (formContext: Xrm.FormContext): void => {`, file);
-                    // shell.sed('-i', `export function `, ``, file); too much
-                    console.log(`Modified ${split[1]}.ts ${split[2]}`);
-                }
+            const file = shell.ls(filepath)[0];
+            const modelCheck = shell.grep('.model', filepath);
+            if (modelCheck.stdout !== '\n') {
+                shell.sed('-i', new RegExp(`// import.*\\.model';`, 'ig'), '', file);
+                shell.sed('-i', new RegExp(`import.*\\.model';`, 'ig'), '', file);
+                shell.sed('-i', new RegExp(`import.*WebApi/Model';`, 'ig'), '', file);
+                shell.sed('-i', new RegExp(`import.*WebApi/WebApi';`, 'ig'), `import {WebApi} from '../WebApi/WebApi';`, file);
             }
         });
     }

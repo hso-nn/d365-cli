@@ -13,7 +13,9 @@
       "dom"
     ]
   },
-  "exclude": [
-    "node_modules"
+  "include": [
+    "src",
+    "bin/root/src/WebApi",
+    "bin/root/src/Http"
   ]
 }
