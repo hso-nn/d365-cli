@@ -19,9 +19,9 @@ export class Update {
     private static async update(): Promise<void> {
         console.log(`Updating D365 Project...`);
         const variables = await Variables.get();
-        Update.updateProjectRootFolder();
         Update.updateSrcFolder();
-        Update.updatePackageJson(variables);
+        Update.updateProjectRootFolder();
+        // Update.updatePackageJson(variables);
         Update.updateServiceFiles();
         Update.updateModelFiles();
         Update.updateEntityFiles();
@@ -41,11 +41,18 @@ export class Update {
 
         console.log(`Updating postcss.config.js`);
         shell.cp('-R', `${__dirname}/root/postcss.config.js`, '.');
+
+        console.log(`Updating tsconfig.json`);
+        shell.cp('-R', `${__dirname}/root/tsconfig.json`, '.');
+        shell.exec('git add tsconfig.json');
     }
 
     private static updateSrcFolder(): void {
-        console.log(`Updating tsconfig.json...`);
-        shell.cp('-R', `${__dirname}/root/src/tsconfig.json`, './src');
+        if (shell.ls(['./tsconfig.json']).length !== 1) {
+            console.log(`Remove src/tsconfig.json...`);
+            shell.exec('git rm src/tsconfig.json');
+            shell.rm(['./src/tsconfig.json']);
+        }
 
         console.log(`Updating WebApi...`);
         shell.cp('-R', `${__dirname}/root/src/WebApi`, './src');
@@ -66,27 +73,28 @@ export class Update {
         shell.cp('-R', `${__dirname}/root/src/translation`, './src');
     }
 
-    private static updatePackageJson(variables: AllVariables): void {
-        console.log(`Updating package.json...`);
-        let dlfCoreCheck = shell.grep(`dlf-core`, 'package.json');
-        const {projectname, description, publisher, version} = variables;
-        if (dlfCoreCheck.stdout !== '\n') {
-            shell.exec('npm install --save dlf-core@latest');
-            dlfCoreCheck = shell.grep(`dlf-core`, 'package.json');
-        }
-        shell.cp('-R', `${__dirname}/root/package.json`, '.');
-        const packageJsonFile = shell.ls('package.json')[0];
-        if (dlfCoreCheck.stdout !== '\n') {
-            shell.sed('-i', '"dependencies": {', `"dependencies": {\n${dlfCoreCheck.stdout}`, packageJsonFile);
-        }
-        shell.sed('-i', new RegExp('<%= projectname %>', 'ig'), projectname, packageJsonFile);
-        shell.sed('-i', new RegExp('<%= description %>', 'ig'), description, packageJsonFile);
-        shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, packageJsonFile);
-        shell.sed('-i', new RegExp('<%= version %>', 'ig'), version, packageJsonFile);
-        console.log(`Removing old npm packages. This may take a while...`);
-        shell.exec('npm prune');
-        shell.exec('npm install');
-    }
+
+    // private static updatePackageJson(variables: AllVariables): void {
+    //     console.log(`Updating package.json...`);
+    //     let dlfCoreCheck = shell.grep(`dlf-core`, 'package.json');
+    //     const {projectname, description, publisher, version} = variables;
+    //     if (dlfCoreCheck.stdout !== '\n') {
+    //         shell.exec('npm install --save dlf-core@latest');
+    //         dlfCoreCheck = shell.grep(`dlf-core`, 'package.json');
+    //     }
+    //     shell.cp('-R', `${__dirname}/root/package.json`, '.');
+    //     const packageJsonFile = shell.ls('package.json')[0];
+    //     if (dlfCoreCheck.stdout !== '\n') {
+    //         shell.sed('-i', '"dependencies": {', `"dependencies": {\n${dlfCoreCheck.stdout}`, packageJsonFile);
+    //     }
+    //     shell.sed('-i', new RegExp('<%= projectname %>', 'ig'), projectname, packageJsonFile);
+    //     shell.sed('-i', new RegExp('<%= description %>', 'ig'), description, packageJsonFile);
+    //     shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, packageJsonFile);
+    //     shell.sed('-i', new RegExp('<%= version %>', 'ig'), version, packageJsonFile);
+    //     console.log(`Removing old npm packages. This may take a while...`);
+    //     shell.exec('npm prune');
+    //     shell.exec('npm install');
+    // }
 
     private static updateServiceFiles(): void {
         console.log(`Updating Service files...`);
@@ -97,7 +105,7 @@ export class Update {
 
     private static updateServiceModel(filepath: string): void {
         const file = shell.ls(filepath)[0];
-        const serviceCheck = shell.grep(`Model.`, filepath);
+        const serviceCheck = shell.grep(` Model.`, filepath);
         if (serviceCheck.stdout !== '\n') {
             shell.sed('-i', new RegExp(` Model\\.`, 'ig'), ' Service.', file);
             shell.sed('-i', new RegExp(`export class`, 'i'), `import {Service} from '../WebApi/Service';\nexport class`, file);
