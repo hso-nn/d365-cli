@@ -1,6 +1,5 @@
 import {Filter, MultipleSystemQueryOptions, SystemQueryOptions, WebApi} from '../WebApi/WebApi';
-import {EntityModel} from './Entity.model';
-import {Model, ModelValidation} from '../WebApi/Model';
+import {Service} from '../WebApi/Service';
 
 export class EntityService {
     private static logicalName = 'EntityLogicalName';
@@ -31,10 +30,10 @@ export class EntityService {
 
     public static async retrieveClone(id: string): Promise<EntityModel> {
         const origRecord = await Xrm.WebApi.retrieveRecord(EntityService.logicalName, id);
-        return Model.parseCreateModel(EntityService.logicalName, origRecord);
+        return Service.parseCreateModel(EntityService.logicalName, origRecord);
     }
 
     public static async validateRecord(entityModel: EntityModel): Promise<ModelValidation> {
-        return Model.validateRecord(EntityService.logicalName, entityModel);
+        return Service.validateRecord(EntityService.logicalName, entityModel);
     }
 }

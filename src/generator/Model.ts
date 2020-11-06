@@ -40,6 +40,7 @@ export class Model extends AdalRouter {
     private async generateModel(): Promise<void> {
         this.log(`Generating model for Entity '${this.entityname}'<br/>Using entityLogicalName '${this.entityLogicalName}'</br>`);
         await this.writeModelFile();
+        await this.writeEnumFile();
         this.log('Generating model finished');
     }
 
@@ -48,39 +49,53 @@ export class Model extends AdalRouter {
     }
 
     private get modelImportRegex(): RegExp {
-        return new RegExp(`([\\s\\S]*)export\\sinterface\\s${this.entityname}`, 'gm');
+        return new RegExp(`([\\s\\S]*)interface\\s${this.entityname}`, 'gm');
     }
 
     private async writeModelFile(): Promise<void> {
-        const filepath = `src/${this.entityname}/${this.entityname}.model.ts`,
-            filedata = String(fs.readFileSync(filepath)),
+        const modelFilepath = `src/${this.entityname}/${this.entityname}.model.ts`,
+            filedata = String(fs.readFileSync(modelFilepath)),
             modelMatch = Model.modelinterfaceRegex.exec(filedata);
         if (modelMatch) {
             const attributeInterfaceTypes = await this.getAttributeInterfaceTypes(),
                 relationshipInterfaceTypes = await this.getRelationshipInterfaceTypes(),
                 importsString = this.getImportStrings(relationshipInterfaceTypes),
                 typesString = await this.getTypeStrings(),
-                enumsString = await this.getEnumStrings(),
                 importMatch = this.modelImportRegex.exec(filedata);
             let modelString = await this.getAttributesString(attributeInterfaceTypes, relationshipInterfaceTypes);
             modelString += await Model.getRelationshipsString(relationshipInterfaceTypes, attributeInterfaceTypes);
             modelString += this.getCombinedAttributeRelationshipString(attributeInterfaceTypes, relationshipInterfaceTypes);
             let newFiledata = filedata.replace(modelMatch[1], modelString);
-            newFiledata = newFiledata.replace(importMatch[1], importsString + enumsString + typesString);
-            shell.ShellString(newFiledata).to(filepath);
+            newFiledata = newFiledata.replace(importMatch[1], importsString + typesString);
+            shell.ShellString(newFiledata).to(modelFilepath);
         } else {
-            this.log(`Model file seems to be corrupt. Please fix ${filepath}`);
+            this.log(`Model file seems to be corrupt. Please fix ${modelFilepath}`);
+        }
+    }
+
+    private async writeEnumFile(): Promise<void> {
+        const enumStrings = await this.getEnumStrings();
+        if (enumStrings) {
+            const enumFilepath = `src/${this.entityname}/${this.entityname}.enum.ts`;
+            if (!shell.test('-f', enumFilepath)) {
+                shell.cp('-r', `${__dirname}/Entity/Entity.enum.ts`, `src/${this.entityname}`);
+                shell.cp('-r', `src/${this.entityname}/Entity.enum.ts`, enumFilepath);
+                shell.rm('-rf', `src/${this.entityname}/Entity.enum.ts`);
+                shell.exec(`git add ${enumFilepath}`);
+            }
+            shell.ShellString(enumStrings).to(enumFilepath);
         }
     }
 
     private getImportStrings(relationshipInterfaceTypes: InterfaceTypes): string {
-        let importStrings = `import {Model} from '../WebApi/Model';\n`;
+        // let importStrings = `import {Model} from '../WebApi/Model';\n`;
+        let importStrings = '';
         for (const referencingEntityNavigationPropertyName of Object.keys(relationshipInterfaceTypes)) {
             if (!Model.defaultModelAttributes.includes(referencingEntityNavigationPropertyName)) {
                 const referencedEntity = relationshipInterfaceTypes[referencingEntityNavigationPropertyName],
                     camelReferencedEntity = Model.capitalize(this.getTypeName(referencedEntity)),
                     relatedModelFilePath = `src/${camelReferencedEntity}/${camelReferencedEntity}.model.ts`;
-                importStrings += `import {${camelReferencedEntity}Model} from '../${camelReferencedEntity}/${camelReferencedEntity}.model';\n`;
+                // importStrings += `import {${camelReferencedEntity}Model} from '../${camelReferencedEntity}/${camelReferencedEntity}.model';\n`;
 
                 if (!shell.test('-f', relatedModelFilePath)) {
                     this.log(`<span style="color:blue;">NavigationProperty '${referencingEntityNavigationPropertyName}' generated.<br/>

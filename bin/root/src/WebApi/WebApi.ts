@@ -1,4 +1,3 @@
-import {Model} from './Model';
 import {Http, JsonHttpHeaders, jsonHttpHeaders, Method} from '../Http/Http';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

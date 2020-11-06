@@ -1,4 +1,3 @@
-import {Model} from '../../../../bin/root/src/WebApi/Model';
 
 export interface SystemFormModel extends Model {
     formid?: string;

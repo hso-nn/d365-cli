@@ -55,6 +55,7 @@ export class Update {
         console.log(`Updating WebApi...`);
         shell.cp('-R', `${__dirname}/root/src/WebApi`, './src');
         shell.exec('git add src/WebApi/Model.ts');
+        shell.exec('git add src/WebApi/Service.ts');
 
         console.log(`Updating Http...`);
         shell.cp('-R', `${__dirname}/root/src/Http`, './src');
@@ -148,6 +149,7 @@ export class Update {
         shell.ls(`src/**/*.service.ts*`).forEach(function (filepath) {
             Update.updateServiceFileCount(filepath);
             Update.updateServiceFileCloneValidation(filepath);
+            Update.updateServiceModel(filepath);
         });
     }
 
@@ -193,24 +195,52 @@ export class Update {
                     .replace(/EntityService/g, `${entityname}Service`)
                     .replace(/EntityModel/g, `${entityname}Model`)
                     .replace(/entityModel/g, `${entitynameCamelCase}Model`) + '\n', file);
-            shell.sed('-i', `import {Model}`,
-                `import {Model, ModelValidation}`, file);
-            shell.sed('-i', `export class`,
-                `import {Model, ModelValidation} from '../WebApi/Model';\n\nexport class`, file);
             console.log(`Modified ${filepath}`);
         }
     }
 
+    private static updateServiceModel(filepath: string): void {
+        const file = shell.ls(filepath)[0];
+        const serviceCheck = shell.grep(`Model.`, filepath);
+        if (serviceCheck.stdout !== '\n') {
+            shell.sed('-i', new RegExp(` Model\\.`, 'ig'), ' Service.', file);
+            shell.sed('-i', new RegExp(`export class`, 'i'), `import {Service} from '../WebApi/Service';\nexport class`, file);
+        }
+        shell.sed('-i', `import {Model} from '../WebApi/Model';`, ``, file);
+    }
+
+    // eslint-disable-next-line max-lines-per-function
     private static updateModelFiles(): void {
         console.log(`Updating Model files`);
+        // eslint-disable-next-line max-lines-per-function
         shell.ls(`src/**/*.model.ts*`).forEach(function (filepath) {
-            const check = shell.grep(`import {Model}`, filepath);
-            if (check.stdout === '\n') {
+            const extendsCheck = shell.grep(`extends Model`, filepath);
+            if (extendsCheck.stdout === '\n') {
                 const split = filepath.split('/'),
                     entityname = split[1],
                     file = shell.ls(filepath)[0];
-                shell.sed('-i', `export`, `import {Model} from '../WebApi/Model';\nexport`, file);
-                shell.sed('-i', `interface ${entityname}Model`, `interface ${entityname}Model extends Model`, file);
+                // shell.sed('-i', `export`, `import {Model} from '../WebApi/Model';\nexport`, file);
+                shell.sed('-i', `interface ${entityname}Model {`, `interface ${entityname}Model extends Model {`, file);
+                console.log(`Modified ${filepath}`);
+            }
+            const filedata = String(fs.readFileSync(filepath));
+            if (filedata.includes('enum')) {
+                const split = filepath.split('/'),
+                    entityname = split[1],
+                    newFilepath = `src/${entityname}/${entityname}.enum.ts`;
+                shell.cp('-r', `${__dirname}/Entity/Entity.enum.ts`, `src/${entityname}`);
+                shell.cp('-r', `src/${entityname}/Entity.enum.ts`, newFilepath);
+                shell.rm('-rf', `src/${entityname}/Entity.enum.ts`);
+                shell.exec(`git add ${newFilepath}`);
+                const enumRegExp = new RegExp(`export enum\\s[a-zA-Z]*\\s{[a-zA-Z0-9\\s=,]*}`, 'gm');
+                shell.ShellString(filedata.match(enumRegExp).join('\n')).to(newFilepath);
+                shell.ShellString(filedata.replace(enumRegExp, '')).to(filepath);
+            }
+            const exportCheck = shell.grep('export', filepath);
+            if (exportCheck.stdout !== '\n') {
+                const file = shell.ls(filepath)[0];
+                shell.sed('-i', `import {Model} from '../WebApi/Model';`, ``, file);
+                shell.sed('-i', `export `, ``, file);
                 console.log(`Modified ${filepath}`);
             }
         });
@@ -225,8 +255,8 @@ export class Update {
         console.log('Updating Entity files');
         const filepaths = shell.ls(`src/**/*.form.ts`);
         for (const filepath of filepaths) {
-            const check = shell.grep(`Translation.init`, filepath);
-            if (check.stdout !== '\n') {
+            const translationCheck = shell.grep(`Translation.init`, filepath);
+            if (translationCheck.stdout !== '\n') {
                 const filedata = String(fs.readFileSync(filepath));
                 shell.ShellString(filedata.replace(Update.getTranslationInitRegex(variables), '')).to(filepath);
                 console.log(`Modified ${filepath}`);
@@ -251,6 +281,12 @@ export class Update {
                     // shell.sed('-i', `export function `, ``, file); too much
                     console.log(`Modified ${split[1]}.ts ${split[2]}`);
                 }
+            }
+            const modelCheck = shell.grep('.model', filepath);
+            if (modelCheck.stdout !== '\n') {
+                shell.sed('-i', new RegExp(`// import.*\\.model';`, 'ig'), '', file);
+                shell.sed('-i', new RegExp(`import.*\\.model';`, 'ig'), '', file);
+                shell.sed('-i', new RegExp(`import.*WebApi/Model';`, 'ig'), '', file);
             }
         });
     }
