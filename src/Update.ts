@@ -21,7 +21,7 @@ export class Update {
         const variables = await Variables.get();
         Update.updateSrcFolder();
         Update.updateProjectRootFolder();
-        // Update.updatePackageJson(variables);
+        Update.updatePackageJson(variables);
         Update.updateServiceFiles();
         Update.updateModelFiles();
         Update.updateEntityFiles();
@@ -74,27 +74,27 @@ export class Update {
     }
 
 
-    // private static updatePackageJson(variables: AllVariables): void {
-    //     console.log(`Updating package.json...`);
-    //     let dlfCoreCheck = shell.grep(`dlf-core`, 'package.json');
-    //     const {projectname, description, publisher, version} = variables;
-    //     if (dlfCoreCheck.stdout !== '\n') {
-    //         shell.exec('npm install --save dlf-core@latest');
-    //         dlfCoreCheck = shell.grep(`dlf-core`, 'package.json');
-    //     }
-    //     shell.cp('-R', `${__dirname}/root/package.json`, '.');
-    //     const packageJsonFile = shell.ls('package.json')[0];
-    //     if (dlfCoreCheck.stdout !== '\n') {
-    //         shell.sed('-i', '"dependencies": {', `"dependencies": {\n${dlfCoreCheck.stdout}`, packageJsonFile);
-    //     }
-    //     shell.sed('-i', new RegExp('<%= projectname %>', 'ig'), projectname, packageJsonFile);
-    //     shell.sed('-i', new RegExp('<%= description %>', 'ig'), description, packageJsonFile);
-    //     shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, packageJsonFile);
-    //     shell.sed('-i', new RegExp('<%= version %>', 'ig'), version, packageJsonFile);
-    //     console.log(`Removing old npm packages. This may take a while...`);
-    //     shell.exec('npm prune');
-    //     shell.exec('npm install');
-    // }
+    private static updatePackageJson(variables: AllVariables): void {
+        console.log(`Updating package.json...`);
+        let dlfCoreCheck = shell.grep(`dlf-core`, 'package.json');
+        const {projectname, description, publisher, version} = variables;
+        if (dlfCoreCheck.stdout !== '\n') {
+            shell.exec('npm install --save dlf-core@latest');
+            dlfCoreCheck = shell.grep(`dlf-core`, 'package.json');
+        }
+        shell.cp('-R', `${__dirname}/root/package.json`, '.');
+        const packageJsonFile = shell.ls('package.json')[0];
+        if (dlfCoreCheck.stdout !== '\n') {
+            shell.sed('-i', '"dependencies": {', `"dependencies": {\n${dlfCoreCheck.stdout}`, packageJsonFile);
+        }
+        shell.sed('-i', new RegExp('<%= projectname %>', 'ig'), projectname, packageJsonFile);
+        shell.sed('-i', new RegExp('<%= description %>', 'ig'), description, packageJsonFile);
+        shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, packageJsonFile);
+        shell.sed('-i', new RegExp('<%= version %>', 'ig'), version, packageJsonFile);
+        console.log(`Removing old npm packages. This may take a while...`);
+        shell.exec('npm prune');
+        shell.exec('npm install');
+    }
 
     private static updateServiceFiles(): void {
         console.log(`Updating Service files...`);
