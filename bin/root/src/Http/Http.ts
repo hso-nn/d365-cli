@@ -1,15 +1,3 @@
-export type Method = 'GET' | 'POST' | 'DELETE';
-
-export interface HttpHeaders {
-    [index: string]: string;
-}
-
-export interface JsonHttpHeaders extends HttpHeaders {
-    'OData-MaxVersion': string;
-    'OData-Version': string;
-    'Accept': string;
-    'Content-Type': string;
-}
 
 export const jsonHttpHeaders = {
     'OData-MaxVersion': '4.0',

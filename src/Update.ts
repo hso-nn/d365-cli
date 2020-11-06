@@ -21,7 +21,7 @@ export class Update {
         const variables = await Variables.get();
         Update.updateProjectRootFolder();
         Update.updateSrcFolder();
-        // Update.updatePackageJson(variables);
+        Update.updatePackageJson(variables);
         Update.updateServiceFiles();
         Update.updateModelFiles();
         Update.updateEntityFiles();
@@ -49,9 +49,12 @@ export class Update {
 
         console.log(`Updating WebApi...`);
         shell.cp('-R', `${__dirname}/root/src/WebApi`, './src');
+        shell.exec('git add src/WebApi/SystemQueryOptions.ts');
+        shell.exec('git add src/WebApi/Service.ts');
 
         console.log(`Updating Http...`);
         shell.cp('-R', `${__dirname}/root/src/Http`, './src');
+        shell.exec('git add src/Http/HttpHeaders.ts');
 
         console.log(`Updating util...`);
         shell.cp('-R', `${__dirname}/root/src/util`, './src');
@@ -63,27 +66,27 @@ export class Update {
         shell.cp('-R', `${__dirname}/root/src/translation`, './src');
     }
 
-    // private static updatePackageJson(variables: AllVariables): void {
-    //     console.log(`Updating package.json...`);
-    //     let dlfCoreCheck = shell.grep(`dlf-core`, 'package.json');
-    //     const {projectname, description, publisher, version} = variables;
-    //     if (dlfCoreCheck.stdout !== '\n') {
-    //         shell.exec('npm install --save dlf-core@latest');
-    //         dlfCoreCheck = shell.grep(`dlf-core`, 'package.json');
-    //     }
-    //     shell.cp('-R', `${__dirname}/root/package.json`, '.');
-    //     const packageJsonFile = shell.ls('package.json')[0];
-    //     if (dlfCoreCheck.stdout !== '\n') {
-    //         shell.sed('-i', '"dependencies": {', `"dependencies": {\n${dlfCoreCheck.stdout}`, packageJsonFile);
-    //     }
-    //     shell.sed('-i', new RegExp('<%= projectname %>', 'ig'), projectname, packageJsonFile);
-    //     shell.sed('-i', new RegExp('<%= description %>', 'ig'), description, packageJsonFile);
-    //     shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, packageJsonFile);
-    //     shell.sed('-i', new RegExp('<%= version %>', 'ig'), version, packageJsonFile);
-    //     console.log(`Removing old npm packages. This may take a while...`);
-    //     shell.exec('npm prune');
-    //     shell.exec('npm install');
-    // }
+    private static updatePackageJson(variables: AllVariables): void {
+        console.log(`Updating package.json...`);
+        let dlfCoreCheck = shell.grep(`dlf-core`, 'package.json');
+        const {projectname, description, publisher, version} = variables;
+        if (dlfCoreCheck.stdout !== '\n') {
+            shell.exec('npm install --save dlf-core@latest');
+            dlfCoreCheck = shell.grep(`dlf-core`, 'package.json');
+        }
+        shell.cp('-R', `${__dirname}/root/package.json`, '.');
+        const packageJsonFile = shell.ls('package.json')[0];
+        if (dlfCoreCheck.stdout !== '\n') {
+            shell.sed('-i', '"dependencies": {', `"dependencies": {\n${dlfCoreCheck.stdout}`, packageJsonFile);
+        }
+        shell.sed('-i', new RegExp('<%= projectname %>', 'ig'), projectname, packageJsonFile);
+        shell.sed('-i', new RegExp('<%= description %>', 'ig'), description, packageJsonFile);
+        shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, packageJsonFile);
+        shell.sed('-i', new RegExp('<%= version %>', 'ig'), version, packageJsonFile);
+        console.log(`Removing old npm packages. This may take a while...`);
+        shell.exec('npm prune');
+        shell.exec('npm install');
+    }
 
     private static updateServiceFiles(): void {
         console.log(`Updating Service files...`);
@@ -137,6 +140,7 @@ export class Update {
                 shell.sed('-i', new RegExp(`// import.*\\.model';`, 'ig'), '', file);
                 shell.sed('-i', new RegExp(`import.*\\.model';`, 'ig'), '', file);
                 shell.sed('-i', new RegExp(`import.*WebApi/Model';`, 'ig'), '', file);
+                shell.sed('-i', new RegExp(`import.*WebApi/WebApi';`, 'ig'), `import {WebApi} from '../WebApi/WebApi';`, file);
             }
         });
     }

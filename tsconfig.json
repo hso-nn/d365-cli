@@ -15,6 +15,7 @@
   },
   "include": [
     "src",
-    "bin/root/src/WebApi"
+    "bin/root/src/WebApi",
+    "bin/root/src/Http"
   ]
 }

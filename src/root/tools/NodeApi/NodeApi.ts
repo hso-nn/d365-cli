@@ -1,4 +1,3 @@
-import {Filter, MultipleSystemQueryOptions, SystemQueryOptions} from '../../../../bin/root/src/WebApi/WebApi';
 import * as fs from 'fs';
 import * as https from 'https';
 import { IncomingMessage } from 'http';
