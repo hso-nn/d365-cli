@@ -1,6 +1,6 @@
 import {Http, jsonHttpHeaders} from '../Http/Http';
 
-export const filterConditions = ['eq' , 'ne', 'gt', 'ge', 'lt', 'le'] as const; // See SystemQueryOptions type FilterCondition
+const filterConditions = ['eq' , 'ne', 'gt', 'ge', 'lt', 'le'] as const; // See SystemQueryOptions type FilterCondition
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const dateReviver = (key: string, value: any): any => {

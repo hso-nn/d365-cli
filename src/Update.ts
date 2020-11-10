@@ -65,6 +65,7 @@ export class Update {
 
         console.log(`Updating util...`);
         shell.cp('-R', `${__dirname}/root/src/util`, './src');
+        shell.exec('git add src/util/Geolocation.ts');
 
         console.log(`Updating Annotation...`);
         shell.cp('-R', `${__dirname}/root/src/Annotation`, './src');
@@ -117,7 +118,7 @@ export class Update {
         console.log(`Updating Model files...`);
         shell.ls(`src/**/*.model.ts*`).forEach(function (filepath) {
             const filedata = String(fs.readFileSync(filepath));
-            if (filedata.includes('enum')) {
+            if (filedata.includes('export enum')) {
                 const split = filepath.split('/'),
                     entityname = split[1],
                     newFilepath = `src/${entityname}/${entityname}.enum.ts`;
