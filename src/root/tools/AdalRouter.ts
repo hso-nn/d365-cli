@@ -86,7 +86,6 @@ export class AdalRouter {
                                 }
                             }
                         }
-                        debugger;
                         var tenant = "${this.settings.adal.tenant}";
                         if (tenant !== "undefined") {
                             config.tenant = tenant;
