@@ -19,8 +19,8 @@ export class Update {
     private static async update(): Promise<void> {
         console.log(`Updating D365 Project...`);
         const variables = await Variables.get();
-        Update.updateProjectRootFolder();
         Update.updateSrcFolder();
+        Update.updateProjectRootFolder();
         Update.updatePackageJson(variables);
         Update.updateServiceFiles();
         Update.updateModelFiles();
@@ -41,11 +41,18 @@ export class Update {
 
         console.log(`Updating postcss.config.js`);
         shell.cp('-R', `${__dirname}/root/postcss.config.js`, '.');
+
+        console.log(`Updating tsconfig.json`);
+        shell.cp('-R', `${__dirname}/root/tsconfig.json`, '.');
+        shell.exec('git add tsconfig.json');
     }
 
     private static updateSrcFolder(): void {
-        console.log(`Updating tsconfig.json...`);
-        shell.cp('-R', `${__dirname}/root/src/tsconfig.json`, './src');
+        if (shell.ls(['./tsconfig.json']).length !== 1) {
+            console.log(`Remove src/tsconfig.json...`);
+            shell.exec('git rm src/tsconfig.json');
+            shell.rm(['./src/tsconfig.json']);
+        }
 
         console.log(`Updating WebApi...`);
         shell.cp('-R', `${__dirname}/root/src/WebApi`, './src');
@@ -58,6 +65,7 @@ export class Update {
 
         console.log(`Updating util...`);
         shell.cp('-R', `${__dirname}/root/src/util`, './src');
+        shell.exec('git add src/util/Geolocation.ts');
 
         console.log(`Updating Annotation...`);
         shell.cp('-R', `${__dirname}/root/src/Annotation`, './src');
@@ -65,6 +73,7 @@ export class Update {
         console.log(`Updating Translation...`);
         shell.cp('-R', `${__dirname}/root/src/translation`, './src');
     }
+
 
     private static updatePackageJson(variables: AllVariables): void {
         console.log(`Updating package.json...`);
@@ -97,7 +106,7 @@ export class Update {
 
     private static updateServiceModel(filepath: string): void {
         const file = shell.ls(filepath)[0];
-        const serviceCheck = shell.grep(`Model.`, filepath);
+        const serviceCheck = shell.grep(` Model.`, filepath);
         if (serviceCheck.stdout !== '\n') {
             shell.sed('-i', new RegExp(` Model\\.`, 'ig'), ' Service.', file);
             shell.sed('-i', new RegExp(`export class`, 'i'), `import {Service} from '../WebApi/Service';\nexport class`, file);
@@ -109,7 +118,7 @@ export class Update {
         console.log(`Updating Model files...`);
         shell.ls(`src/**/*.model.ts*`).forEach(function (filepath) {
             const filedata = String(fs.readFileSync(filepath));
-            if (filedata.includes('enum')) {
+            if (filedata.includes('export enum')) {
                 const split = filepath.split('/'),
                     entityname = split[1],
                     newFilepath = `src/${entityname}/${entityname}.enum.ts`;

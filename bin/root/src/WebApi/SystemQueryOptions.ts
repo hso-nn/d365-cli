@@ -24,8 +24,7 @@ type QueryFunction = 'Above' | 'AboveOrEqual' | 'Between' | 'Contains' | 'Contai
     'NextXMonths' | 'NextXWeeks' | 'NextXYears' | 'NextYear' | 'NotBetween' | 'NotEqualBusinessId' | 'NotEqualUserId' | 'NotIn' | 'NotUnder' | 'OlderThanXDays' |
     'OlderThanXHours' | 'OlderThanXMinutes' | 'OlderThanXMonths' | 'OlderThanXWeeks' | 'OlderThanXYears' | 'On' | 'OnOrAfter' | 'OnOrBefore' | 'ThisFiscalPerios' |
     'ThisFiscalYear' | 'ThisMonth' | 'ThisWeek' | 'ThisYear' | 'Today' | 'Tomorrow' | 'Under' | 'UnderOrEqual' | 'Yesterday';
-const filterConditions = ['eq' , 'ne', 'gt', 'ge', 'lt', 'le'] as const;
-type FilterCondition = typeof filterConditions[number]; // 'eq' | 'ne' | 'gt' | 'ge' | 'lt' | 'le';
+type FilterCondition = 'eq' | 'ne'| 'gt'| 'ge'| 'lt'| 'le'; // typeof filterConditions[number]; See WebApi const filterConditions
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface Condition {
     attribute: string;

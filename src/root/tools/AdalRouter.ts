@@ -69,15 +69,21 @@ export class AdalRouter {
                             clientId: "${this.settings.adal.clientId}",
                             popUp: true,
                             callback: function (errorDesc, id_token, error, tokenType) {
-                                authContext.acquireToken('${this.settings.crm.url}', function (errorDesc, access_token, error, tokenType) {
-                                    if (!error) {
-                                        window.location.href = "/token/" + access_token;
-                                    } else {
-                                        var errorSpan = document.createElement("span");
-                                        errorSpan.innerHTML = "<b>Error during acquireToken (access_token):</b><br/>" + errorDesc;
-                                        document.body.appendChild(errorSpan);
-                                    }
-                                });
+                                if (!error) {
+                                    authContext.acquireToken('${this.settings.crm.url}', function (errorDesc, access_token, error, tokenType) {
+                                        if (!error) {
+                                            window.location.href = "/token/" + access_token;
+                                        } else {
+                                            var errorSpan = document.createElement("span");
+                                            errorSpan.innerHTML = "<b>Error during acquireToken (access_token):</b><br/>" + error + ": " + errorDesc;
+                                            document.body.appendChild(errorSpan);
+                                        }
+                                    });
+                                } else {
+                                    var errorSpan = document.createElement("span");
+                                    errorSpan.innerHTML = "<b>Error during acquireToken (id_token):</b><br/>" + error + ": " + errorDesc;
+                                    document.body.appendChild(errorSpan);
+                                }
                             }
                         }
                         var tenant = "${this.settings.adal.tenant}";

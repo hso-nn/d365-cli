@@ -75,7 +75,8 @@ export class Model extends AdalRouter {
 
     private async writeEnumFile(): Promise<void> {
         const enumStrings = await this.getEnumStrings();
-        if (enumStrings) {
+        if (enumStrings.trim()) {
+            console.log('Enum strings: ' + enumStrings);
             const enumFilepath = `src/${this.entityname}/${this.entityname}.enum.ts`;
             if (!shell.test('-f', enumFilepath)) {
                 shell.cp('-r', `${__dirname}/Entity/Entity.enum.ts`, `src/${this.entityname}`);
@@ -252,7 +253,9 @@ export class Model extends AdalRouter {
                 enumStrings += '}\n';
             }
         }
-        enumStrings += '\n';
+        if (enumStrings) {
+            enumStrings += '\n';
+        }
         return enumStrings;
     }
 
