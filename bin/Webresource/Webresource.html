@@ -6,10 +6,13 @@
 </head>
 <body class="Webresource">
     <link rel="stylesheet" type="text/css" href="./Webresource.css"/>
-    <script type="text/javascript" src="./Webresource.js"></script>
     <script type="text/javascript">
         "use strict";
         window.Xrm = parent.Xrm;
+    </script>
+    <script type="text/javascript" src="./Webresource.js"></script>
+    <script type="text/javascript">
+        "use strict";
         window.addEventListener("load", function() {
             <%= publisher %>.<%= namespace %>.Webresource.onLoad();
         });
