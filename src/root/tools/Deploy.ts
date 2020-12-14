@@ -62,21 +62,21 @@ export class Deploy extends AdalRouter {
     }
 
     private async deployFile(filepath: string): Promise<void> {
-        const filedata = fs.readFileSync(filepath), // String(fs.readFileSync(filepath)),
-            crmPath = filepath.substr(5),
+        const crmPath = filepath.substr(5),
             webresource = await this.getWebresource(crmPath);
         this.log(`${crmPath}`);
         if (webresource) {
-            await this.updateWebresource(webresource, filedata);
+            await this.updateWebresource(webresource, filepath);
         } else {
-            await this.insertWebresource(filedata, crmPath);
+            await this.insertWebresource(filepath, crmPath);
         }
     }
 
-    private async updateWebresource(webresource: WebresourceModel, data: Buffer): Promise<void> {
+    private async updateWebresource(webresource: WebresourceModel, filepath: string): Promise<void> {
         const md5Orig = this.md5(webresource.content),
+            data = fs.readFileSync(filepath),
             base64 = data.toString('base64'),
-            dependencyXML = await this.generateDependencyXML(webresource, data),
+            dependencyXML = await this.generateDependencyXML(filepath, webresource, data),
             md5New = this.md5(base64);
         if (md5Orig !== md5New || dependencyXML && dependencyXML !== webresource?.dependencyxml) {
             webresource.content = base64;
@@ -94,8 +94,9 @@ export class Deploy extends AdalRouter {
         }
     }
 
-    private async insertWebresource(data: Buffer, path: string): Promise<WebresourceModel> {
-        const base64 = data.toString('base64');
+    private async insertWebresource(filepath: string, path: string): Promise<WebresourceModel> {
+        const data = fs.readFileSync(filepath),
+            base64 = data.toString('base64');
         try {
             const solutionUniqueName = this.settings.crm.solution_name,
                 webresourceModel: WebresourceModel = {
@@ -103,7 +104,7 @@ export class Deploy extends AdalRouter {
                     name: path,
                     displayname: path
                 },
-                dependencyXML = await this.generateDependencyXML(webresourceModel, data);
+                dependencyXML = await this.generateDependencyXML(filepath, webresourceModel, data);
             if (dependencyXML) {
                 webresourceModel.dependencyxml = dependencyXML;
             }
@@ -131,12 +132,20 @@ export class Deploy extends AdalRouter {
         return webresources[0];
     }
 
-    // Small wrapper method for future support of html files, etc
-    private async generateDependencyXML(webresource: WebresourceModel, data: Buffer): Promise<string> {
+    // Small wrapper method for future support of other extensions, etc
+    private async generateDependencyXML(filepath: string, webresource: WebresourceModel, data: Buffer): Promise<string> {
         if (webresource.name.endsWith('.js')) {
             const dependencyXML = await this.getDependencyXML(webresource, data);
-            console.log(`Dependencyxml: ${dependencyXML}`);
             return dependencyXML;
+        } else if (webresource.name.endsWith('.html')) {
+            const scriptPath = filepath.replace(/.html/g, '.js');
+            if (fs.existsSync(scriptPath)) {
+                const jsData = fs.readFileSync(scriptPath);
+                const dependencyXML = await this.getDependencyXML(webresource, jsData);
+                return dependencyXML;
+            } else {
+                console.log(`script file: ${scriptPath} does not exist`);
+            }
         }
     }
 
