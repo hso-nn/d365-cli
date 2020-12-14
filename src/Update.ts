@@ -19,6 +19,7 @@ export class Update {
     private static async update(): Promise<void> {
         console.log(`Updating D365 Project...`);
         const variables = await Variables.get();
+        Update.updateWebresources();
         Update.updateSrcFolder();
         Update.updateProjectRootFolder();
         Update.updatePackageJson(variables);
@@ -47,6 +48,22 @@ export class Update {
         shell.exec('git add tsconfig.json');
     }
 
+    private static updateWebresources(): void {
+        console.log('Updating Webresource files...');
+        shell.ls(`src/**/*.html`).forEach(function (filepath) {
+            const file = shell.ls(filepath)[0];
+            const fileData = String(fs.readFileSync(filepath));
+            if (!fileData.match(new RegExp('<script type="text/javascript">\\s*"use strict";\\s*window.Xrm = parent.Xrm;\\s*</script>'))) {
+                const match = fileData.match(new RegExp(`<body( [a-zA-Z=" ]*)?>`, 'i'));
+                shell.sed('-i', new RegExp(match[0], 'i'), `${match[0]}\n` +
+                    `    <script type="text/javascript">\n` +
+                    `        "use strict";\n` +
+                    `        window.Xrm = parent.Xrm;\n` +
+                    `    </script>`, file);
+            }
+        });
+    }
+
     private static updateSrcFolder(): void {
         if (shell.ls(['./tsconfig.json']).length !== 1) {
             console.log(`Remove src/tsconfig.json...`);
@@ -73,7 +90,6 @@ export class Update {
         console.log(`Updating Translation...`);
         shell.cp('-R', `${__dirname}/root/src/translation`, './src');
     }
-
 
     private static updatePackageJson(variables: AllVariables): void {
         console.log(`Updating package.json...`);
