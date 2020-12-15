@@ -4,6 +4,7 @@ import {Create} from './Create';
 import {Update} from './update';
 import {Generator} from './generator/Generator';
 import {Variables} from './Variables';
+import {Deploy} from './root/tools/Deploy';
 
 program
     .version('1.8.0') // .version(require('../package').version)
@@ -86,23 +87,13 @@ program
 
 program
     .command('deploy')
-    .alias('d')
+    .option('-f, --force', 'Force unmodified files as well')
     .description('Invokes the deploy builder')
-    .action(() => {
-        shell.exec('npm run deploy');
-    })
-    .on('--help', () => {
+    .action(({force}) => {
+        Deploy.deployProject(force);
+    }).on('--help', () => {
         console.log(`Distributes the project to the D365 environment. You need to run the 'build' command first`);
     });
-
-/* easy debugging/programming
-program
-    .command('deploy')
-    .description('Invokes the deploy builder')
-    .action(() => {
-        console.log(Deploy);
-    });
-*/
 
 program
     .command('update')

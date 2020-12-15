@@ -20,6 +20,7 @@ export class Update {
         console.log(`Updating D365 Project...`);
         const variables = await Variables.get();
         Update.updateWebresources();
+        Update.updateToolsFolder();
         Update.updateSrcFolder();
         Update.updateProjectRootFolder();
         Update.updatePackageJson(variables);
@@ -62,6 +63,12 @@ export class Update {
                     `    </script>`, file);
             }
         });
+    }
+
+    private static updateToolsFolder(): void {
+        console.log('Updating tools folder...');
+        shell.rm('-rf', `tools/deploy.js`);
+        shell.exec('git rm tools/deploy.js');
     }
 
     private static updateSrcFolder(): void {
