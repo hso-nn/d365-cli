@@ -5,6 +5,7 @@ import {AdalRouter} from './AdalRouter';
 import * as crypto from 'crypto';
 import * as xml2js from 'xml2js';
 import * as shell from 'shelljs';
+import * as colors from 'colors';
 
 interface LibraryItem {
     name: string;
@@ -28,7 +29,21 @@ interface XmlDoc {
 }
 
 export class Deploy extends AdalRouter {
+    public static async deployProject(force: boolean): Promise<void> {
+        if (process.argv[4]) {
+            console.log(colors.red(`No spaces allowed after update command!`));
+        } else {
+            new Deploy(force);
+        }
+    }
+
     private md5 = (contents: string): string => crypto.createHash('md5').update(contents).digest('hex');
+    private force: boolean;
+
+    constructor(force: boolean) {
+        super();
+        this.force = force;
+    }
 
     protected onAuthenticated(): Promise<void> {
         return this.deploy();
@@ -78,7 +93,7 @@ export class Deploy extends AdalRouter {
             base64 = data.toString('base64'),
             dependencyXML = await this.generateDependencyXML(filepath, webresource, data),
             md5New = this.md5(base64);
-        if (md5Orig !== md5New || dependencyXML && dependencyXML !== webresource?.dependencyxml) {
+        if (this.force || md5Orig !== md5New || dependencyXML && dependencyXML !== webresource?.dependencyxml) {
             webresource.content = base64;
             webresource.dependencyxml = dependencyXML;
             try {
@@ -257,4 +272,4 @@ export class Deploy extends AdalRouter {
         });
     }
 }
-new Deploy();
+// new Deploy();

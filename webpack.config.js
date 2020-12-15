@@ -17,9 +17,6 @@ module.exports = {
     },
     externals: [nodeExternals()],
     entry: {
-        "root/tools/deploy": [
-            path.resolve(__dirname, "src/root/tools/Deploy.ts")
-        ],
         "root/tools/resx": [
             path.resolve(__dirname, "src/root/tools/Resx.ts")
         ],
