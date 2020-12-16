@@ -8,7 +8,7 @@ A [Command-line interface](https://en.wikipedia.org/wiki/Command-line_interface)
 Invoke the tool on the command line through the hso-d365 executable. Online help is avaliable on the command line.
 See wiki for detailed [CLI Commands](https://github.com/hso-nn/d365-cli/wiki/CLICommands).
 
-Since the features and thus the documentation is growing fast, this readme only contains a [Getting Started](#Getting Started).
+Since the features and thus the documentation is growing fast, this readme only contains a [Getting Started](#getting-started).
 All documentation and examples can be found in the [wiki](https://github.com/hso-nn/d365-cli/wiki).
 
 
