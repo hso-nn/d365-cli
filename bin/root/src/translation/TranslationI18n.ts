@@ -1,8 +1,12 @@
 import i18next from 'i18next';
 import crmJson from '../../tools/crm.json';
 
-declare interface Resources {
-    [index: string]: {translation: {[index: string]: string}};
+interface Resources {
+    [index: string]: {translation: Translations};
+}
+
+interface Translations {
+    [index: string]: string;
 }
 
 export class TranslationI18n {
@@ -35,10 +39,10 @@ export class TranslationI18n {
         return resources;
     }
 
-    private static getTranslation(languageId: string): {translation: {}} {
-        const resource = TranslationI18n.requestTranslationFile(languageId);
-        if (resource) {
-            return {translation: resource};
+    private static getTranslation(languageId: string): {translation: Translations} {
+        const translations = TranslationI18n.requestTranslationFile(languageId);
+        if (translations) {
+            return {translation: translations};
         }
     }
 
@@ -47,28 +51,26 @@ export class TranslationI18n {
         return i18next.t(text, options);
     }
 
-    private static async requestTranslationFile(languageId: string): Promise<JSON> {
-        return new Promise((resolve): void => {
-            const globalContext = Xrm.Utility.getGlobalContext(),
-                clientUrl = globalContext.getClientUrl(),
-                relativePath = `${crmJson.crm.publisher_prefix}_/${(crmJson).webresource.namespace}/locales/`,
-                uri = `${clientUrl}/webresources/${relativePath}/${languageId}.json`,
-                request = new XMLHttpRequest();
-            request.open('GET', encodeURI(uri), false);
-            request.onreadystatechange = function (): void {
-                if (this.readyState === 4) {
-                    request.onreadystatechange = null;
-                    if ([200, 201, 204].includes(this.status)) {
-                        if (this.status !== 204) {
-                            console.warn('Translation: your cache is disabled or dependencies not set on CE webresource.');
-                        }
-                        resolve(JSON.parse(request.response));
-                    } else {
-                        resolve();
+    private static requestTranslationFile(languageId: string): Translations {
+        let result: Translations = {};
+        const globalContext = Xrm.Utility.getGlobalContext(),
+            clientUrl = globalContext.getClientUrl(),
+            relativePath = `${crmJson.crm.publisher_prefix}_/${(crmJson).webresource.namespace}/locales/`,
+            uri = `${clientUrl}/webresources/${relativePath}/${languageId}.json`,
+            request = new XMLHttpRequest();
+        request.open('GET', encodeURI(uri), false);
+        request.onreadystatechange = function (): void {
+            if (this.readyState === 4) {
+                request.onreadystatechange = null;
+                if ([200, 201, 204].includes(this.status)) {
+                    if (this.status !== 204) {
+                        console.warn('Translation: your cache is disabled or dependencies not set on CE webresource.');
                     }
+                    result = JSON.parse(request.response);
                 }
-            };
-            request.send();
-        });
+            }
+        };
+        request.send();
+        return result;
     }
 }
