@@ -1,6 +1,6 @@
 
 export class Geolocation {
-    public static async getPosition(): Promise<Position> {
+    public static async getPosition(): Promise<GeolocationPosition> {
         const clientContext = Xrm.Utility.getGlobalContext().client,
             client = clientContext.getClient();
         if (client === 'Mobile') {

@@ -1,4 +1,4 @@
-import {Filter, MultipleSystemQueryOptions, SystemQueryOptions, WebApi} from '../WebApi/WebApi';
+import {WebApi} from '../WebApi/WebApi';
 import {Service} from '../WebApi/Service';
 
 export class EntityService {

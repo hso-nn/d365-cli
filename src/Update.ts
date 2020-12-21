@@ -174,6 +174,7 @@ export class Update {
                 shell.sed('-i', new RegExp(`import.*WebApi/Model';`, 'ig'), '', file);
                 shell.sed('-i', new RegExp(`import.*WebApi/WebApi';`, 'ig'), `import {WebApi} from '../WebApi/WebApi';`, file);
             }
+            shell.sed('-i', '// eslint-disable-next-line @typescript-eslint/ban-ts-ignore', '// eslint-disable-next-line @typescript-eslint/ban-ts-comment', file);
         });
     }
 
@@ -184,12 +185,12 @@ export class Update {
             start = content.indexOf('entry:'),
             end = content.indexOf('output:'),
             entryPart = content.substr(start, end - start),
-            cutEntry = entryPart.replace('\r\n    },\r\n    ', '');
+            cutEntry = entryPart.replace(/\s*},\s*/gm, '');
         shell.cp('-R', `${__dirname}/root/webpack.config.js`, '.');
         const webpackConfigFile = shell.ls('webpack.config.js')[0];
         shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), variables.publisher, webpackConfigFile);
         shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), variables.namespace, webpackConfigFile);
         shell.sed('-i', new RegExp('<%= description %>', 'ig'), variables.description, webpackConfigFile);
-        shell.sed('-i', new RegExp('entry: {', 'ig'), cutEntry, webpackConfigFile);
+        shell.sed('-i', new RegExp('entry: {', 'ig'), `${cutEntry}\r\n        `, webpackConfigFile);
     }
 }
