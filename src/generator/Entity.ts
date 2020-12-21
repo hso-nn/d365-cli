@@ -46,7 +46,7 @@ export class Entity {
         });
         const webpackConfigFile = shell.ls('webpack.config.js')[0];
         // eslint-disable-next-line max-len
-        shell.sed('-i', 'entry: {', `entry: {\n        ${entityname}: [\n            path.resolve(__dirname, "src/${entityname}/${entityname}.ts")\n        ],`, webpackConfigFile);
+        shell.sed('-i', 'entry: {', `entry: {\n            ${entityname}: [\n                path.resolve(__dirname, "src/${entityname}/${entityname}.ts")\n            ],`, webpackConfigFile);
         shell.exec('git add webpack.config.js');
         console.log('Adding D365 Entity done');
     }
