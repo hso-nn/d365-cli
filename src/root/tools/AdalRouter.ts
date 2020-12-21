@@ -1,5 +1,5 @@
 import * as express from 'express';
-// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as open from 'open';
 import {Express, Router} from 'express';

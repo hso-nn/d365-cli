@@ -162,6 +162,7 @@ export class NodeApi {
         'Content-Type': 'application/json; charset=utf-8'
     };
 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     public static async executeAction(actionName: string, bearer: string, data?: any, entityLogicalName?: string, id?: string): Promise<any> {
         if (entityLogicalName) {
             return this.executeBoundAction(actionName, bearer, data, entityLogicalName, id);
@@ -280,6 +281,7 @@ export class NodeApi {
     }
 
     private static handleNodeHttpsResponse(response: IncomingMessage, bodyString: string): NodeApiResponse {
+        // eslint-disable-next-line @typescript-eslint/ban-types
         const statusHandlers: {[index: number]: Function} = {
             200: () => {
                 return NodeApi.dataHandler(response, bodyString);

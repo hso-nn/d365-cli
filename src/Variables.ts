@@ -1,3 +1,5 @@
+import * as readline from 'readline';
+import * as fs from 'fs';
 
 export type WebpackConfigVariables = {
     publisher?: string;
@@ -29,8 +31,8 @@ export class Variables {
     private static readWebpackConfig(): Promise<WebpackConfigVariables> {
         return new Promise((resolve): void => {
             let publisher, namespace;
-            const lineReader = require('readline').createInterface({
-                input: require('fs').createReadStream(`webpack.config.js`)
+            const lineReader = readline.createInterface({
+                input: fs.createReadStream(`webpack.config.js`)
             });
             lineReader.on('line', (line: string) => {
                 if (line.includes('dir_build =')) {
@@ -52,8 +54,8 @@ export class Variables {
     private static readPackageJson(): Promise<PackageJsonVariables> {
         return new Promise((resolve): void => {
             let projectname = '', description, version = '';
-            const lineReader = require('readline').createInterface({
-                input: require('fs').createReadStream(`package.json`)
+            const lineReader = readline.createInterface({
+                input: fs.createReadStream(`package.json`)
             });
             lineReader.on('line', (line: string) => {
                 if (line.includes('"name":')) {
@@ -81,8 +83,8 @@ export class Variables {
     private static readCrmJson(): Promise<CrmJsonVariable> {
         return new Promise((resolve): void => {
             let environment = '', solution = '', translationtype = '';
-            const lineReader = require('readline').createInterface({
-                input: require('fs').createReadStream(`tools/crm.json`)
+            const lineReader = readline.createInterface({
+                input: fs.createReadStream(`tools/crm.json`)
             });
             lineReader.on('line', (line: string) => {
                 if (line.includes('"solution_name":')) {
