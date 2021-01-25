@@ -55,7 +55,7 @@ export class Update {
             const file = shell.ls(filepath)[0];
             const fileData = String(fs.readFileSync(filepath));
             if (!fileData.match(new RegExp('<script type="text/javascript">\\s*"use strict";\\s*window.Xrm = parent.Xrm;\\s*</script>'))) {
-                const match = fileData.match(new RegExp(`<body( [a-zA-Z=" ]*)?>`, 'i'));
+                const match = fileData.match(new RegExp(`<body.*?>`, 'i'));
                 shell.sed('-i', new RegExp(match[0], 'i'), `${match[0]}\n` +
                     `    <script type="text/javascript">\n` +
                     `        "use strict";\n` +
