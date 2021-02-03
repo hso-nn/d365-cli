@@ -49,7 +49,7 @@
     "karma-junit-reporter": "^2.0.1",
     "karma-sourcemap-loader": "^0.3.8",
     "karma-tap": "^4.2.0",
-    "karma-webpack": "^4.0.2",
+    "karma-webpack": "^5.0.0",
     "mini-css-extract-plugin": "^1.3.3",
     "moment": "^2.29.1",
     "node-sass": "^5.0.0",
