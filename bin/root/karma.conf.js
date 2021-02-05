@@ -1,31 +1,45 @@
 // Karma configuration
-// Generated on Tue Oct 23 2018 17:26:53 GMT+0200 (W. Europe Daylight Time)
-var path = require("path");
-var webpackConfig = require("./webpack.config.js");
-webpackConfig.module.rules.push({
-    test: /\.ts$/,
-    exclude: [
-        path.resolve(__dirname, "test"),
-        /node_modules|\.spec\.ts$/,
-    ],
-    enforce: "post",
-    use: {
-        loader: "istanbul-instrumenter-loader",
-        options: { esModules: true }
-    }
-});
+
+const webpackConfig = {
+    resolve: {
+        extensions: [".js", ".json", ".ts", ".tsx"]
+    },
+    module: {
+        rules: [{
+            test: /\.tsx?$/,
+            use: "ts-loader",
+            exclude: /node_modules/
+        }, {
+            test: /\.ts$/,
+            enforce: "post",
+            use: {
+                loader: "coverage-istanbul-loader",
+                options: { esModules: true }
+            }
+        }]
+    },
+    devtool: "inline-source-map",
+}
 
 module.exports = function (config) { //eslint-disable-line max-lines-per-function
     config.set({
 
         // base path that will be used to resolve all patterns (eg. files, exclude)
-        basePath: "../..",
+        basePath: "",
 
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-        frameworks: ["jasmine"],
+        frameworks: ["jasmine", "webpack"],
 
+        plugins: [
+            "karma-webpack",
+            "karma-jasmine",
+            "karma-coverage",
+            "karma-junit-reporter",
+            "karma-sourcemap-loader",
+            "karma-chrome-launcher"
+        ],
 
         // list of files / patterns to load in the browser
         files: [
@@ -41,7 +55,7 @@ module.exports = function (config) { //eslint-disable-line max-lines-per-functio
         // preprocess matching files before serving them to the browser
         // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
         preprocessors: {
-            "./test-main.js": ["webpack", "sourcemap"],
+            "./test-main.js": ["webpack", "sourcemap", "coverage"],
         },
 
 
@@ -95,9 +109,15 @@ module.exports = function (config) { //eslint-disable-line max-lines-per-functio
         coverageReporter: {
             // specify a common output directory
             dir: "testresults/coverage",
+            instrumenterOptions: {
+                istanbul: {
+                    noCompact: true
+                }
+            },
             reporters: [
                 // reporters not supporting the `file` property
                 { type: "html", subdir: "report-html" },
+                // { type: 'lcov', subdir: 'report-lcov' },
                 // reporters supporting the `file` property, use `subdir` to directly
                 // output them in the `dir` directory
                 //{ type: 'text', subdir: '.', file: 'text.txt' },

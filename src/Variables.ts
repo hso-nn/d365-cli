@@ -15,7 +15,6 @@ export type PackageJsonVariables = {
 export type CrmJsonVariable = {
     environment?: string;
     solution?: string;
-    translationtype?: string;
 }
 
 export type AllVariables = WebpackConfigVariables & PackageJsonVariables & CrmJsonVariable;
@@ -82,7 +81,7 @@ export class Variables {
 
     private static readCrmJson(): Promise<CrmJsonVariable> {
         return new Promise((resolve): void => {
-            let environment = '', solution = '', translationtype = '';
+            let environment = '', solution = '';
             const lineReader = readline.createInterface({
                 input: fs.createReadStream(`tools/crm.json`)
             });
@@ -99,16 +98,11 @@ export class Variables {
                     const split = line.split('"');
                     environment = split[3];
                 }
-                if (line.includes('"translation:"')) {
-                    const split = line.split('"');
-                    translationtype = split[3];
-                }
                 if (line.includes('"redirectUri":')) {
                     lineReader.close();
                     resolve({
                         environment: environment,
                         solution: solution,
-                        translationtype: translationtype
                     });
                 }
             });

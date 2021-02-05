@@ -1,6 +1,5 @@
 webpack.config.js
 karma.conf.js
-i18next-scanner.config.js
 test-main.js
 postcss.config.js
 msbuild-formatter.js

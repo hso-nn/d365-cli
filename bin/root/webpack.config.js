@@ -1,6 +1,6 @@
 const path = require("path");
 const webpack = require("webpack");
-const dir_build = path.resolve(__dirname, "dist/hds_/ces");
+const dir_build = path.resolve(__dirname, "dist/hds_/<%= namespace %>");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserPlugin = require("terser-webpack-plugin");

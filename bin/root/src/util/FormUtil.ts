@@ -20,7 +20,6 @@ export class FormUtil {
 
     static setDisabled(executionContext: Xrm.Events.EventContext, disabled: boolean, attributeNames: string[]): void {
         const formContext = executionContext.getFormContext();
-
         attributeNames.forEach((fieldname: string) => {
             const formControl: Xrm.Controls.StandardControl = formContext.getControl(fieldname);
             if (formControl) {
@@ -31,11 +30,30 @@ export class FormUtil {
 
     static setVisible(executionContext: Xrm.Events.EventContext, visible: boolean, attributeNames: string[]): void {
         const formContext = executionContext.getFormContext();
-
         attributeNames.forEach((fieldname: string) => {
             const formControl: Xrm.Controls.StandardControl = formContext.getControl(fieldname);
             if (formControl) {
                 formControl.setVisible(visible);
+            }
+        });
+    }
+
+    static setValue(executionContext: Xrm.Events.EventContext, value: any, attributeNames: string[]): void {
+        const formContext = executionContext.getFormContext();
+        attributeNames.forEach((fieldname: string) => {
+            const attribute: Xrm.Attributes.Attribute = formContext.getAttribute(fieldname);
+            if (attribute) {
+                attribute.setValue(value);
+            }
+        });
+    }
+
+    static setRequiredLevel(executionContext: Xrm.Events.EventContext, level: Xrm.Attributes.RequirementLevel, attributeNames: string[]): void {
+        const formContext = executionContext.getFormContext();
+        attributeNames.forEach((fieldname: string) => {
+            const attribute: Xrm.Attributes.Attribute = formContext.getAttribute(fieldname);
+            if (attribute) {
+                attribute.setRequiredLevel(level);
             }
         });
     }
@@ -45,7 +63,7 @@ export class FormUtil {
             entityName = formContext.data.entity.getEntityName(),
             entityMetadata = await Xrm.Utility.getEntityMetadata(entityName, [attributeName]),
             attributeMetadata = entityMetadata.Attributes.get(attributeName);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         for (const target of attributeMetadata.Targets) {
             try {

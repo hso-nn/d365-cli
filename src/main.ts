@@ -7,7 +7,7 @@ import {Variables} from './Variables';
 import {Deploy} from './root/tools/Deploy';
 
 program
-    .version('1.8.0') // .version(require('../package').version)
+    .version('3.0.0') // .version(require('../package').version)
     .usage('<command> [options]');
 
 program
@@ -35,21 +35,14 @@ program
 program
     .command('extractTranslations')
     .alias('extract')
-    .description('Extracts translations into resx or json files, dependent on crm.json translation setting.')
+    .description('Extracts translations into resx files.')
     .action(async () => {
-        const variables = await Variables.get();
-        if (variables.translationtype === 'i18n') {
-            console.log('Extracting i18n json files');
-            shell.exec('npm run i18next-scanner');
-        } else {
-            console.log('Extracting resx files');
-            shell.exec('npm run resx');
-        }
+        console.log('Extracting resx files');
+        shell.exec('npm run resx');
     })
     .on('--help', () => {
         console.log(`In translation folder a folder 'locales' will be generated having translation files.`);
-        console.log('When your translation setting is i18n, it will generate a json files for each language specified in i18next-scanner.config.js');
-        console.log(`When your translation setting is resx, it will generate one locales.resx file.`);
+        console.log(`It will generate one locales.resx file.`);
         console.log(`You have to add for each required language a copy yourself like locales.1033.resx.`);
         console.log(`Once done, the tooling will keep up-to-date for you.`);
     });
