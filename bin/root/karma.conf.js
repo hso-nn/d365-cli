@@ -1,19 +1,5 @@
 // Karma configuration
-// Generated on Tue Oct 23 2018 17:26:53 GMT+0200 (W. Europe Daylight Time)
-var path = require("path");
-var webpackConfig = require("./webpack.config.js");
-webpackConfig.module.rules.push({
-    test: /\.ts$/,
-    exclude: [
-        path.resolve(__dirname, "test"),
-        /node_modules|\.spec\.ts$/,
-    ],
-    enforce: "post",
-    use: {
-        loader: "istanbul-instrumenter-loader",
-        options: { esModules: true }
-    }
-});
+const webpackConfig = require("./webpack.config.js");
 
 module.exports = function (config) { //eslint-disable-line max-lines-per-function
     config.set({
