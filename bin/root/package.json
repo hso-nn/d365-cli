@@ -14,8 +14,7 @@
     "watch": "webpack --watch",
     "start": "webpack serve",
     "starthttps": "webpack serve --https",
-    "lint": "eslint ./ --ext .js,.ts,.tsx",
-    "i18next-scanner": "i18next-scanner --config i18next-scanner.config.js src/**/*.{js,ts,tsx}"
+    "lint": "eslint ./ --ext .js,.ts,.tsx"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
@@ -38,8 +37,6 @@
     "cssnano": "^4.1.10",
     "eslint": "^7.16.0",
     "eslint-loader": "^4.0.2",
-    "i18next": "^19.8.4",
-    "i18next-scanner": "^3.0.0",
     "json-loader": "^0.5.7",
     "karma": "^5.2.3",
     "karma-chrome-launcher": "^3.1.0",
