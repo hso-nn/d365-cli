@@ -7,7 +7,7 @@ import {Variables} from './Variables';
 import {Deploy} from './root/tools/Deploy';
 
 program
-    .version('3.0.1') // .version(require('../package').version)
+    .version('3.0.2') // .version(require('../package').version)
     .usage('<command> [options]');
 
 program
