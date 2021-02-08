@@ -247,7 +247,7 @@ export class Model extends AdalRouter {
                 enumStrings += `export enum ${this.getTypeName(logicalName)} {\n`;
                 const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
                 for (const option of options) {
-                    enumStrings += `    ${option.label.replace(/\s/g, '')} = ${option.value},\n`;
+                    enumStrings += `    ${option.label.replace(/\W/g, '')} = ${option.value},\n`;
                 }
                 enumStrings += '}\n';
             }
