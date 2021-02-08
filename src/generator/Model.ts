@@ -74,17 +74,50 @@ export class Model extends AdalRouter {
     }
 
     private async writeEnumFile(): Promise<void> {
+        const enumAttributeNames = await this.getAttributeNamesEnumString();
         const enumStrings = await this.getEnumStrings();
-        if (enumStrings.trim()) {
-            const enumFilepath = `src/${this.entityname}/${this.entityname}.enum.ts`;
-            if (!shell.test('-f', enumFilepath)) {
-                shell.cp('-r', `${__dirname}/Entity/Entity.enum.ts`, `src/${this.entityname}`);
-                shell.cp('-r', `src/${this.entityname}/Entity.enum.ts`, enumFilepath);
-                shell.rm('-rf', `src/${this.entityname}/Entity.enum.ts`);
-                shell.exec(`git add ${enumFilepath}`);
-            }
-            shell.ShellString(enumStrings).to(enumFilepath);
+        const enumFilepath = `src/${this.entityname}/${this.entityname}.enum.ts`;
+        if (!shell.test('-f', enumFilepath)) {
+            shell.cp('-r', `${__dirname}/Entity/Entity.enum.ts`, `src/${this.entityname}`);
+            shell.cp('-r', `src/${this.entityname}/Entity.enum.ts`, enumFilepath);
+            shell.rm('-rf', `src/${this.entityname}/Entity.enum.ts`);
+            shell.exec(`git add ${enumFilepath}`);
         }
+        shell.ShellString(enumAttributeNames + enumStrings).to(enumFilepath);
+    }
+
+    private async getAttributeNamesEnumString(): Promise<string> {
+        let enumStrings = '';
+        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
+        const entityPascalCase = `${this.entityLogicalName.charAt(0).toUpperCase()}${this.entityLogicalName.slice(1)}`;
+        enumStrings += `export enum ${entityPascalCase}AttributeNames {\n`;
+        for (const attribute of attributesMetadata) {
+            const {LogicalName: logicalName} = attribute;
+            const attributePascalCase = `${logicalName.charAt(0).toUpperCase()}${logicalName.slice(1)}`;
+            enumStrings += `    ${attributePascalCase} = '${logicalName}',\n`;
+        }
+        enumStrings += `}\n`;
+        return enumStrings;
+    }
+
+    private async getEnumStrings(): Promise<string> {
+        let enumStrings = '';
+        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
+        for (const attribute of attributesMetadata) {
+            const {AttributeType: attributeType, LogicalName: logicalName} = attribute;
+            if (attributeType === 'Picklist') {
+                enumStrings += `export enum ${this.getTypeName(logicalName)} {\n`;
+                const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
+                for (const option of options) {
+                    enumStrings += `    ${option.label.replace(/\W/g, '')} = ${option.value},\n`;
+                }
+                enumStrings += '}\n';
+            }
+        }
+        if (enumStrings) {
+            enumStrings += '\n';
+        }
+        return enumStrings;
     }
 
     private getImportStrings(relationshipInterfaceTypes: InterfaceTypes): string {
@@ -236,26 +269,6 @@ export class Model extends AdalRouter {
         }
         typeStrings += '\n';
         return typeStrings;
-    }
-
-    private async getEnumStrings(): Promise<string> {
-        let enumStrings = '';
-        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
-        for (const attribute of attributesMetadata) {
-            const {AttributeType: attributeType, LogicalName: logicalName} = attribute;
-            if (attributeType === 'Picklist') {
-                enumStrings += `export enum ${this.getTypeName(logicalName)} {\n`;
-                const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
-                for (const option of options) {
-                    enumStrings += `    ${option.label.replace(/\W/g, '')} = ${option.value},\n`;
-                }
-                enumStrings += '}\n';
-            }
-        }
-        if (enumStrings) {
-            enumStrings += '\n';
-        }
-        return enumStrings;
     }
 
     private static get logicalNameRegex(): RegExp {
