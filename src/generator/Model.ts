@@ -41,6 +41,7 @@ export class Model extends AdalRouter {
         this.log(`Generating model for Entity '${this.entityname}'<br/>Using entityLogicalName '${this.entityLogicalName}'</br>`);
         await this.writeModelFile();
         await this.writeEnumFile();
+        await this.writeFormContextFile();
         this.log('Generating model finished');
     }
 
@@ -71,53 +72,6 @@ export class Model extends AdalRouter {
         } else {
             this.log(`Model file seems to be corrupt. Please fix ${modelFilepath}`);
         }
-    }
-
-    private async writeEnumFile(): Promise<void> {
-        const enumAttributeNames = await this.getAttributeNamesEnumString();
-        const enumStrings = await this.getEnumStrings();
-        const enumFilepath = `src/${this.entityname}/${this.entityname}.enum.ts`;
-        if (!shell.test('-f', enumFilepath)) {
-            shell.cp('-r', `${__dirname}/Entity/Entity.enum.ts`, `src/${this.entityname}`);
-            shell.cp('-r', `src/${this.entityname}/Entity.enum.ts`, enumFilepath);
-            shell.rm('-rf', `src/${this.entityname}/Entity.enum.ts`);
-            shell.exec(`git add ${enumFilepath}`);
-        }
-        shell.ShellString(enumAttributeNames + enumStrings).to(enumFilepath);
-    }
-
-    private async getAttributeNamesEnumString(): Promise<string> {
-        let enumStrings = '';
-        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
-        const entityPascalCase = `${this.entityLogicalName.charAt(0).toUpperCase()}${this.entityLogicalName.slice(1)}`;
-        enumStrings += `export enum ${entityPascalCase}AttributeNames {\n`;
-        for (const attribute of attributesMetadata) {
-            const {LogicalName: logicalName} = attribute;
-            const attributePascalCase = `${logicalName.charAt(0).toUpperCase()}${logicalName.slice(1)}`;
-            enumStrings += `    ${attributePascalCase} = '${logicalName}',\n`;
-        }
-        enumStrings += `}\n`;
-        return enumStrings;
-    }
-
-    private async getEnumStrings(): Promise<string> {
-        let enumStrings = '';
-        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
-        for (const attribute of attributesMetadata) {
-            const {AttributeType: attributeType, LogicalName: logicalName} = attribute;
-            if (attributeType === 'Picklist') {
-                enumStrings += `export enum ${this.getTypeName(logicalName)} {\n`;
-                const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
-                for (const option of options) {
-                    enumStrings += `    ${option.label.replace(/\W/g, '')} = ${option.value},\n`;
-                }
-                enumStrings += '}\n';
-            }
-        }
-        if (enumStrings) {
-            enumStrings += '\n';
-        }
-        return enumStrings;
     }
 
     private getImportStrings(relationshipInterfaceTypes: InterfaceTypes): string {
@@ -180,10 +134,6 @@ export class Model extends AdalRouter {
             relationshipsInterfaces[ReferencingEntityNavigationPropertyName] = ReferencedEntity;
         }
         return relationshipsInterfaces;
-    }
-
-    private static capitalize(text: string): string {
-        return text.charAt(0).toUpperCase() + text.slice(1);
     }
 
     private static defaultModelAttributes = ['createdonbehalfbyyominame', 'owneridname', 'importsequencenumber', 'modifiedbyyominame', 'utcconversiontimezonecode',
@@ -288,5 +238,107 @@ export class Model extends AdalRouter {
         } else {
             console.log(colors.red(`Entity ${entityname} does not exist. Please add first by following command:\nHSO-D365 generate Entity ${entityname}`));
         }
+    }
+
+    private async writeFormContextFile(): Promise<void> {
+        const formContextAttributesString = await this.getFormContextAttributesString();
+        const formContextFilepath = `src/${this.entityname}/${this.entityname}.formContext.ts`;
+        shell.cp('-r', `${__dirname}/Entity/Entity.formContext.ts`, `src/${this.entityname}`);
+        shell.cp('-r', `src/${this.entityname}/Entity.formContext.ts`, formContextFilepath);
+        shell.rm('-rf', `src/${this.entityname}/Entity.formContext.ts`);
+        shell.sed('-i', new RegExp('Entity', 'g'), this.entityname, formContextFilepath);
+        shell.exec(`git add ${formContextFilepath}`);
+        const filedata = String(fs.readFileSync(formContextFilepath));
+        const replaceString = `${this.entityname}FormContext {`;
+        const newFileData = filedata.replace(replaceString, `${replaceString}\n${formContextAttributesString}`);
+        shell.ShellString(newFileData).to(formContextFilepath);
+    }
+
+    private async getFormContextAttributesString(): Promise<string> {
+        let formContextAttributesString = '';
+        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
+        for (const attribute of attributesMetadata) {
+            const {AttributeType: attributeType, LogicalName: logicalName} = attribute;
+            const xrmAttributeType = this.getXrmAttributeType(attributeType);
+            if (xrmAttributeType) {
+                const pascalLogicalName = Model.capitalize(logicalName);
+                const methodName = `    static get${pascalLogicalName}Attribute(formContext: FormContext): ${xrmAttributeType} {`;
+                const returnString = `return formContext.getAttribute(${this.entityname}AttributeNames.${pascalLogicalName});`;
+                formContextAttributesString += `${methodName}\n        ${returnString}\n    }\n`;
+            }
+        }
+        return formContextAttributesString;
+    }
+
+    // https://docs.microsoft.com/en-us/dotnet/api/microsoft.xrm.sdk.metadata.attributemetadata?view=dynamics-general-ce-9
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private getXrmAttributeType(attributeType: string): string {
+        if (['String', 'Memo', 'Uniqueidentifier'].includes(attributeType)) {
+            return 'Xrm.Attributes.StringAttribute';
+        } else if (['DateTime'].includes(attributeType)) {
+            return 'Xrm.Attributes.DateAttribute';
+        } else if (['Boolean'].includes(attributeType)) {
+            return 'Xrm.Attributes.BooleanAttribute | Xrm.Attributes.EnumAttribute';
+        } else if (['Picklist', 'Status', 'State'].includes(attributeType)) {
+            return 'Xrm.Attributes.OptionSetAttribute';
+        } else if (['Integer', 'Double', 'BigInt', 'Decimal', 'Double', 'Money'].includes(attributeType)) {
+            return 'Xrm.Attributes.NumberAttribute';
+        } else if (['Lookup', 'Customer', 'Owner'].includes(attributeType)) {
+            return 'Xrm.Attributes.LookupAttribute';
+        } else {
+            this.log(`<span style="color:blue;">${this.entityLogicalName} attribute ${attributeType} falls back to Xrm.Attributes.Attribute.<br/>
+                <span style="color:green">Please log an issue if needed.</span></br>`);
+            return 'Xrm.Attributes.Attribute';
+        }
+    }
+
+    private async writeEnumFile(): Promise<void> {
+        const enumAttributeNames = await this.getAttributeNamesEnumString();
+        const enumStrings = await this.getEnumStrings();
+        const enumFilepath = `src/${this.entityname}/${this.entityname}.enum.ts`;
+        if (!shell.test('-f', enumFilepath)) {
+            shell.cp('-r', `${__dirname}/Entity/Entity.enum.ts`, `src/${this.entityname}`);
+            shell.cp('-r', `src/${this.entityname}/Entity.enum.ts`, enumFilepath);
+            shell.rm('-rf', `src/${this.entityname}/Entity.enum.ts`);
+            shell.exec(`git add ${enumFilepath}`);
+        }
+        shell.ShellString(enumAttributeNames + enumStrings).to(enumFilepath);
+    }
+
+    private async getAttributeNamesEnumString(): Promise<string> {
+        let enumStrings = '';
+        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
+        enumStrings += `export enum ${Model.capitalize(this.entityLogicalName)}AttributeNames {\n`;
+        for (const attribute of attributesMetadata) {
+            const {LogicalName: logicalName} = attribute;
+            const attributePascalCase = `${Model.capitalize(logicalName)}`;
+            enumStrings += `    ${attributePascalCase} = '${logicalName}',\n`;
+        }
+        enumStrings += `}\n`;
+        return enumStrings;
+    }
+
+    private async getEnumStrings(): Promise<string> {
+        let enumStrings = '';
+        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
+        for (const attribute of attributesMetadata) {
+            const {AttributeType: attributeType, LogicalName: logicalName} = attribute;
+            if (attributeType === 'Picklist') {
+                enumStrings += `export enum ${this.getTypeName(logicalName)} {\n`;
+                const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
+                for (const option of options) {
+                    enumStrings += `    ${option.label.replace(/\W/g, '')} = ${option.value},\n`;
+                }
+                enumStrings += '}\n';
+            }
+        }
+        if (enumStrings) {
+            enumStrings += '\n';
+        }
+        return enumStrings;
+    }
+
+    private static capitalize(text: string): string {
+        return text.charAt(0).toUpperCase() + text.slice(1);
     }
 }
