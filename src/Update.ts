@@ -1,5 +1,6 @@
 import * as colors from 'colors';
 import * as shell from 'shelljs';
+import * as fs from 'fs';
 import {AllVariables, Variables} from './Variables';
 
 export class Update {
@@ -21,6 +22,7 @@ export class Update {
         Update.updateTranslationFiles();
         Update.updateSrcFolder();
         Update.updateProjectRootFolder();
+        Update.updateFormFiles();
         Update.updatePackageJson(variables);
         Update.updateWebpackConfig(variables);
         console.log(`Updating D365 Project done`);
@@ -45,6 +47,20 @@ export class Update {
         console.log(`Updating tsconfig.json`);
         shell.cp('-R', `${__dirname}/root/tsconfig.json`, '.');
         shell.exec('git add tsconfig.json');
+    }
+
+    private static updateFormFiles(): void {
+        console.log(`Updating Service files...`);
+        shell.ls(`src/**/*.form.ts*`).forEach(function (filepath) {
+            const fileData = String(fs.readFileSync(filepath));
+            const match = fileData.match(new RegExp('export class ([a-zA-Z]*)Form {'));
+            if (match) {
+                const entityName = match[1];
+                const importString = `import {${entityName}FormContext} from './${entityName}.formContext';`;
+                const newExportString = `export class ${entityName}Form extends ${entityName}FormContext {`;
+                shell.sed('-i', new RegExp(`export class ${entityName}Form {`, 'i'), `${importString}\n${newExportString}`, filepath);
+            }
+        });
     }
 
     private static updateTranslationFiles(): void {

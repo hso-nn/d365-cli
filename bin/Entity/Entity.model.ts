@@ -1,6 +1,6 @@
+/* This is a generated file, please regenerate and do not modify */
+/* eslint-disable max-len  */
 
-// Please add Entity fields here, which are (to be) used in code
-// Please add NavigationProperties here, referring to another model, which are (to be) used in code
-interface EntityModel extends Model {
-    EntityLogicalNameid?: string;
-}
+interface EntityModel extends Model {}
+
+/* eslint-enable max-len  */

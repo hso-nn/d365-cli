@@ -27,30 +27,19 @@ export class Create {
     }
 
     private static async create(projectname: string): Promise<void> {
+        const answers = await Create.inquirer();
         console.log(`Initializing D365 Project ${projectname}...`);
-        shell.mkdir(projectname);
+        if (!shell.test('-e', `${projectname}`)) {
+            shell.mkdir(projectname);
+        }
         shell.cd(projectname);
         shell.mkdir('Webresources');
         shell.cp('-R', `${__dirname}/root/*`, 'Webresources');
         shell.cp('-R', `${__dirname}/root/.*`, 'Webresources');
 
-        const answers = await Create.inquirer();
-
-        const crmJsonFile = shell.ls('Webresources/tools/crm.json')[0];
-        shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, crmJsonFile);
-        shell.sed('-i', new RegExp('<%= solution %>', 'ig'), answers.solution, crmJsonFile);
-        shell.sed('-i', new RegExp('<%= environment %>', 'ig'), answers.environment, crmJsonFile);
-        shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), answers.namespace, crmJsonFile);
-
-        const packageJsonFile = shell.ls('Webresources/package.json')[0];
-        shell.sed('-i', '<%= projectname %>', projectname.toLowerCase(), packageJsonFile);
-        shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.solution, packageJsonFile);
-        shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, packageJsonFile);
-
-        const webpackConfigFile = shell.ls('Webresources/webpack.config.js')[0];
-        shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, webpackConfigFile);
-        shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), answers.namespace, webpackConfigFile);
-        shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.namespace, webpackConfigFile);
+        Create.initCrmJson(answers);
+        Create.initPackageJson(projectname, answers);
+        Create.initWebpackConfig(answers);
 
         shell.cd('Webresources');
         console.log(`Installing npm packages. This may take a while...`);
@@ -59,6 +48,28 @@ export class Create {
         console.log(`${colors.blue('hso-d365 generate Entity x')} in Webresources folder generates Entity x files and settings.`);
         console.log(`${colors.blue('npm run build:prod')} in Webresources folder creates the deployment package.`);
         console.log(`See package.json#scripts for all options.`);
+    }
+
+    private static initCrmJson(answers: CreateAnswers): void {
+        const crmJsonFile = shell.ls('Webresources/tools/crm.json')[0];
+        shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, crmJsonFile);
+        shell.sed('-i', new RegExp('<%= solution %>', 'ig'), answers.solution, crmJsonFile);
+        shell.sed('-i', new RegExp('<%= environment %>', 'ig'), answers.environment, crmJsonFile);
+        shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), answers.namespace, crmJsonFile);
+    }
+
+    private static initPackageJson(projectName: string, answers: CreateAnswers): void {
+        const packageJsonFile = shell.ls('Webresources/package.json')[0];
+        shell.sed('-i', '<%= projectname %>', projectName.toLowerCase(), packageJsonFile);
+        shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.solution, packageJsonFile);
+        shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, packageJsonFile);
+    }
+
+    private static initWebpackConfig(answers: CreateAnswers): void {
+        const webpackConfigFile = shell.ls('Webresources/webpack.config.js')[0];
+        shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, webpackConfigFile);
+        shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), answers.namespace, webpackConfigFile);
+        shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.namespace, webpackConfigFile);
     }
 
     private static inquirer(): Promise<CreateAnswers> {

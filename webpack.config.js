@@ -78,7 +78,7 @@ module.exports = (env, argv) =>  {
                 extractComments: false,
                 terserOptions: {
                     compress: {
-                        drop_console: mode === "production"
+                        drop_console: false, // needed for command line!
                     }
                 }
             })]

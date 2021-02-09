@@ -19,6 +19,7 @@ export class Generator {
         } else if (schematic.toLowerCase() === 'webresource') {
             return Webresource.generateWebresource(name);
         } else if(schematic.toLocaleLowerCase() === 'model') {
+            console.log(colors.red('Deprecated: please use Entity instead'));
             return Model.generateModel(name);
         } else if (schematic.toLowerCase() === 'licensevalidator') {
             return LicenseValidator.generateLicenseValidator(name);
