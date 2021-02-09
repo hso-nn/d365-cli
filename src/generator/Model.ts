@@ -277,7 +277,7 @@ export class Model extends AdalRouter {
             if (xrmAttributeType) {
                 const pascalSchemaName = Model.capitalize(schemaName);
                 const methodName = `    static get${pascalSchemaName}Attribute(formContext: FormContext): ${xrmAttributeType} {`;
-                const returnString = `return formContext.getAttribute(${this.entityname}AttributeNames.${schemaName});`;
+                const returnString = `return formContext.getAttribute(${this.entityname}AttributeNames.${pascalSchemaName});`;
                 formContextAttributesString += `${methodName}\n        ${returnString}\n    }\n`;
             }
         }
@@ -322,11 +322,10 @@ export class Model extends AdalRouter {
     private async getAttributeNamesEnumString(): Promise<string> {
         let enumStrings = '';
         const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
-        const displayName = await this.getDisplayName(this.entityLogicalName);
-        enumStrings += `export enum ${displayName}AttributeNames {\n`;
+        enumStrings += `export enum ${this.entityname}AttributeNames {\n`;
         for (const attribute of attributesMetadata) {
             const {LogicalName: logicalName, SchemaName: schemaName} = attribute;
-            enumStrings += `    ${schemaName} = '${logicalName}',\n`;
+            enumStrings += `    ${Model.capitalize(schemaName)} = '${logicalName}',\n`;
         }
         enumStrings += `}\n`;
         return enumStrings;
@@ -338,7 +337,8 @@ export class Model extends AdalRouter {
         for (const attribute of attributesMetadata) {
             const {AttributeType: attributeType, LogicalName: logicalName, SchemaName: schemaName} = attribute;
             if (attributeType === 'Picklist') {
-                enumStrings += `export enum ${schemaName} {\n`;
+                const pascalSchemaName = Model.capitalize(schemaName);
+                enumStrings += `export enum ${pascalSchemaName} {\n`;
                 const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
                 for (const option of options) {
                     let label = option.label.replace(/\W/g, '');
