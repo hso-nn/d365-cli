@@ -109,19 +109,23 @@ module.exports = (env, argv) => {
                 patterns: [{
                     from: "./**/**.png",
                     to: dir_build,
-                    context: "src"
+                    context: "src",
+                    noErrorOnMissing: true,
                 }, {
                     from: "./**/**.svg",
                     to: dir_build,
-                    context: "src"
+                    context: "src",
+                    noErrorOnMissing: true,
                 }, {
                     from: "./**/**.html",
                     to: dir_build,
-                    context: "src"
+                    context: "src",
+                    noErrorOnMissing: true,
                 }, {
                     from: "locales/*",
                     to: dir_build,
-                    context: "src/translation"
+                    context: "src/translation",
+                    noErrorOnMissing: true,
                 }]
             }),
         ]),
