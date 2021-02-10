@@ -65,13 +65,13 @@ export class Update {
 
     private static updateTranslationFiles(): void {
         console.log('Updating translation files...');
-        if (shell.ls(['./translation/TranslationI18n.ts']).length === 1) {
-            shell.rm('-rf', `translation/TranslationI18n.ts`);
-            shell.exec('git rm translation/TranslationI18n.ts');
+        if (shell.ls(['./src/translation/TranslationI18n.ts']).length === 1) {
+            shell.rm('-rf', `./src/translation/TranslationI18n.ts`);
+            shell.exec('git rm ./src/translation/TranslationI18n.ts');
         }
         if (shell.ls(['./i18next-scanner.config.js']).length === 1) {
-            shell.rm('-rf', `i18next-scanner.config.js`);
-            shell.exec('git rm i18next-scanner.config.js');
+            shell.rm('-rf', `./i18next-scanner.config.js`);
+            shell.exec('git rm ./i18next-scanner.config.js');
         }
     }
 
