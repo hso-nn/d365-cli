@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run clean && webpack --mode development",
     "build:prod": "npm run clean && webpack --mode production --bail --progress",
-    "resx": "node tools/resx.js",
+    "resx": "hso-d365 extractTranslations",
     "setFormCustomizable:true": "node tools/setFormCustomizable.js --customizable true",
     "setFormCustomizable:false": "node tools/setFormCustomizable.js --customizable false",
     "clean": "IF exist dist (rmdir /s /q dist)",

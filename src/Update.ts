@@ -21,6 +21,7 @@ export class Update {
         const variables = await Variables.get();
         Update.updateTranslationFiles();
         Update.updateSrcFolder();
+        Update.updateToolsFolder();
         Update.updateProjectRootFolder();
         Update.updateFormFiles();
         Update.updatePackageJson(variables);
@@ -94,6 +95,17 @@ export class Update {
 
         console.log(`Updating Translation...`);
         shell.cp('-R', `${__dirname}/root/src/translation`, './src');
+    }
+
+    private static updateToolsFolder(): void {
+        if (shell.ls(['./tools/resx.js']).length === 1) {
+            shell.rm('-rf', `./tools/resx.js`);
+            shell.exec('git rm ./tools/resx.js');
+        }
+        if (shell.ls(['./tools/locales.resx']).length === 1) {
+            shell.rm('-rf', `./tools/locales.resx`);
+            shell.exec('git rm ./tools/locales.resx');
+        }
     }
 
     private static updatePackageJson(variables: AllVariables): void {

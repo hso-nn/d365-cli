@@ -17,9 +17,6 @@ module.exports = (env, argv) =>  {
         },
         externals: [nodeExternals()],
         entry: {
-            "root/tools/resx": [
-                path.resolve(__dirname, "src/root/tools/Resx.ts")
-            ],
             "root/tools/setFormCustomizable": [
                 path.resolve(__dirname, "src/root/tools/SetFormCustomizable.ts")
             ],
