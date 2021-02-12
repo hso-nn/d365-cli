@@ -8,7 +8,7 @@ import {Deploy} from './root/tools/Deploy';
 import {Resx} from './root/tools/Resx';
 
 program
-    .version('4.0.1') // .version(require('../package').version)
+    .version('4.0.2') // .version(require('../package').version)
     .usage('<command> [options]');
 
 program
