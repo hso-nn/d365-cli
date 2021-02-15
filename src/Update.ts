@@ -106,6 +106,10 @@ export class Update {
             shell.rm('-rf', `./tools/locales.resx`);
             shell.exec('git rm ./tools/locales.resx');
         }
+        if (shell.ls(['./tools/setFormCustomizable.js']).length === 1) {
+            shell.rm('-rf', `./tools/setFormCustomizable.js`);
+            shell.exec('git rm ./tools/setFormCustomizable.js');
+        }
     }
 
     private static updatePackageJson(variables: AllVariables): void {

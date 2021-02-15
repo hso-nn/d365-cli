@@ -6,6 +6,7 @@ import {Generator} from './generator/Generator';
 import {Variables} from './Variables';
 import {Deploy} from './root/tools/Deploy';
 import {Resx} from './root/tools/Resx';
+import {SetFormCustomizable} from './root/tools/SetFormCustomizable';
 
 program
     .version('4.0.3') // .version(require('../package').version)
@@ -93,8 +94,8 @@ program
     .command('setFormCustomizable <customizable>')
     .alias('f')
     .description('Sets the Solution forms iscustomizable/canbedeleted true/false')
-    .action((customizable?: boolean) => {
-        shell.exec(`npm run setFormCustomizable:${customizable ? 'true' : 'false'}`);
+    .action((customizable?: string) => {
+        new SetFormCustomizable(customizable === 'true');
     })
     .on('--help', () => {
         console.log(`Sets the Solution forms iscustomizable/canbedeleted true/false`);

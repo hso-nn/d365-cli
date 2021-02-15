@@ -6,15 +6,16 @@
   "scripts": {
     "build": "npm run clean && webpack --mode development",
     "build:prod": "npm run clean && webpack --mode production --bail --progress",
-    "resx": "hso-d365 extractTranslations",
-    "setFormCustomizable:true": "node tools/setFormCustomizable.js --customizable true",
-    "setFormCustomizable:false": "node tools/setFormCustomizable.js --customizable false",
     "clean": "IF exist dist (rmdir /s /q dist)",
-    "deploy": "hso-d365 deploy",
     "watch": "webpack --watch",
     "start": "webpack serve",
     "starthttps": "webpack serve --https",
-    "lint": "eslint ./ --ext .js,.ts,.tsx"
+    "lint": "eslint ./ --ext .js,.ts,.tsx",
+    "deploy": "hso-d365 deploy",
+    "resx": "hso-d365 extractTranslations",
+    "setFormCustomizable:true": "hso-d365 setFormCustomizable true",
+    "setFormCustomizable:false": "hso-d365 setFormCustomizable false",
+    "update": "hso-d365 update"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
