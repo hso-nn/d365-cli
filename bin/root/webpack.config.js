@@ -13,7 +13,8 @@ module.exports = (env, argv) => {
     const cssLoaders = [mode === "development" ? "style-loader" :  MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"];
     return {
         mode: mode,
-        entry: {},
+        entry: {
+        },
         output: {
             path: dir_build,
             filename: "[name]/[name].js",

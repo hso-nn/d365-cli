@@ -3,7 +3,6 @@ import * as shell from 'shelljs';
 import {Entity} from './Entity';
 import {Webresource} from './Webresource';
 import {LicenseValidator} from './LicenseValidator';
-import {Model} from './Model';
 
 export class Generator {
     public static generate(schematic: string, name: string): Promise<void> {
@@ -19,8 +18,7 @@ export class Generator {
         } else if (schematic.toLowerCase() === 'webresource') {
             return Webresource.generateWebresource(name);
         } else if(schematic.toLocaleLowerCase() === 'model') {
-            console.log(colors.red('Deprecated: please use Entity instead'));
-            return Model.generateModel(name);
+            console.log(colors.red('Not supported anymore: please use Entity instead'));
         } else if (schematic.toLowerCase() === 'licensevalidator') {
             return LicenseValidator.generateLicenseValidator(name);
         }

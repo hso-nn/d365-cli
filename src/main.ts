@@ -33,21 +33,6 @@ program
         Generator.showGenerateHelp();
     });
 
-// program
-//     .command('extractTranslations')
-//     .alias('extract')
-//     .description('Extracts translations into resx files.')
-//     .action(async () => {
-//         console.log('Extracting resx files');
-//         shell.exec('npm run resx');
-//     })
-//     .on('--help', () => {
-//         console.log(`In translation folder a folder 'locales' will be generated having translation files.`);
-//         console.log(`It will generate one locales.resx file.`);
-//         console.log(`You have to add for each required language a copy yourself like locales.1033.resx.`);
-//         console.log(`Once done, the tooling will keep up-to-date for you.`);
-//     });
-
 program
     .command('extractTranslations')
     .alias('extract')
