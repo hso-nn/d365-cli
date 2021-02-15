@@ -106,4 +106,3 @@ export class Resx {
         shell.ShellString(xml).to(resxpath);
     }
 }
-Resx.extract();
