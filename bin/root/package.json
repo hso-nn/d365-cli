@@ -7,7 +7,7 @@
     "build": "npm run clean && webpack --mode development",
     "build:prod": "npm run clean && webpack --mode production --bail --progress",
     "clean": "IF exist dist (rmdir /s /q dist)",
-    "watch": "webpack --watch",
+    "watch": "webpack --watch --mode development",
     "start": "webpack serve",
     "starthttps": "webpack serve --https",
     "lint": "eslint ./ --ext .js,.ts,.tsx",
