@@ -19,23 +19,21 @@ export class Entity extends AdalRouter {
         } else if (process.argv[5]) {
             console.log(colors.red(`No spaces allowed!`));
         } else {
-            const answers = await inquirer.prompt([{
-                type: 'input',
-                name: 'entityLogicalName',
-                message: 'Entity LogicalName:'
-            }]);
-            const entityLogicalName = answers.entityLogicalName;
-            new Entity(entityName, entityLogicalName);
+            new Entity(entityName);
         }
         return null;
     }
 
+    private static isGeneratedEntity(entityName: string): boolean {
+        const check = shell.grep(` ${entityName}:`, 'webpack.config.js');
+        return check.stdout !== '\n';
+    }
+
+    private entityLogicalName: string;
     private readonly entityName: string;
-    private readonly entityLogicalName: string;
-    constructor(entityName: string, entityLogicalName: string) {
+    constructor(entityName: string) {
         super();
         this.entityName = entityName;
-        this.entityLogicalName = entityLogicalName;
     }
 
     protected onAuthenticated(): Promise<void> {
@@ -43,19 +41,29 @@ export class Entity extends AdalRouter {
     }
 
     private async generateEntity(): Promise<void> {
-        try {
-            await NodeApi.getEntityDefinition(this.entityLogicalName, this.bearer, ['PrimaryIdAttribute']);
-            const check = shell.grep(` ${this.entityName}:`, 'webpack.config.js');
-            if (check.stdout === '\n') {
-                await this.addEntityFiles(this.entityName);
-                Entity.registerWebpackConfig(this.entityName);
-            } else {
-                console.log(colors.green(`Entity ${this.entityName} already exists`));
+        if (!Entity.isGeneratedEntity(this.entityName)) {
+            const answers = await inquirer.prompt([{
+                type: 'input',
+                name: 'entityLogicalName',
+                message: 'Entity LogicalName:'
+            }]);
+            this.entityLogicalName = answers.entityLogicalName;
+            try {
+                await NodeApi.getEntityDefinition(this.entityLogicalName, this.bearer, ['PrimaryIdAttribute']);
+            } catch (e) {
+                console.log(colors.red(`Failed: Entity ${this.entityName} has no LogicalName ${this.entityLogicalName}`));
+                throw e;
             }
-            await this.generateModel();
-        } catch (e) {
-            console.log(colors.red(`Failed: Entity ${this.entityName} has no LogicalName ${this.entityLogicalName}`));
+            await this.addEntityFiles(this.entityName);
+            Entity.registerWebpackConfig(this.entityName);
+        } else {
+            const serviceFilepath = `src/${this.entityName}/${this.entityName}.service.ts`;
+            const fileData = String(fs.readFileSync(serviceFilepath));
+            const match = fileData.match(new RegExp(`private static logicalName = '([a-zA-Z]*)';`));
+            this.entityLogicalName = match[1];
+            console.log(colors.green(`Entity ${this.entityName} already exists`));
         }
+        await this.generateModel();
     }
 
     private static registerWebpackConfig(entityName: string): void {
