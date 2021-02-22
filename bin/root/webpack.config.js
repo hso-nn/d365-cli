@@ -80,10 +80,7 @@ module.exports = (env, argv) => {
             new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
             new webpack.BannerPlugin(`<%= description %> ${packageJson.version} | (c) HSO Innovation`),
             new MiniCssExtractPlugin({
-                // Options similar to the same options in webpackOptions.output
-                // both options are optional
                 filename: "[name]/[name].css",
-                // chunkFilename: "[id].css",
             }),
             // Fix Microsoft CE Validation tool
             new ReplaceInFileWebpackPlugin([{
@@ -108,17 +105,7 @@ module.exports = (env, argv) => {
         ] : [
             new CopyWebpackPlugin({
                 patterns: [{
-                    from: "./**/**.png",
-                    to: dir_build,
-                    context: "src",
-                    noErrorOnMissing: true,
-                }, {
-                    from: "./**/**.svg",
-                    to: dir_build,
-                    context: "src",
-                    noErrorOnMissing: true,
-                }, {
-                    from: "./**/**.html",
+                    from: "./**/**.(html|png|svg)",
                     to: dir_build,
                     context: "src",
                     noErrorOnMissing: true,
