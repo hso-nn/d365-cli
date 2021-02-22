@@ -6,6 +6,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const ReplaceInFileWebpackPlugin = require("replace-in-file-webpack-plugin");
 const packageJson = require('./package.json');
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 module.exports = (env, argv) => {
     const mode = argv.mode;
@@ -31,47 +32,14 @@ module.exports = (env, argv) => {
         },
         module: {
             rules: [{
-                enforce: "pre",
-                test: /\.js?$/,
-                loader: "eslint-loader",
-                options: {
-                    failOnWarning: false,
-                    failOnError: true
-                },
-                include: [
-                    path.resolve(__dirname, "./src")
-                ],
-            }, {
-                test: /\.js$/,
-                use: {
-                    loader: "babel-loader",
-                },
-                include: [
-                    path.resolve(__dirname, "./src"),
-                    path.resolve(__dirname, "./tests")
-                ],
-            }, {
                 test: /\.scss$/,
-                use: scssLoaders
+                use: scssLoaders,
             }, {
                 test: /\.css$/,
-                use: cssLoaders
-            }, {
-                test: /\.tsx?$/,
-                enforce: "pre",
-                use: [
-                    {
-                        loader: "eslint-loader",
-                        options: {
-                            failOnWarning: false,
-                            failOnError: true
-                        }
-                    }
-                ]
+                use: cssLoaders,
             }, {
                 test: /\.tsx?$/,
                 use: "ts-loader",
-                exclude: /node_modules/
             }]
         },
         plugins: [
@@ -81,6 +49,13 @@ module.exports = (env, argv) => {
             new webpack.BannerPlugin(`<%= description %> ${packageJson.version} | (c) HSO Innovation`),
             new MiniCssExtractPlugin({
                 filename: "[name]/[name].css",
+            }),
+            new ESLintPlugin({
+                failOnError: true,
+                failOnWarning: false,
+                emitError: true,
+                emitWarning: false,
+                extensions: ["ts", "tsx"],
             }),
             // Fix Microsoft CE Validation tool
             new ReplaceInFileWebpackPlugin([{
@@ -93,7 +68,7 @@ module.exports = (env, argv) => {
                     search: /"!=typeof/g,
                     replace: '"!==typeof'
                 }]
-            }])
+            }]),
         ].concat(mode === "development" ? [
             new CopyWebpackPlugin({
                 patterns: [{
