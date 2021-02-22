@@ -9,7 +9,7 @@ import {Resx} from './root/tools/Resx';
 import {SetFormCustomizable} from './root/tools/SetFormCustomizable';
 
 program
-    .version('4.1.1') // .version(require('../package').version)
+    .version('4.1.2') // .version(require('../package').version)
     .usage('<command> [options]');
 
 program

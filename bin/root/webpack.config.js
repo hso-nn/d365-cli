@@ -51,10 +51,6 @@ module.exports = (env, argv) => {
                 filename: "[name]/[name].css",
             }),
             new ESLintPlugin({
-                failOnError: true,
-                failOnWarning: false,
-                emitError: true,
-                emitWarning: false,
                 extensions: ["ts", "tsx"],
             }),
             // Fix Microsoft CE Validation tool
