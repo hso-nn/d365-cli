@@ -59,7 +59,7 @@ export class Entity extends AdalRouter {
         } else {
             const serviceFilepath = `src/${this.entityName}/${this.entityName}.service.ts`;
             const fileData = String(fs.readFileSync(serviceFilepath));
-            const match = fileData.match(new RegExp(`private static logicalName = '([a-zA-Z]*)';`));
+            const match = fileData.match(new RegExp(`private static logicalName = '([a-zA-Z_]*)';`));
             this.entityLogicalName = match[1];
             console.log(colors.green(`Entity ${this.entityName} already exists`));
         }
