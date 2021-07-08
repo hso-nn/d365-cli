@@ -9,7 +9,8 @@ interface WebresourceProps {}
 // eslint-disable-next-line no-unused-vars,max-lines-per-function
 const Webresource: React.FC<WebresourceProps> = (props: WebresourceProps): JSX.Element => {
     const [yourBoolean, setYourBoolean] = useState(false);
-    console.log(yourBoolean + setYourBoolean); // Prevent linting error
+    console.log(yourBoolean); // Prevent linting error
+    console.log(setYourBoolean); // Prevent linting error
     // eslint-disable-next-line max-lines-per-function
     return (
         <>
