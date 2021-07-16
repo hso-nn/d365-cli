@@ -4,4 +4,6 @@ export interface SolutionModel extends Model {
     solutiontype?: string;
     friendlyname?: string;
     version?: string;
+    publisherid?: string;
+    _publisherid_value?: string;
 }
