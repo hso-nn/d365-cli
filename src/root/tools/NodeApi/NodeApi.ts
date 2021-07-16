@@ -234,7 +234,7 @@ export class NodeApi {
             filterStr += typeof(value) === 'string' ? ` '${value}'` : ` ${value}`; // String
             filterParts.push(filterStr);
         }
-        return `${filterParts.join(` ${type} `)}`;
+        return `(${filterParts.join(` ${type} `)})`;
     }
 
     private static request(method: Method, uri: string, data?: any, httpHeaders: HttpHeaders = {}): Promise<NodeApiResponse> {
@@ -351,9 +351,9 @@ export class NodeApi {
         return manyToOneMetadatas;
     }
 
-    public static async getAttributesMetadata(entityLogicalName: string, bearer: string, select?: string[]): Promise<any> {
-        const {crm} = NodeApi.getSettings(),
-            {url, version} = crm;
+    public static async getAttributesMetadata(entityLogicalName: string, bearer: string, select?: string[]): Promise<AttributeMetadata[]> {
+        const {crm} = NodeApi.getSettings();
+        const {url, version} = crm;
         let uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes?$filter=IsValidODataAttribute eq true`;
         if (select) {
             uri += `&$select=${select.join(',')}`;

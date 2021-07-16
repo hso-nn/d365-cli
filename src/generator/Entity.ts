@@ -2,12 +2,12 @@ import * as colors from 'colors';
 import * as shell from 'shelljs';
 import * as inquirer from 'inquirer';
 import * as fs from 'fs';
-import {Variables} from '../Variables';
 import {AdalRouter} from '../root/tools/AdalRouter';
 import {NodeApi} from '../root/tools/NodeApi/NodeApi';
 import {Model} from './Model';
 import {Enum} from './Enum';
-import {FormContext} from './FormContext';
+import {AttributeFormContext} from './AttributeFormContext';
+import {Form} from './Form';
 
 export class Entity extends AdalRouter {
     public static async generateEntity(entityName: string): Promise<void> {
@@ -23,11 +23,6 @@ export class Entity extends AdalRouter {
         return null;
     }
 
-    private static isGeneratedEntity(entityName: string): boolean {
-        const check = shell.grep(` ${entityName}:`, 'webpack.config.js');
-        return check.stdout !== '\n';
-    }
-
     private entityLogicalName: string;
     private readonly entityName: string;
     constructor(entityName: string) {
@@ -40,12 +35,14 @@ export class Entity extends AdalRouter {
         await this.log(`Generating files for Entity '${this.entityName}'<br/>Using entityLogicalName '${this.entityLogicalName}'</br>`);
         await Model.generateModel(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
         await Enum.generateEnum(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
-        await FormContext.generateFormContext(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
+        await AttributeFormContext.generateFormContext(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
+        await Form.generateFormFiles(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
         await this.log('Generating files finished');
     }
 
     private async generateEntity(): Promise<void> {
-        if (!Entity.isGeneratedEntity(this.entityName)) {
+        const folderPath = `src/${this.entityName}`;
+        if (!shell.test('-d', folderPath)) {
             const answers = await inquirer.prompt([{
                 type: 'input',
                 name: 'entityLogicalName',
@@ -58,43 +55,46 @@ export class Entity extends AdalRouter {
                 console.log(colors.red(`Failed: Entity ${this.entityName} has no LogicalName ${this.entityLogicalName}`));
                 throw e;
             }
+            shell.mkdir(`src/${this.entityName}`);
             await this.addEntityFiles(this.entityName);
-            Entity.registerWebpackConfig(this.entityName);
+            // Entity.registerWebpackConfig(this.entityName);
         } else {
             const serviceFilepath = `src/${this.entityName}/${this.entityName}.service.ts`;
             const fileData = String(fs.readFileSync(serviceFilepath));
             const match = fileData.match(new RegExp(`private static logicalName = '([a-zA-Z_]*)';`));
             this.entityLogicalName = match[1];
-            console.log(colors.green(`Entity ${this.entityName} already exists`));
+            console.log(colors.green(`Entity ${this.entityName} already exist`));
         }
     }
 
-    private static registerWebpackConfig(entityName: string): void {
-        const webpackConfigFile = shell.ls('webpack.config.js')[0];
-        // eslint-disable-next-line max-len
-        shell.sed('-i', 'entry: {', `entry: {\n            ${entityName}: [\n                path.resolve(__dirname, "src/${entityName}/${entityName}.ts")\n            ],`, webpackConfigFile);
-        shell.exec('git add webpack.config.js');
-    }
+    // private static registerWebpackConfig(entityName: string): void {
+    // const webpackConfigFile = shell.ls('webpack.config.ts')[0];
+    // eslint-disable-next-line max-len
+    //shell.sed('-i', 'entry: {', `entry: {\n            ${entityName}: [\n                path.resolve(__dirname, "src/${entityName}/${entityName}.ts")\n            ],`, webpackConfigFile);
+    // shell.exec('git add webpack.config.ts');
+    // }
 
     private async addEntityFiles(entityName: string): Promise<void> {
-        console.log(`Adding D365 Entity files ${entityName}...`);
-        const {publisher, namespace} = await Variables.get();
-        shell.mkdir(`src/${entityName}`);
-        shell.ls(`${__dirname}/Entity/*.*`).forEach((filepath) => {
-            const split = filepath.split('/');
-            const filename = split[split.length - 1];
-            const newfilename = filename.replace(/Entity/g, entityName);
-            shell.cp('-r', filepath, `src/${entityName}`);
-            shell.cp('-r', `src/${entityName}/${filename}`, `src/${entityName}/${newfilename}`);
-            shell.rm('-rf', `src/${entityName}/${filename}`);
-            shell.sed('-i', new RegExp('EntityLogicalName', 'ig'), this.entityLogicalName, `src/${entityName}/${newfilename}`);
-            shell.sed('-i', new RegExp('Entity', 'g'), entityName, `src/${entityName}/${newfilename}`);
-            shell.sed('-i', new RegExp('entity', 'g'), entityName.charAt(0).toLowerCase() + entityName.slice(1), `src/${entityName}/${newfilename}`);
-            shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, `src/${entityName}/${newfilename}`);
-            shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), namespace, `src/${entityName}/${newfilename}`);
-            shell.exec(`git add src/${entityName}/${newfilename}`);
-        });
-        console.log('Adding D365 Entity files done');
+        await this.addServiceFile(entityName);
+        await this.addBuildFile();
+    }
+
+    private async addServiceFile(entityName: string): Promise<void> {
+        await this.log(`Adding ${entityName}/${entityName}.service.ts...`);
+        const filepath = `src/${this.entityName}/${this.entityName}.service.ts`;
+        shell.cp('-r', `${__dirname}/Entity/Entity.service.ts`, filepath);
+        shell.sed('-i', new RegExp('EntityLogicalName', 'g'), this.entityLogicalName, filepath);
+        shell.sed('-i', new RegExp('Entity', 'g'), entityName, filepath);
+        shell.exec(`git add ${filepath}`);
+        await this.log(`Added ${entityName}/${entityName}.service.ts`);
+    }
+
+    private async addBuildFile(): Promise<void> {
+        await this.log(`Adding ${this.entityName}/build.json`);
+        const filepath = `src/${this.entityName}/build.json`;
+        shell.cp('-r', `${__dirname}/Entity/build.json`, filepath);
+        shell.exec(`git add ${filepath}`);
+        await this.log(`Added ${this.entityName}/build.json`);
     }
 
     // private trimPrefix(name: string): string {

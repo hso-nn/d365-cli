@@ -2,11 +2,12 @@ import * as shell from 'shelljs';
 import * as fs from 'fs';
 import {NodeApi} from '../root/tools/NodeApi/NodeApi';
 
-export class FormContext {
+export class AttributeFormContext {
     private readonly bearer: string;
     private readonly entityName: string;
     private readonly entityLogicalName: string;
     private readonly log: (message: string) => Promise<void>;
+    private attributesMetadata: AttributeMetadata[];
 
     constructor(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>) {
         this.bearer = bearer;
@@ -16,17 +17,18 @@ export class FormContext {
     }
 
     public static async generateFormContext(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>): Promise<void> {
-        const formContext = new FormContext(bearer, entityName, entityLogicalName, log);
+        const formContext = new AttributeFormContext(bearer, entityName, entityLogicalName, log);
         await formContext.writeFormContextFile();
     }
 
     private async writeFormContextFile(): Promise<void> {
         await this.log(`Generating ${this.entityName}.formContext.ts<br/>`);
+        this.attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
         const formContextAttributesString = await this.getFormContextAttributesString();
         const formContextFilepath = `src/${this.entityName}/${this.entityName}.formContext.ts`;
-        shell.cp('-r', `${__dirname}/Entity/Entity.formContext.ts`, `src/${this.entityName}`);
-        shell.cp('-r', `src/${this.entityName}/Entity.formContext.ts`, formContextFilepath);
-        shell.rm('-rf', `src/${this.entityName}/Entity.formContext.ts`);
+        shell.cp('-r', `${__dirname}/Entity/Entity.attributesContext.ts`, `src/${this.entityName}`);
+        shell.cp('-r', `src/${this.entityName}/Entity.attributesContext.ts`, formContextFilepath);
+        shell.rm('-rf', `src/${this.entityName}/Entity.attributesContext.ts`);
         shell.sed('-i', new RegExp('Entity', 'g'), this.entityName, formContextFilepath);
         shell.exec(`git add ${formContextFilepath}`);
         const filedata = String(fs.readFileSync(formContextFilepath));
@@ -38,12 +40,11 @@ export class FormContext {
 
     private async getFormContextAttributesString(): Promise<string> {
         let formContextAttributesString = '';
-        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
-        for (const attribute of attributesMetadata) {
+        for (const attribute of this.attributesMetadata) {
             const {AttributeType: attributeType, SchemaName: schemaName} = attribute;
             const xrmAttributeType = await this.getXrmAttributeType(attributeType);
             if (xrmAttributeType) {
-                const pascalSchemaName = FormContext.capitalize(schemaName);
+                const pascalSchemaName = AttributeFormContext.capitalize(schemaName);
                 const methodName = `    static get${pascalSchemaName}Attribute(formContext: FormContext): ${xrmAttributeType} {`;
                 const returnString = `return formContext.getAttribute(${this.entityName}AttributeNames.${pascalSchemaName});`;
                 formContextAttributesString += `${methodName}\n        ${returnString}\n    }\n`;

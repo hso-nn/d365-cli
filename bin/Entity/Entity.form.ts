@@ -1,4 +1,4 @@
-import {Translation} from '../translation/Translation';
+import {Translation} from '../../translation/Translation';
 import {EntityFormContext} from './Entity.formContext';
 
 export class EntityForm extends EntityFormContext {

@@ -11,6 +11,7 @@ const Webresource: React.FC<WebresourceProps> = (props: WebresourceProps): JSX.E
     const [yourBoolean, setYourBoolean] = useState(false);
     console.log(yourBoolean); // Prevent linting error
     console.log(setYourBoolean); // Prevent linting error
+    console.log(props); // Prevent linting error
     // eslint-disable-next-line max-lines-per-function
     return (
         <>

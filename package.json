@@ -28,9 +28,9 @@
     "hso-d365": "bin/hso-d365"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.10",
+    "@babel/core": "^7.14.3",
     "@babel/polyfill": "^7.12.1",
-    "@babel/preset-env": "^7.12.11",
+    "@babel/preset-env": "^7.14.2",
     "@types/colors": "^1.2.1",
     "@types/commander": "^2.12.2",
     "@types/express": "^4.17.9",
