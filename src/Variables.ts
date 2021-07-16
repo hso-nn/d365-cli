@@ -31,11 +31,11 @@ export class Variables {
         return new Promise((resolve): void => {
             let publisher, namespace;
             const lineReader = readline.createInterface({
-                input: fs.createReadStream(`webpack.config.js`)
+                input: fs.createReadStream(`webpack.config.ts`)
             });
             lineReader.on('line', (line: string) => {
                 if (line.includes('dir_build =')) {
-                    const split = line.split('"'),
+                    const split = line.split(`'`),
                         publisherNamespace = split[1],
                         pnSplit = publisherNamespace.split('_/');
                     publisher = pnSplit[0].replace('dist/', '');

@@ -100,11 +100,11 @@ export class Service {
         Targets: string[];
     } {
         const attributeMetadata = entityMetadata.Attributes.get(attribute);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         let attributeDescriptor = attributeMetadata.attributeDescriptor;
         if (attributeDescriptor.AttributeOf) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             attributeDescriptor = entityMetadata.Attributes.get(attributeDescriptor.AttributeOf).attributeDescriptor;
         }

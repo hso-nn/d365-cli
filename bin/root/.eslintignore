@@ -1,4 +1,4 @@
-webpack.config.js
+webpack.config.ts
 karma.conf.js
 test-main.js
 postcss.config.js

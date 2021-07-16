@@ -1,6 +1,6 @@
 /* This is a generated file, please regenerate and do not modify */
 
-import {EntityAttributeNames} from './Entity.enum';
+import {EntityFormContext} from '../Entity.formContext';
 import FormContext = Xrm.FormContext;
 
-export class EntityFormContext {}
+export class FormNameFormContext extends EntityFormContext {}

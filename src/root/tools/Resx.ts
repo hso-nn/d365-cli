@@ -26,7 +26,7 @@ export class Resx {
         return null;
     }
 
-    private static regex = /Translation\.translate\([\s]*([']([^']*)[']|[`]([^`]*)[`])[\s]*\)/gm;
+    private static regex = /Translation\.translate\([\s]*([']([^']*)[']|[`]([^`]*)[`]|["]([^"]*)["])[\s]*\)/gm;
 
     private static getCodeKeys(): string[] {
         const keys = new Set<string>();
@@ -38,7 +38,7 @@ export class Resx {
                 if (match.index === Resx.regex.lastIndex) {
                     Resx.regex.lastIndex += 1;
                 }
-                keys.add(match[2] || match[3]);
+                keys.add(match[2] || match[3] || match[4]);
             }
         }
         return Array.from(keys.values());
@@ -49,12 +49,11 @@ export class Resx {
             shell.mkdir(`src/translation/locales`);
         }
         if (!shell.test('-f', 'src/translation/locales/locales.resx')) {
-            shell.cp('-R', `${__dirname}/locales.resx`, './src/translation/locales');
-            // shell.cp('-R', `${__dirname}/Locales/locales.resx`, './src/translation/locales');
+            shell.cp('-R', `${__dirname}/Translation/locales.resx`, './src/translation/locales');
             shell.exec('git add src/translation/locales/locales.resx');
         }
         if (!shell.test('-f', 'src/translation/locales/locales.1033.resx')) {
-            shell.cp('-r', `${__dirname}/locales.resx`, './src/translation/locales/locales.1033.resx');
+            shell.cp('-r', `${__dirname}/Translation/locales.resx`, './src/translation/locales/locales.1033.resx');
             shell.exec('git add src/translation/locales/locales.1033.resx');
         }
     }
@@ -107,4 +106,3 @@ export class Resx {
         shell.ShellString(xml).to(resxpath);
     }
 }
-Resx.extract();

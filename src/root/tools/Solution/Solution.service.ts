@@ -7,7 +7,7 @@ export class SolutionService {
     // private static logicalName = 'solution';
     private static entitySetName = 'solutions';
 
-    public static async retrieveMultipleRecords(multipleSystemQueryOptions: MultipleSystemQueryOptions, bearer: string): Promise<SolutionModel[]> {
+    private static async retrieveMultipleRecords(multipleSystemQueryOptions: MultipleSystemQueryOptions, bearer: string): Promise<SolutionModel[]> {
         return NodeApi.retrieveMultipleRecords(SolutionService.entitySetName, multipleSystemQueryOptions, bearer);
     }
 

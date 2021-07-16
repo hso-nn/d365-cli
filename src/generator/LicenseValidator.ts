@@ -4,11 +4,11 @@ import {Variables} from '../Variables';
 
 export class LicenseValidator {
     public static async generateLicenseValidator(licensename: string): Promise<void> {
-        const check = shell.grep(` LicenseValidator:`, 'webpack.config.js');
+        const check = shell.grep(` LicenseValidator:`, 'webpack.config.ts');
         if (!licensename) {
             console.log(colors.red('Module name missing'));
         } else if (check.stdout !== '\n') {
-            console.log(colors.red(`src/License already exists!`));
+            console.log(colors.red(`src/License already exist!`));
         } else if (process.argv[5]) {
             console.log(colors.red(`No spaces allowed!`));
         } else {
@@ -29,10 +29,10 @@ export class LicenseValidator {
             shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, `src/License/${filename}`);
             shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), namespace, `src/License/${filename}`);
         });
-        const webpackConfigFile = shell.ls('webpack.config.js')[0];
+        const webpackConfigFile = shell.ls('webpack.config.ts')[0];
         // eslint-disable-next-line max-len
         shell.sed('-i', 'entry: {', `entry: {\n        LicenseValidator: [\n            path.resolve(__dirname, "src/License/Validator.ts")\n        ],`, webpackConfigFile);
-        shell.exec('git add webpack.config.js');
+        shell.exec('git add webpack.config.ts');
         console.log('Adding D365 License Validator done');
     }
 }

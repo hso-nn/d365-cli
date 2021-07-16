@@ -1,5 +1,3 @@
-import * as colors from 'colors';
-import {AdalRouter} from '../root/tools/AdalRouter';
 import * as shell from 'shelljs';
 import * as fs from 'fs';
 import {NodeApi} from '../root/tools/NodeApi/NodeApi';
@@ -8,50 +6,30 @@ interface InterfaceTypes {
     [key: string]: string;
 }
 
-export class Model extends AdalRouter {
-    public static generateModel(entityname: string): Promise<void> {
-        if (!entityname) {
-            console.log(colors.red('Model name missing'));
-        } else if (!new RegExp('[A-Z]').test(entityname[0])) {
-            console.log(colors.red(`Entity name must be UpperCamelCase!`));
-        } else if (process.argv[5]) {
-            console.log(colors.red(`No spaces allowed!`));
-        } else {
-            const entityLogicalName = Model.getEntityLogicalName(entityname);
-            if (entityLogicalName) {
-                new Model(entityname);
-            }
-        }
-        return null;
-    }
-
-    private readonly entityname: string;
+export class Model {
+    private readonly bearer: string;
+    private readonly entityName: string;
     private readonly entityLogicalName: string;
-    constructor(entityname: string) {
-        super();
-        this.entityname = entityname;
-        this.entityLogicalName = Model.getEntityLogicalName(this.entityname);
+    private readonly log: (message: string) => Promise<void>;
+    constructor(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>) {
+        this.bearer = bearer;
+        this.entityName = entityName;
+        this.entityLogicalName = entityLogicalName;
+        this.log = log;
     }
 
-    protected onAuthenticated(): Promise<void> {
-        return this.generateModel();
-    }
-
-    private async generateModel(): Promise<void> {
-        this.log(`Generating files for Entity '${this.entityname}'<br/>Using entityLogicalName '${this.entityLogicalName}'</br>`);
-        await this.writeModelFile();
-        await this.writeEnumFile();
-        await this.writeFormContextFile();
-        this.log('Generating files finished');
+    public static async generateModel(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>): Promise<void> {
+        const model = new Model(bearer, entityName, entityLogicalName, log);
+        await model.writeModelFile();
     }
 
     private async writeModelFile(): Promise<void> {
-        this.log(`Generating ${this.entityname}.model.ts<br/>`);
-        const modelFilepath = `src/${this.entityname}/${this.entityname}.model.ts`;
-        shell.cp('-r', `${__dirname}/Entity/Entity.model.ts`, `src/${this.entityname}`);
-        shell.cp('-r', `src/${this.entityname}/Entity.model.ts`, modelFilepath);
-        shell.rm('-rf', `src/${this.entityname}/Entity.model.ts`);
-        shell.sed('-i', new RegExp('Entity', 'g'), this.entityname, modelFilepath);
+        await this.log(`Generating ${this.entityName}.model.ts<br/>`);
+        const modelFilepath = `src/${this.entityName}/${this.entityName}.model.ts`;
+        shell.cp('-r', `${__dirname}/Entity/Entity.model.ts`, `src/${this.entityName}`);
+        shell.cp('-r', `src/${this.entityName}/Entity.model.ts`, modelFilepath);
+        shell.rm('-rf', `src/${this.entityName}/Entity.model.ts`);
+        shell.sed('-i', new RegExp('Entity', 'g'), this.entityName, modelFilepath);
         shell.exec(`git add ${modelFilepath}`);
         let fileData = String(fs.readFileSync(modelFilepath));
         const attributeInterfaceTypes = await this.getAttributeInterfaceTypes();
@@ -61,12 +39,12 @@ export class Model extends AdalRouter {
         let modelString = await this.getAttributesString(attributeInterfaceTypes, relationshipInterfaceTypes);
         modelString += await this.getRelationshipsString(relationshipInterfaceTypes, attributeInterfaceTypes);
         modelString += await this.getCombinedAttributeRelationshipString(attributeInterfaceTypes, relationshipInterfaceTypes);
-        const replaceString1 = `${this.entityname}Model extends Model {`;
+        const replaceString1 = `${this.entityName}Model extends Model {`;
         fileData = fileData.replace(replaceString1, `${replaceString1}${modelString}`);
         const replaceString2 = `interface`;
         fileData = fileData.replace(replaceString2, `${importsString}${typesString}${replaceString2}`);
         shell.ShellString(fileData).to(modelFilepath);
-        this.log(`Generated ${this.entityname}.model.ts<br/>`);
+        await this.log(`Generated ${this.entityName}.model.ts<br/>`);
     }
 
     /**
@@ -81,12 +59,12 @@ export class Model extends AdalRouter {
                 const displayName = await this.getDisplayName(referencedEntity);
                 const relatedModelFilePath = `src/${displayName}/${displayName}.model.ts`;
                 if (!shell.test('-f', relatedModelFilePath)) {
-                    this.log(`<span style="color:blue;">NavigationProperty '${referencingEntityNavigationPropertyName}' generated<br/>
+                    await this.log(`<span style="color:blue;">NavigationProperty '${referencingEntityNavigationPropertyName}' generated<br/>
                         Referenced model '${displayName}Model' not found.<br/>
                         Add referenced entity '${displayName}' by following cli command:</span><br/>
                         <span style="color:green">hso-d365 generate Entity ${displayName}</span></br>
-                        <span style="color:blue;">And regenerate '${this.entityname}' by following cli command:</span><br/>
-                        <span style="color:green">hso-d365 generate Entity ${this.entityname}</span></br>
+                        <span style="color:blue;">And regenerate '${this.entityName}' by following cli command:</span><br/>
+                        <span style="color:green">hso-d365 generate Entity ${this.entityName}</span></br>
                         `);
                 }
             }
@@ -189,7 +167,7 @@ export class Model extends AdalRouter {
             if (interfaceType) {
                 attributesInterfaces[LogicalName] = interfaceType;
             } else {
-                this.log(`To be implemented: ${AttributeType} for ${LogicalName}<br/>`);
+                await this.log(`To be implemented: ${AttributeType} for ${LogicalName}<br/>`);
             }
         }
         return attributesInterfaces;
@@ -233,148 +211,10 @@ export class Model extends AdalRouter {
         return typeStrings;
     }
 
-    private static get logicalNameRegex(): RegExp {
-        return /static\slogicalName\s=\s'(.*)';/gm;
-    }
-
-    private static getEntityLogicalName(entityname: string): string {
-        const filepath = `src/${entityname}/${entityname}.service.ts`;
-        if (shell.test('-f', filepath)) {
-            const filedata = String(fs.readFileSync(filepath)),
-                match = Model.logicalNameRegex.exec(filedata),
-                entityLogicalName = match && match[1] || '';
-            if (!entityLogicalName) {
-                console.log(colors.red(`File ${filepath} does not contains a logicalName field.`));
-            }
-            return entityLogicalName;
-        } else {
-            console.log(colors.red(`Entity ${entityname} does not exist. Please add first by following command:\nHSO-D365 generate Entity ${entityname}`));
-        }
-    }
-
-    private async writeFormContextFile(): Promise<void> {
-        this.log(`Generating ${this.entityname}.formContext.ts<br/>`);
-        const formContextAttributesString = await this.getFormContextAttributesString();
-        const formContextFilepath = `src/${this.entityname}/${this.entityname}.formContext.ts`;
-        shell.cp('-r', `${__dirname}/Entity/Entity.formContext.ts`, `src/${this.entityname}`);
-        shell.cp('-r', `src/${this.entityname}/Entity.formContext.ts`, formContextFilepath);
-        shell.rm('-rf', `src/${this.entityname}/Entity.formContext.ts`);
-        shell.sed('-i', new RegExp('Entity', 'g'), this.entityname, formContextFilepath);
-        shell.exec(`git add ${formContextFilepath}`);
-        const filedata = String(fs.readFileSync(formContextFilepath));
-        const replaceString = `${this.entityname}FormContext {`;
-        const newFileData = filedata.replace(replaceString, `${replaceString}\n${formContextAttributesString}`);
-        shell.ShellString(newFileData).to(formContextFilepath);
-        this.log(`Generated ${this.entityname}.formContext.ts<br/>`);
-    }
-
-    private async getFormContextAttributesString(): Promise<string> {
-        let formContextAttributesString = '';
-        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
-        for (const attribute of attributesMetadata) {
-            const {AttributeType: attributeType, SchemaName: schemaName} = attribute;
-            const xrmAttributeType = this.getXrmAttributeType(attributeType);
-            if (xrmAttributeType) {
-                const pascalSchemaName = Model.capitalize(schemaName);
-                const methodName = `    static get${pascalSchemaName}Attribute(formContext: FormContext): ${xrmAttributeType} {`;
-                const returnString = `return formContext.getAttribute(${this.entityname}AttributeNames.${pascalSchemaName});`;
-                formContextAttributesString += `${methodName}\n        ${returnString}\n    }\n`;
-            }
-        }
-        return formContextAttributesString;
-    }
-
-    // https://docs.microsoft.com/en-us/dotnet/api/microsoft.xrm.sdk.metadata.attributemetadata?view=dynamics-general-ce-9
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private getXrmAttributeType(attributeType: string): string {
-        if (['String', 'Memo', 'Uniqueidentifier'].includes(attributeType)) {
-            return 'Xrm.Attributes.StringAttribute';
-        } else if (['DateTime'].includes(attributeType)) {
-            return 'Xrm.Attributes.DateAttribute';
-        } else if (['Boolean'].includes(attributeType)) {
-            return 'Xrm.Attributes.BooleanAttribute | Xrm.Attributes.EnumAttribute';
-        } else if (['Picklist', 'Status', 'State'].includes(attributeType)) {
-            return 'Xrm.Attributes.OptionSetAttribute';
-        } else if (['Integer', 'Double', 'BigInt', 'Decimal', 'Double', 'Money'].includes(attributeType)) {
-            return 'Xrm.Attributes.NumberAttribute';
-        } else if (['Lookup', 'Customer', 'Owner'].includes(attributeType)) {
-            return 'Xrm.Attributes.LookupAttribute';
-        } else {
-            this.log(`<span style="color:blue;">${this.entityLogicalName} attribute ${attributeType} falls back to Xrm.Attributes.Attribute.</span><br/>`);
-            return 'Xrm.Attributes.Attribute';
-        }
-    }
-
-    private async writeEnumFile(): Promise<void> {
-        this.log(`Generating ${this.entityname}.enum.ts<br/>`);
-        const enumAttributeNames = await this.getAttributeNamesEnumString();
-        const enumStrings = await this.getEnumStrings();
-        const enumFilepath = `src/${this.entityname}/${this.entityname}.enum.ts`;
-        shell.cp('-r', `${__dirname}/Entity/Entity.enum.ts`, `src/${this.entityname}`);
-        shell.cp('-r', `src/${this.entityname}/Entity.enum.ts`, enumFilepath);
-        shell.rm('-rf', `src/${this.entityname}/Entity.enum.ts`);
-        shell.exec(`git add ${enumFilepath}`);
-        const fileData = String(fs.readFileSync(enumFilepath));
-        this.log(`Generated ${this.entityname}.enum.ts<br/>`);
-        shell.ShellString(fileData + enumAttributeNames + enumStrings).to(enumFilepath);
-    }
-
-    private async getAttributeNamesEnumString(): Promise<string> {
-        let enumStrings = '';
-        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
-        enumStrings += `export enum ${this.entityname}AttributeNames {\n`;
-        for (const attribute of attributesMetadata) {
-            const {LogicalName: logicalName, SchemaName: schemaName} = attribute;
-            enumStrings += `    ${Model.capitalize(schemaName)} = '${logicalName}',\n`;
-        }
-        enumStrings += `}\n`;
-        return enumStrings;
-    }
-
-    private async getEnumStrings(): Promise<string> {
-        let enumStrings = '';
-        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
-        for (const attribute of attributesMetadata) {
-            const {AttributeType: attributeType, LogicalName: logicalName, SchemaName: schemaName} = attribute;
-            if (attributeType === 'Picklist') {
-                const pascalSchemaName = Model.capitalize(schemaName);
-                enumStrings += `export enum ${pascalSchemaName} {\n`;
-                const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
-                for (const option of options) {
-                    let label = option.label.replace(/\W/g, '');
-                    if (!label.charAt(0).match(/^[a-zA-Z]/)) {
-                        label = `'${label}'`;
-                    }
-                    enumStrings += `    ${label} = ${option.value},\n`;
-                }
-                enumStrings += '}\n';
-            }
-        }
-        if (enumStrings) {
-            enumStrings += '\n';
-        }
-        return enumStrings;
-    }
-
     private async getDisplayName(entityName: string): Promise<string> {
         const {DisplayName} = await NodeApi.getEntityDefinition(entityName, this.bearer, ['DisplayName']);
         const {LocalizedLabels: localizedLabels} = DisplayName;
         const localization = localizedLabels.find((localizedLabel: {LanguageCode: number; Label: string;} ) => localizedLabel.LanguageCode === 1033);
         return localization.Label.replace(/\W/g, '');
-    }
-
-    // private trimPrefix(name: string): string {
-    //     const {publisher_prefix} = this.settings.crm;
-    //     return name.replace(`${publisher_prefix}_`, '');
-    // }
-
-    // private getTypeName(logicalName: string): string {
-    //     const {publisher_prefix} = this.settings.crm,
-    //         typeName = logicalName.replace(`${publisher_prefix}_`, '');
-    //     return Model.capitalize(typeName);
-    // }
-
-    private static capitalize(text: string): string {
-        return text.charAt(0).toUpperCase() + text.slice(1);
     }
 }

@@ -2,12 +2,12 @@ import * as colors from 'colors';
 import * as shell from 'shelljs';
 import {Entity} from './Entity';
 import {Webresource} from './Webresource';
+import {EnvironmentVariable} from './EnvironmentVariable';
 import {LicenseValidator} from './LicenseValidator';
-import {Model} from './Model';
 
 export class Generator {
     public static generate(schematic: string, name: string): Promise<void> {
-        const supportedSchematics = ['entity', 'webresource', 'model', 'licensevalidator'];
+        const supportedSchematics = ['entity', 'webresource', 'model', 'licensevalidator', 'environmentvariable'];
         if (!shell.test('-e', 'src')) {
             console.log(colors.red(`You are not inside the project Webresources folder!`));
         } else if (!schematic) {
@@ -19,10 +19,11 @@ export class Generator {
         } else if (schematic.toLowerCase() === 'webresource') {
             return Webresource.generateWebresource(name);
         } else if(schematic.toLocaleLowerCase() === 'model') {
-            console.log(colors.red('Deprecated: please use Entity instead'));
-            return Model.generateModel(name);
+            console.log(colors.red('Not supported anymore: please use Entity instead'));
         } else if (schematic.toLowerCase() === 'licensevalidator') {
             return LicenseValidator.generateLicenseValidator(name);
+        } else if(schematic.toLowerCase() === 'environmentvariable') {
+            return EnvironmentVariable.generateEnvironmentVariable();
         }
     }
 

@@ -6,9 +6,8 @@ export const jsonHttpHeaders = {
     'Content-Type': 'application/json; charset=utf-8'
 };
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export class Http {
-    public static request(method: Method, url: string, data?: any, httpHeaders: HttpHeaders = {}): Promise<XMLHttpRequest> {
+    public static request<D>(method: Method, url: string, data?: D, httpHeaders: HttpHeaders = {}): Promise<XMLHttpRequest> {
         return new Promise((resolve, reject): void => {
             const request = new XMLHttpRequest(),
                 requestData = data && JSON.stringify(data),
@@ -31,4 +30,3 @@ export class Http {
         });
     }
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */

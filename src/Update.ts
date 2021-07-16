@@ -21,10 +21,11 @@ export class Update {
         const variables = await Variables.get();
         Update.updateTranslationFiles();
         Update.updateSrcFolder();
+        Update.updateToolsFolder();
         Update.updateProjectRootFolder();
         Update.updateFormFiles();
         Update.updatePackageJson(variables);
-        Update.updateWebpackConfig(variables);
+        await Update.updateWebpackConfig();
         console.log(`Updating D365 Project done`);
     }
 
@@ -65,13 +66,13 @@ export class Update {
 
     private static updateTranslationFiles(): void {
         console.log('Updating translation files...');
-        if (shell.ls(['./translation/TranslationI18n.ts']).length === 1) {
-            shell.rm('-rf', `translation/TranslationI18n.ts`);
-            shell.exec('git rm translation/TranslationI18n.ts');
+        if (shell.ls(['./src/translation/TranslationI18n.ts']).length === 1) {
+            shell.rm('-rf', `./src/translation/TranslationI18n.ts`);
+            shell.exec('git rm ./src/translation/TranslationI18n.ts');
         }
         if (shell.ls(['./i18next-scanner.config.js']).length === 1) {
-            shell.rm('-rf', `i18next-scanner.config.js`);
-            shell.exec('git rm i18next-scanner.config.js');
+            shell.rm('-rf', `./i18next-scanner.config.js`);
+            shell.exec('git rm ./i18next-scanner.config.js');
         }
     }
 
@@ -96,6 +97,21 @@ export class Update {
         shell.cp('-R', `${__dirname}/root/src/translation`, './src');
     }
 
+    private static updateToolsFolder(): void {
+        if (shell.ls(['./tools/resx.js']).length === 1) {
+            shell.rm('-rf', `./tools/resx.js`);
+            shell.exec('git rm ./tools/resx.js');
+        }
+        if (shell.ls(['./tools/locales.resx']).length === 1) {
+            shell.rm('-rf', `./tools/locales.resx`);
+            shell.exec('git rm ./tools/locales.resx');
+        }
+        if (shell.ls(['./tools/setFormCustomizable.js']).length === 1) {
+            shell.rm('-rf', `./tools/setFormCustomizable.js`);
+            shell.exec('git rm ./tools/setFormCustomizable.js');
+        }
+    }
+
     private static updatePackageJson(variables: AllVariables): void {
         console.log(`Updating package.json...`);
         const {projectname, description, publisher, version} = variables;
@@ -110,19 +126,22 @@ export class Update {
         shell.exec('npm install');
     }
 
-    private static updateWebpackConfig(variables: AllVariables): void {
-        console.log(`Updating webpack.config.js...`);
-        const origWebpackConfigFile = shell.cat('webpack.config.js'),
-            content = origWebpackConfigFile.stdout,
-            start = content.indexOf('entry:'),
-            end = content.indexOf('output:'),
-            entryPart = content.substr(start, end - start),
-            cutEntry = entryPart.replace(/\s*},\s*/gm, '');
-        shell.cp('-R', `${__dirname}/root/webpack.config.js`, '.');
-        const webpackConfigFile = shell.ls('webpack.config.js')[0];
+    private static async updateWebpackConfig(): Promise<void> {
+        console.log(`Updating webpack.config...`);
+        const origWebpackConfigFile = shell.cat('webpack.config.js');
+        const content = origWebpackConfigFile.stdout;
+        const start = content.indexOf('entry:') + 7;
+        const end = content.indexOf('output:');
+        const entryPart = content.substr(start, end - start);
+        const cutEntry = entryPart.replace(/\s*},\s*/gm, '');
+        shell.cp('-R', `${__dirname}/root/webpack.config.ts`, '.');
+        const webpackConfigFile = shell.ls('webpack.config.ts')[0];
+        const variables = await Variables.get();
         shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), variables.publisher, webpackConfigFile);
         shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), variables.namespace, webpackConfigFile);
         shell.sed('-i', new RegExp('<%= description %>', 'ig'), variables.description, webpackConfigFile);
-        shell.sed('-i', new RegExp('entry: {', 'ig'), `${cutEntry}\r\n        `, webpackConfigFile);
+        shell.sed('-i', new RegExp('entry: {...entry, ...{', 'ig'), `entry: {...entry, ...${cutEntry}\r\n        `, webpackConfigFile);
+        shell.exec('git rm webpack.config.js');
+        shell.exec('git add webpack.config.ts');
     }
 }

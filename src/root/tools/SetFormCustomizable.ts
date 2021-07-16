@@ -6,34 +6,34 @@ import {SolutionModel} from './Solution/Solution.model';
 import {SolutionComponentModel} from './SolutionComponent/SolutionComponent.model';
 import {SystemFormModel} from './SystemForm/SystemForm.model';
 
-class SetFormCustomizable extends AdalRouter {
-    protected onAuthenticated(): Promise<void> {
-        const customizable = process.argv[3];
-        this.log('Customizable: ' + customizable);
-        // process.argv.forEach((val, index) => {
-        //     this.log(index + ': ' + val);
-        // });
-        return this.setFormCustomizable(customizable === 'true');
+export class SetFormCustomizable extends AdalRouter {
+    private readonly customizable: boolean;
+    constructor(customizable: boolean) {
+        super();
+        this.customizable = customizable;
     }
 
-    private async setFormCustomizable(customizable: boolean): Promise<void> {
-        this.log(`Solution name: ${this.settings.crm.solution_name}`);
+    protected async onAuthenticated(): Promise<void> {
+        await this.log(`Customizable: ${this.customizable}`);
+        return this.setFormCustomizable();
+    }
+
+    private async setFormCustomizable(): Promise<void> {
+        await this.log(`Solution name: ${this.settings.crm.solution_name}`);
         const solution = await SolutionService.getSolution(['solutionid'], this.bearer);
-        this.log(`Solution id: ${solution.solutionid}`);
-        this.log(``);
-        const solutioncomponents = await this.getSolutionComponents(solution);
-        for (const solutioncomponent of solutioncomponents) {
-            this.log(`SolutionComponent: ${solutioncomponent.objectid}`);
-            const systemForm = await this.getSystemForm(solutioncomponent);
-            await this.setForm(systemForm, customizable);
+        await this.log(`Solution id: ${solution.solutionid}`);
+        await this.log(``);
+        const solutionComponents = await this.getSolutionComponents(solution);
+        for (const solutionComponent of solutionComponents) {
+            await this.log(`SolutionComponent: ${solutionComponent.objectid}`);
+            const systemForm = await this.getSystemForm(solutionComponent);
+            await this.setForm(systemForm, this.customizable);
         }
     }
 
     private async setForm(systemForm: SystemFormModel, customizable: boolean): Promise<void> {
-        this.log(`Form name: ${systemForm.name}`);
+        await this.log(`Form name: ${systemForm.name}`);
         if (systemForm.iscustomizable.Value !== customizable || systemForm.canbedeleted.Value !== customizable) {
-            // this.log(`Is customizable: ${systemForm.iscustomizable.Value}`);
-            // this.log(`Can be deleted: ${systemForm.canbedeleted.Value}`);
             if (systemForm.iscustomizable.CanBeChanged) {
                 systemForm.iscustomizable.Value = customizable;
             }
@@ -42,14 +42,14 @@ class SetFormCustomizable extends AdalRouter {
             }
             try {
                 await SystemFormService.updateRecord(systemForm.formid, systemForm, this.bearer);
-                this.log(`Updated`);
+                await this.log(`Updated`);
             } catch (e) {
-                this.log(e.message);
+                await this.log(e.message);
             }
         } else {
-            this.log(`Unmodified`);
+            await this.log(`Unmodified`);
         }
-        this.log(`---------------------------`);
+        await this.log(`---------------------------`);
     }
 
     private getSolutionComponents(solution: SolutionModel): Promise<SolutionComponentModel[]> {
@@ -72,4 +72,3 @@ class SetFormCustomizable extends AdalRouter {
             ['name', 'objecttypecode', 'iscustomizable', 'canbedeleted'], this.bearer);
     }
 }
-new SetFormCustomizable();

@@ -14,7 +14,7 @@ export class Create {
         if (process.argv[4]) {
             console.log(colors.red(`No spaces allowed!`));
         } else if (shell.test('-e', `${projectname}/Webresources`)) {
-            console.log(colors.red(`Project ${projectname}/Webresources already exists!`));
+            console.log(colors.red(`Project ${projectname}/Webresources already exist!`));
         } else {
             return Create.create(projectname);
         }
@@ -66,7 +66,7 @@ export class Create {
     }
 
     private static initWebpackConfig(answers: CreateAnswers): void {
-        const webpackConfigFile = shell.ls('Webresources/webpack.config.js')[0];
+        const webpackConfigFile = shell.ls('Webresources/webpack.config.ts')[0];
         shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, webpackConfigFile);
         shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), answers.namespace, webpackConfigFile);
         shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.namespace, webpackConfigFile);
