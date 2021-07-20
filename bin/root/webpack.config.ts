@@ -15,7 +15,7 @@ import TerserPlugin from 'terser-webpack-plugin';
 import ReplaceInFileWebpackPlugin from 'replace-in-file-webpack-plugin';
 
 import packageJson from './package.json';
-const dir_build = path.resolve(__dirname, 'dist/hds_/ces');
+const dir_build = path.resolve(__dirname, 'dist/<%= publisher %>_/<%= namespace %>');
 import * as shell from 'shelljs';
 import * as fs from 'fs';
 
@@ -47,7 +47,7 @@ for (const filepath of buildFiles) {
     for (const form of buildJson.forms) {
         const {name, build} = form;
         if (build) {
-            entry[name] = [
+            entry[`${entityName}_${name}`] = [
                 path.resolve(__dirname, `src/${entityName}/${name}/${name}.ts`)
             ];
         }
