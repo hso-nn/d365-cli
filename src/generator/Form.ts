@@ -58,6 +58,7 @@ export class Form {
         shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, filepath);
         shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), namespace, filepath);
         shell.sed('-i', new RegExp('<%= formname %>', 'ig'), systemForm.name, filepath);
+        shell.sed('-i', new RegExp('<%= entity %>', 'ig'), this.entityName, filepath);
         shell.exec(`git add ${filepath}`);
         await this.log(`Added ${this.entityName}/${formName}/${formName}.ts`);
     }
