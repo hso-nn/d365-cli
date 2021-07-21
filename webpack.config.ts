@@ -1,20 +1,26 @@
-const path = require("path");
-const webpack = require("webpack");
-const dir_build = path.resolve(__dirname, "bin");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
-const TerserPlugin = require("terser-webpack-plugin");
-const nodeExternals = require("webpack-node-externals");
-const packageJson = require('./package.json');
+import path from 'path';
+import webpack from 'webpack';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import CopyWebpackPlugin from 'copy-webpack-plugin';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import TerserPlugin from 'terser-webpack-plugin';
+import nodeExternals from 'webpack-node-externals';
+import packageJson from './package.json';
 
-module.exports = (env, argv) =>  {
+const dir_build = path.resolve(__dirname, "bin");
+
+const configFunction = (env: unknown, argv: {mode: string}) =>  {
     const mode = argv.mode;
     return {
         mode: mode,
-        target: "node",
         node: {
             __dirname: false,
             __filename: false
         },
+        // target: "node",
+        externalsPresets: {node: true},
         externals: [nodeExternals()],
         entry: {
             "main": [
@@ -52,7 +58,7 @@ module.exports = (env, argv) =>  {
         },
         plugins: [
             new webpack.NoEmitOnErrorsPlugin(),
-            new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+            new webpack.IgnorePlugin({resourceRegExp: /^\.\/locale$/, contextRegExp: /moment$/}),
             new webpack.BannerPlugin(`HSO D365 CLI ${packageJson.version} | (c) HSO Innovation`),
         ].concat(mode === "development" ? [] : [
             new CopyWebpackPlugin({
@@ -80,3 +86,4 @@ module.exports = (env, argv) =>  {
         devtool: mode === "development" ? "source-map" : false,
     }
 };
+export default configFunction;

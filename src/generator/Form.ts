@@ -6,7 +6,7 @@ import {SolutionService} from '../root/tools/Solution/Solution.service';
 import {SolutionComponentService} from '../root/tools/SolutionComponent/SolutionComponent.service';
 import {SystemFormModel} from '../root/tools/SystemForm/SystemForm.model';
 import {ControlFormContext} from './ControlFormContext';
-import * as colors from 'colors';
+import colors from 'colors';
 import {Variables} from '../Variables';
 
 export class Form {
