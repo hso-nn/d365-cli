@@ -7,9 +7,10 @@ import {Variables} from './Variables';
 import {Deploy} from './root/tools/Deploy';
 import {Resx} from './root/tools/Resx';
 import {SetFormCustomizable} from './root/tools/SetFormCustomizable';
+import packageJson from '../package.json';
 
 program
-    .version('5.0.3') // .version(require('../package').version)
+    .version(packageJson.version)
     .usage('<command> [options]');
 
 program

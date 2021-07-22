@@ -36,9 +36,6 @@ const configFunction = (env: unknown, argv: {mode: string}) =>  {
         },
         module: {
             rules: [{
-                test: /\.json$/,
-                use: "json-loader"
-            }, {
                 test: /\.ts$/,
                 enforce: "pre",
                 use: [
