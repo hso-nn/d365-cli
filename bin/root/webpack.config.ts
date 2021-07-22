@@ -124,7 +124,8 @@ const configFunction = (env: unknown, argv: {mode: string }): unknown => {
                 patterns: [{
                     from: './**/**.html',
                     to: dir_build,
-                    context: 'src'
+                    context: 'src',
+                    noErrorOnMissing: true,
                 }]
             }),
         ] : [
