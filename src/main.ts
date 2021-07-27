@@ -1,5 +1,5 @@
 import * as shell from 'shelljs';
-import * as program from 'commander';
+import program from 'commander';
 import {Create} from './Create';
 import {Update} from './update';
 import {Generator} from './generator/Generator';
@@ -7,9 +7,10 @@ import {Variables} from './Variables';
 import {Deploy} from './root/tools/Deploy';
 import {Resx} from './root/tools/Resx';
 import {SetFormCustomizable} from './root/tools/SetFormCustomizable';
+import packageJson from '../package.json';
 
 program
-    .version('5.0.1') // .version(require('../package').version)
+    .version(packageJson.version)
     .usage('<command> [options]');
 
 program

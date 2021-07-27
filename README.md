@@ -4,11 +4,19 @@
 [![npm](https://img.shields.io/npm/v/@hso/d365-cli.svg)](https://www.npmjs.com/package/@hso/d365-cli)
 
 # Introduction
-A [Command-line interface](https://en.wikipedia.org/wiki/Command-line_interface) for D365 Project (Forms/Webresources) Development based on [HSO](https://www.hso.com/en-us) best practices. 
-Invoke the tool on the command line through the hso-d365 executable. Online help is avaliable on the command line.
+A [Command-line interface](https://en.wikipedia.org/wiki/Command-line_interface) for D365 Project
+Development based on [HSO](https://www.hso.com) best practices. 
+
+It will set up a namespaced project for Forms and Webresources development including some utils for Annotation, WebApi, Base64, etcetera.
+The project uses TypeScript and [Xrm DefinitelyTyped](https://www.npmjs.com/package/@types/xrm) intellisense.
+For entities, it can generate entity forms including methods for getting tabs, controls, attributes. For entities, it can generate models. The entity model can be used for intellisense and helps with odata.
+The project has a Translation util class and [translation command](https://github.com/hso-nn/d365-cli/wiki/Translations) to generate Resx file. The deployment will set/remove dependencies to webresource files.
+Building obfuscated code and deploying to the D365 Solution can be done in a few [CLI Commands]((https://github.com/hso-nn/d365-cli/wiki/CLICommands)). 
+
+Invoke the tool on the command line through the hso-d365 executable. Online help is available on the command line.
 See wiki for detailed [CLI Commands](https://github.com/hso-nn/d365-cli/wiki/CLICommands).
 
-Since the features and thus the documentation is growing fast, this readme only contains a [Getting Started](#getting-started).
+Since the features and thus the documentation is growing fast, this readme only contains a [Getting Started](#getting-started) and a few examples.
 All documentation and examples can be found in the [wiki](https://github.com/hso-nn/d365-cli/wiki).
 
 
@@ -21,13 +29,13 @@ All documentation and examples can be found in the [wiki](https://github.com/hso
 For a more detailed installation and prerequisites see wiki for [Installation](https://github.com/hso-nn/d365-cli/wiki/Installation).
 
 ## Create project
-To create a new, basic D365 Webresource project, go to the parent directory of your new workspace and use the following commands:
+To create a new project, go to the parent directory of your new workspace and use the following commands:
 
 ```powershell
   hso-d365 new my-first-project
 ```
 
-This will ask a couple of questions to setup the project:
+This will ask a couple of questions to set up the project:
 
 ```powershell
   Initializing D365 Project my-first-project
@@ -39,16 +47,21 @@ This will ask a couple of questions to setup the project:
   Initializing D365 Project done
 ```
 
-## Add Entity
-To add an entity to the project use following commands:  
-
+Now go to the Webresources folder, which is the root folder of the project:
 ```powershell
   cd my-first-project
   cd Webresources
   hso-d365 generate Entity MyEntity
 ```
 
-This will ask a couple of questions to setup the Entity:
+## Add Entity
+To add an entity to the project use following commands:  
+
+```powershell
+  hso-d365 generate Entity MyEntity
+```
+
+This will ask for the Logical Name of the Entity:
 
 ```powershell
   Adding D365 Entity MyEntity...
@@ -69,7 +82,7 @@ To build and deploy changes made to the Entity and Webresource use following com
 ```powershell
   npm run build:prod
 ```
-Now the folder Webresources/dist/mfp_ contains the bundled and uglified files to be deployed.
+Now the folder Webresources/dist/mfp_ contains the bundled and obfuscated files to be deployed.
 It's recommended to deploy in the same folder structure to D365.
 
 Use following command to deploy
@@ -77,9 +90,9 @@ Use following command to deploy
   npm run deploy
 ```
 
-# Examples
-## Cloning Quote
+# Code Examples
 
+## Xrm DefinitelyTyped and [generated](https://github.com/hso-nn/d365-cli/wiki/GenerateEntity) QuoteService
 ```TypeScript
 private static async clone(executionContext: Xrm.Events.EventContext): Promise<void> {
     const formContext = executionContext.getFormContext(),
@@ -95,4 +108,25 @@ private static async clone(executionContext: Xrm.Events.EventContext): Promise<v
         }
     }
 }
+```
+
+## [Entity](https://github.com/hso-nn/d365-cli/wiki/GenerateEntity) (Account, Contact) [Service](https://github.com/hso-nn/d365-cli/wiki/GenerateEntity#nameservicets) and [Model](https://github.com/hso-nn/d365-cli/wiki/GenerateEntity#namemodelts)
+```TypeScript
+    const accounts = await AccountService.retrieveMultipleRecords({ // returns AccountModel[]
+        select: ['name'],
+        expands: [{
+            attribute: 'primarycontactid',
+            select: ['fullname']
+        }]
+    });
+    for (const account of accounts) {
+        // account.primarycontactid is ContractModel
+        console.log(`Contact fullname: ${account.primarycontactid.fullname}`);
+    }
+```
+
+## [Action](https://github.com/hso-nn/d365-cli/wiki/WebApi#executeAction) via [WebApi](https://github.com/hso-nn/d365-cli/wiki/WebApi)
+```TypeScript
+    const result1 = await WebApi.executeAction('WhoAmI');
+    const result2 = await WebApi.executeAction('yourAction', {value: 'x'}, 'account', 'idOfAccount');
 ```

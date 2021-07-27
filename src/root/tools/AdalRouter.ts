@@ -1,7 +1,7 @@
-import * as express from 'express';
+import express from 'express';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import * as open from 'open';
+import open from 'open';
 import {Express, Router} from 'express';
 import * as http from 'http';
 import {Socket} from 'net';
