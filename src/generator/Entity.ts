@@ -41,8 +41,8 @@ export class Entity extends AdalRouter {
     }
 
     private async generateEntity(): Promise<void> {
-        const folderPath = `src/${this.entityName}`;
-        if (!shell.test('-d', folderPath)) {
+        const serviceFilepath = `src/${this.entityName}/${this.entityName}.service.ts`;
+        if (!shell.test('-f', serviceFilepath)) {
             const answers = await inquirer.prompt([{
                 type: 'input',
                 name: 'entityLogicalName',
@@ -59,7 +59,6 @@ export class Entity extends AdalRouter {
             await this.addEntityFiles(this.entityName);
             // Entity.registerWebpackConfig(this.entityName);
         } else {
-            const serviceFilepath = `src/${this.entityName}/${this.entityName}.service.ts`;
             const fileData = String(fs.readFileSync(serviceFilepath));
             const match = fileData.match(new RegExp(`private static logicalName = '([a-zA-Z_]*)';`));
             this.entityLogicalName = match[1];

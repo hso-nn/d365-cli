@@ -2,6 +2,7 @@ import colors from 'colors';
 import * as shell from 'shelljs';
 import {Entity} from './Entity';
 import {Webresource} from './Webresource';
+import {ModelRouter} from './ModelRouter';
 import {EnvironmentVariable} from './EnvironmentVariable';
 import {LicenseValidator} from './LicenseValidator';
 
@@ -19,7 +20,7 @@ export class Generator {
         } else if (schematic.toLowerCase() === 'webresource') {
             return Webresource.generateWebresource(name);
         } else if(schematic.toLocaleLowerCase() === 'model') {
-            console.log(colors.red('Not supported anymore: please use Entity instead'));
+            return ModelRouter.generateModel(name);
         } else if (schematic.toLowerCase() === 'licensevalidator') {
             return LicenseValidator.generateLicenseValidator(name);
         } else if(schematic.toLowerCase() === 'environmentvariable') {
