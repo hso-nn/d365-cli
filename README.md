@@ -84,9 +84,9 @@ To build and deploy changes made to the Entity and Webresource use following com
 Now the folder Webresources/dist/mfp_ contains the bundled and obfuscated files to be deployed.
 It's recommended to deploy in the same folder structure to D365.
 
-Use following command to deploy
+Use following [command to deploy](https://github.com/hso-nn/d365-cli/wiki/CommandDeploy)
 ```powershell
-  npm run deploy
+  hso-d365 deploy
 ```
 
 # Code Examples
