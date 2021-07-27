@@ -27,9 +27,10 @@ program
 program
     .command('generate <schematic> [name]')
     .alias('g')
+    .option('-s, --skipForms', 'Skip generating form files')
     .description('Generates and/or modifies files bases on a schematic.')
-    .action((schematic: string, name: string) => {
-        Generator.generate(schematic, name);
+    .action((schematic: string, name: string, options) => {
+        Generator.generate(schematic, name, options);
     })
     .on('--help', () => {
         Generator.showGenerateHelp();

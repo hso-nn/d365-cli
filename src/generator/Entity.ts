@@ -9,25 +9,31 @@ import {Enum} from './Enum';
 import {AttributeFormContext} from './AttributeFormContext';
 import {Form} from './Form';
 
+interface EntityOptions {
+    skipForms?: boolean;
+}
+
 export class Entity extends AdalRouter {
-    public static async generateEntity(entityName: string): Promise<void> {
+    public static async generateEntity(entityName: string, options: EntityOptions): Promise<void> {
         if (!entityName) {
             console.log(colors.red('Entity name missing'));
         } else if(!new RegExp('[A-Z]').test(entityName[0])) {
             console.log(colors.red(`Entity name must be UpperCamelCase!`));
-        } else if (process.argv[5]) {
+        } else if (!options.skipForms && process.argv[5] || process.argv[6]) {
             console.log(colors.red(`No spaces allowed!`));
         } else {
-            new Entity(entityName);
+            new Entity(entityName, options);
         }
         return null;
     }
 
     private entityLogicalName: string;
     private readonly entityName: string;
-    constructor(entityName: string) {
+    private readonly options: EntityOptions;
+    constructor(entityName: string, options: EntityOptions) {
         super();
         this.entityName = entityName;
+        this.options = options;
     }
 
     protected async onAuthenticated(): Promise<void> {
@@ -35,8 +41,12 @@ export class Entity extends AdalRouter {
         await this.log(`Generating files for Entity '${this.entityName}'<br/>Using entityLogicalName '${this.entityLogicalName}'</br>`);
         await Model.generateModel(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
         await Enum.generateEnum(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
-        await AttributeFormContext.generateFormContext(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
-        await Form.generateFormFiles(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
+        if (!this.options.skipForms) {
+            await AttributeFormContext.generateFormContext(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
+            await Form.generateFormFiles(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
+        } else {
+            await this.log('Skip generate form files');
+        }
         await this.log('Generating files finished');
     }
 
