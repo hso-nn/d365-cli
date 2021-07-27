@@ -10,7 +10,7 @@ Development based on [HSO](https://www.hso.com) best practices.
 It will set up a namespaced project for Forms and Webresources development including some utils for Annotation, WebApi, Base64, etcetera.
 The project uses TypeScript and [Xrm DefinitelyTyped](https://www.npmjs.com/package/@types/xrm) intellisense.
 For entities, it can generate entity forms including methods for getting tabs, controls, attributes. For entities, it can generate models. The entity model can be used for intellisense and helps with odata.
-The project has a Translation util class and [translation command](https://github.com/hso-nn/d365-cli/wiki/Translations) to generate Resx file. The deployment will set/remove dependencies to webresource files.
+The project has a Translation util class and the [translation command](https://github.com/hso-nn/d365-cli/wiki/Translations) generates Resx file. The deployment will set/remove dependencies to webresource files.
 Building obfuscated code and deploying to the D365 Solution can be done in a few [CLI Commands]((https://github.com/hso-nn/d365-cli/wiki/CLICommands)). 
 
 Invoke the tool on the command line through the hso-d365 executable. Online help is available on the command line.
@@ -51,7 +51,6 @@ Now go to the Webresources folder, which is the root folder of the project:
 ```powershell
   cd my-first-project
   cd Webresources
-  hso-d365 generate Entity MyEntity
 ```
 
 ## Add Entity
@@ -94,7 +93,7 @@ Use following command to deploy
 
 ## Xrm DefinitelyTyped and [generated](https://github.com/hso-nn/d365-cli/wiki/GenerateEntity) QuoteService
 ```TypeScript
-private static async clone(executionContext: Xrm.Events.EventContext): Promise<void> {
+static async clone(executionContext: Xrm.Events.EventContext): Promise<void> {
     const formContext = executionContext.getFormContext(),
         id = formContext.data.entity.getId(),
         quote = await QuoteService.retrieveClone(id),
@@ -112,13 +111,13 @@ private static async clone(executionContext: Xrm.Events.EventContext): Promise<v
 
 ## [Entity](https://github.com/hso-nn/d365-cli/wiki/GenerateEntity) (Account, Contact) [Service](https://github.com/hso-nn/d365-cli/wiki/GenerateEntity#nameservicets) and [Model](https://github.com/hso-nn/d365-cli/wiki/GenerateEntity#namemodelts)
 ```TypeScript
-    const accounts = await AccountService.retrieveMultipleRecords({ // returns AccountModel[]
+    const accounts = await AccountService.retrieveMultipleRecords({ 
         select: ['name'],
         expands: [{
             attribute: 'primarycontactid',
             select: ['fullname']
         }]
-    });
+    }); // returns AccountModel[]
     for (const account of accounts) {
         // account.primarycontactid is ContractModel
         console.log(`Contact fullname: ${account.primarycontactid.fullname}`);
@@ -128,5 +127,6 @@ private static async clone(executionContext: Xrm.Events.EventContext): Promise<v
 ## [Action](https://github.com/hso-nn/d365-cli/wiki/WebApi#executeAction) via [WebApi](https://github.com/hso-nn/d365-cli/wiki/WebApi)
 ```TypeScript
     const result1 = await WebApi.executeAction('WhoAmI');
-    const result2 = await WebApi.executeAction('yourAction', {value: 'x'}, 'account', 'idOfAccount');
+    const result2 = await WebApi.executeAction(
+        'yourAction', {value: 'x'}, 'account', 'idOfAccount');
 ```
