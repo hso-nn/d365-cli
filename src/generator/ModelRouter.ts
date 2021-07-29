@@ -48,7 +48,7 @@ export class ModelRouter extends AdalRouter {
         } else {
             const serviceFilepath = `src/${this.entityName}/${this.entityName}.service.ts`;
             const fileData = String(fs.readFileSync(serviceFilepath));
-            const match = fileData.match(new RegExp(`private static logicalName = '([a-zA-Z_]*)';`));
+            const match = fileData.match(new RegExp(`static logicalName = '([a-zA-Z_]*)';`));
             this.entityLogicalName = match[1];
             console.log(colors.green(`Entity ${this.entityName} already exist`));
             await Model.generateModel(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));

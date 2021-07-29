@@ -2,7 +2,7 @@ import {WebresourceModel} from './Webresource.model';
 import {NodeApi} from '../NodeApi/NodeApi';
 
 export class WebresourceService {
-    private static logicalName = 'webresource';
+    public static logicalName = 'webresource';
     private static entitySetName = 'webresourceset';
 
     public static async retrieveMultipleRecords(multipleSystemQueryOptions: MultipleSystemQueryOptions, bearer: string): Promise<WebresourceModel[]> {
