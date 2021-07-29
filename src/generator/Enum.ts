@@ -23,6 +23,7 @@ export class Enum {
     private async writeEnumFile(): Promise<void> {
         await this.log(`Generating ${this.entityName}.enum.ts<br/>`);
         const enumAttributeNames = await this.getAttributeNamesEnumString();
+        const navigationPropertyNames = await this.getNavigationPropertyNamesString();
         const enumStrings = await this.getEnumStrings();
         const enumFilepath = `src/${this.entityName}/${this.entityName}.enum.ts`;
         shell.cp('-r', `${__dirname}/Entity/Entity.enum.ts`, `src/${this.entityName}`);
@@ -31,7 +32,19 @@ export class Enum {
         shell.exec(`git add ${enumFilepath}`);
         const fileData = String(fs.readFileSync(enumFilepath));
         await this.log(`Generated ${this.entityName}.enum.ts<br/>`);
-        shell.ShellString(fileData + enumAttributeNames + enumStrings).to(enumFilepath);
+        shell.ShellString(fileData + enumAttributeNames + navigationPropertyNames + enumStrings).to(enumFilepath);
+    }
+
+    private async getNavigationPropertyNamesString(): Promise<string> {
+        let navigationPropertiesString = '';
+        const manyToOneMetadatas = await NodeApi.getManyToOneMetadatas(this.entityLogicalName, this.bearer);
+        navigationPropertiesString += `export enum ${this.entityName}NavigationPropertyNames {\n`;
+        for (const relation of manyToOneMetadatas) {
+            const {ReferencingEntityNavigationPropertyName} = relation;
+            navigationPropertiesString += `    ${Enum.capitalize(ReferencingEntityNavigationPropertyName)} = '${ReferencingEntityNavigationPropertyName}',\n`;
+        }
+        navigationPropertiesString += `}\n`;
+        return navigationPropertiesString;
     }
 
     private async getAttributeNamesEnumString(): Promise<string> {
