@@ -3,7 +3,7 @@
 import {WebApi} from '../WebApi/WebApi';
 
 export class EnvironmentVariableService {
-    private static logicalName = 'environmentvariablevalue';
+    public static logicalName = 'environmentvariablevalue';
     private static async retrieveMultipleRecords(multipleSystemQueryOptions: MultipleSystemQueryOptions): Promise<EnvironmentVariableModel[]> {
         return WebApi.retrieveMultipleRecords(EnvironmentVariableService.logicalName, multipleSystemQueryOptions);
     }

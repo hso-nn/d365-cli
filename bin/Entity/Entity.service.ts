@@ -2,7 +2,7 @@ import {WebApi} from '../WebApi/WebApi';
 import {Service} from '../WebApi/Service';
 
 export class EntityService {
-    private static logicalName = 'EntityLogicalName';
+    public static logicalName = 'EntityLogicalName';
 
     public static async retrieveMultipleRecords(multipleSystemQueryOptions: MultipleSystemQueryOptions): Promise<EntityModel[]> {
         return WebApi.retrieveMultipleRecords(EntityService.logicalName, multipleSystemQueryOptions);

@@ -3,7 +3,7 @@ import {Base64} from '../util/Base64';
 import {Service} from '../WebApi/Service';
 
 export class AnnotationService {
-    private static logicalName = 'annotation';
+    public static logicalName = 'annotation';
 
     public static async parseAnnotation(blob: Blob, filename: string, id: string, targetEntityName: string): Promise<AnnotationModel> {
         return {
