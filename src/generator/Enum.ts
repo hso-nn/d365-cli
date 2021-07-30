@@ -2,8 +2,6 @@ import * as shell from 'shelljs';
 import * as fs from 'fs';
 import {NodeApi} from '../root/tools/NodeApi/NodeApi';
 import {SavedQueryService} from '../root/tools/SavedQuery/SavedQuery.service';
-import {SolutionService} from '../root/tools/Solution/Solution.service';
-import {SolutionComponentService} from '../root/tools/SolutionComponent/SolutionComponent.service';
 
 export class Enum {
     private readonly bearer: string;
@@ -42,35 +40,17 @@ export class Enum {
     // eslint-disable-next-line max-lines-per-function
     private async getSavedQueriesString(): Promise<string> {
         let savedQueriesString = '';
-        const solution = await SolutionService.getSolution(['solutionid'], this.bearer);
-        const solutionComponents = await SolutionComponentService.retrieveMultipleRecords({
-            select: ['objectid'],
+        savedQueriesString += `export const ${this.entityName.charAt(0).toLowerCase()}${this.entityName.slice(1)}Views = {\n`;
+        const savedQueries = await SavedQueryService.retrieveMultipleRecords({
+            select: ['savedqueryid', 'name', 'returnedtypecode', 'savedqueryidunique'],
             filters: [{
                 conditions: [{
-                    attribute: '_solutionid_value',
-                    value: solution.solutionid
-                }]
-            }, {
-                type: 'or',
-                conditions: [{
-                    attribute: 'componenttype',
-                    value: 26
+                    attribute: 'returnedtypecode',
+                    value: this.entityLogicalName
                 }]
             }]
         }, this.bearer);
-        savedQueriesString += `export const ${this.entityName}Views = {\n`;
-        for (const solutionComponent of solutionComponents) {
-            const objectid = solutionComponent.objectid;
-            const savedQueries = await SavedQueryService.retrieveMultipleRecords({
-                select: ['savedqueryid', 'name', 'returnedtypecode', 'savedqueryidunique'],
-                filters: [{
-                    conditions: [{
-                        attribute: 'savedqueryid',
-                        value: objectid
-                    }]
-                }]
-            }, this.bearer);
-            const savedQuery = savedQueries[0];
+        for (const savedQuery of savedQueries) {
             if (savedQuery && savedQuery.returnedtypecode === this.entityLogicalName) {
                 const {name, savedqueryidunique} = savedQuery;
                 savedQueriesString += `    ${Enum.capitalize(name.replace(/ /g, ''))}: {\n`;
