@@ -1,6 +1,9 @@
 import * as shell from 'shelljs';
 import * as fs from 'fs';
 import {NodeApi} from '../root/tools/NodeApi/NodeApi';
+import {SavedQueryService} from '../root/tools/SavedQuery/SavedQuery.service';
+import {SolutionService} from '../root/tools/Solution/Solution.service';
+import {SolutionComponentService} from '../root/tools/SolutionComponent/SolutionComponent.service';
 
 export class Enum {
     private readonly bearer: string;
@@ -24,6 +27,7 @@ export class Enum {
         await this.log(`Generating ${this.entityName}.enum.ts<br/>`);
         const enumAttributeNames = await this.getAttributeNamesEnumString();
         const navigationPropertyNames = await this.getNavigationPropertyNamesString();
+        const savedQueries = await this.getSavedQueriesString();
         const enumStrings = await this.getEnumStrings();
         const enumFilepath = `src/${this.entityName}/${this.entityName}.enum.ts`;
         shell.cp('-r', `${__dirname}/Entity/Entity.enum.ts`, `src/${this.entityName}`);
@@ -32,7 +36,51 @@ export class Enum {
         shell.exec(`git add ${enumFilepath}`);
         const fileData = String(fs.readFileSync(enumFilepath));
         await this.log(`Generated ${this.entityName}.enum.ts<br/>`);
-        shell.ShellString(fileData + enumAttributeNames + navigationPropertyNames + enumStrings).to(enumFilepath);
+        shell.ShellString(fileData + enumAttributeNames + navigationPropertyNames + enumStrings + savedQueries).to(enumFilepath);
+    }
+
+    // eslint-disable-next-line max-lines-per-function
+    private async getSavedQueriesString(): Promise<string> {
+        let savedQueriesString = '';
+        const solution = await SolutionService.getSolution(['solutionid'], this.bearer);
+        const solutionComponents = await SolutionComponentService.retrieveMultipleRecords({
+            select: ['objectid'],
+            filters: [{
+                conditions: [{
+                    attribute: '_solutionid_value',
+                    value: solution.solutionid
+                }]
+            }, {
+                type: 'or',
+                conditions: [{
+                    attribute: 'componenttype',
+                    value: 26
+                }]
+            }]
+        }, this.bearer);
+        savedQueriesString += `export const ${this.entityName}Views = {\n`;
+        for (const solutionComponent of solutionComponents) {
+            const objectid = solutionComponent.objectid;
+            const savedQueries = await SavedQueryService.retrieveMultipleRecords({
+                select: ['savedqueryid', 'name', 'returnedtypecode', 'savedqueryidunique'],
+                filters: [{
+                    conditions: [{
+                        attribute: 'savedqueryid',
+                        value: objectid
+                    }]
+                }]
+            }, this.bearer);
+            const savedQuery = savedQueries[0];
+            if (savedQuery && savedQuery.returnedtypecode === this.entityLogicalName) {
+                const {name, savedqueryidunique} = savedQuery;
+                savedQueriesString += `    ${Enum.capitalize(name.replace(/ /g, ''))}: {\n`;
+                savedQueriesString += `        name: '${name}',\n`;
+                savedQueriesString += `        savedqueryidunique: '${savedqueryidunique}',\n`;
+                savedQueriesString += `    },\n`;
+            }
+        }
+        savedQueriesString += `};\n`;
+        return savedQueriesString;
     }
 
     private async getNavigationPropertyNamesString(): Promise<string> {
