@@ -128,7 +128,7 @@ export class ControlFormContext {
     private async getXrmControlType(attributeMetadata: AttributeMetadata, type: number, id: string): Promise<string> {
         if (attributeMetadata) {
             const {AttributeType: attributeType} = attributeMetadata;
-            if (['String', 'Memo', 'DateTime', 'Customer', 'Owner', 'Uniqueidentifier'].includes(attributeType)) {
+            if (['String', 'Memo', 'Customer', 'Owner', 'Uniqueidentifier'].includes(attributeType)) {
                 return 'Xrm.Controls.StringControl';
             } else if (['DateTime'].includes(attributeType)) {
                 return 'Xrm.Controls.DateControl';
