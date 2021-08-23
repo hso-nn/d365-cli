@@ -42,7 +42,7 @@ export class Enum {
         let savedQueriesString = '';
         savedQueriesString += `export const ${this.entityName.charAt(0).toLowerCase()}${this.entityName.slice(1)}Views = {\n`;
         const savedQueries = await SavedQueryService.retrieveMultipleRecords({
-            select: ['savedqueryid', 'name', 'returnedtypecode', 'savedqueryidunique'],
+            select: ['savedqueryid', 'name', 'returnedtypecode'],
             filters: [{
                 conditions: [{
                     attribute: 'returnedtypecode',
@@ -52,10 +52,10 @@ export class Enum {
         }, this.bearer);
         for (const savedQuery of savedQueries) {
             if (savedQuery && savedQuery.returnedtypecode === this.entityLogicalName) {
-                const {name, savedqueryidunique} = savedQuery;
+                const {name, savedqueryid} = savedQuery;
                 savedQueriesString += `    ${Enum.capitalize(name.replace(/ /g, ''))}: {\n`;
                 savedQueriesString += `        name: '${name}',\n`;
-                savedQueriesString += `        savedqueryidunique: '${savedqueryidunique}',\n`;
+                savedQueriesString += `        savedqueryid: '${savedqueryid}',\n`;
                 savedQueriesString += `    },\n`;
             }
         }
