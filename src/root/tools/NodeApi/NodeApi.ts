@@ -119,6 +119,23 @@ export class NodeApi {
         });
     }
 
+    public static async getMultiSelectPicklistAttributeMetadata(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSetOption[]> {
+        const {crm} = NodeApi.getSettings(),
+            {url, version} = crm,
+            // eslint-disable-next-line max-len
+            uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attribute}')/Microsoft.Dynamics.CRM.MultiSelectPicklistAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=Options)`,
+            {body} = await NodeApi.request('GET', uri, null, {
+                'Authorization': `Bearer ${bearer}`
+            });
+        return body.OptionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
+            return {
+                value: option.Value,
+                externalValue: option.ExternalValue,
+                label: option.Label.UserLocalizedLabel.Label
+            };
+        });
+    }
+
     public static async getPicklistOptionSet(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSetOption[]> {
         const {crm} = NodeApi.getSettings(),
             {url, version} = crm,

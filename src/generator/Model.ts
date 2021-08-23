@@ -176,7 +176,7 @@ export class Model {
     // https://docs.microsoft.com/en-us/dotnet/api/microsoft.xrm.sdk.metadata.attributemetadata?view=dynamics-general-ce-9
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private async getInterfaceType(attribute: any): Promise<string> {
-        const {AttributeType: attributeType, SchemaName: schemaName} = attribute;
+        const {AttributeType: attributeType, SchemaName: schemaName, AttributeTypeName: attributeTypeName} = attribute;
         if (['String', 'Memo', 'DateTime', 'Lookup', 'Customer', 'Owner', 'Uniqueidentifier'].includes(attributeType)) {
             return 'string';
         } else if (['Boolean'].includes(attributeType)) {
@@ -193,6 +193,8 @@ export class Model {
         } else if (['State'].includes(attributeType)) {
             const options = await NodeApi.getStateOptionSet(this.entityLogicalName, this.bearer);
             return options.map(option => option.value).join(' | ');
+        } else if (attributeTypeName.Value === 'MultiSelectPicklistType') {
+            return 'number[]';
         }
     }
 

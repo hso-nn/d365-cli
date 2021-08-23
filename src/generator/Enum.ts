@@ -91,11 +91,16 @@ export class Enum {
         let enumStrings = '';
         const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
         for (const attribute of attributesMetadata) {
-            const {AttributeType: attributeType, LogicalName: logicalName, SchemaName: schemaName} = attribute;
-            if (attributeType === 'Picklist') {
+            const {AttributeType: attributeType, LogicalName: logicalName, SchemaName: schemaName, AttributeTypeName: attributeTypeName} = attribute;
+            if (attributeType === 'Picklist' || attributeTypeName.Value === 'MultiSelectPicklistType') {
                 const pascalSchemaName = Enum.capitalize(schemaName);
                 enumStrings += `export enum ${pascalSchemaName} {\n`;
-                const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
+                let options;
+                if (attributeType === 'Picklist') {
+                    options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
+                } else {
+                    options = await NodeApi.getMultiSelectPicklistAttributeMetadata(this.entityLogicalName, logicalName, this.bearer);
+                }
                 for (const option of options) {
                     let label = option.label.replace(/\W/g, '');
                     if (!label.charAt(0).match(/^[a-zA-Z]/)) {
