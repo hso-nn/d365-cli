@@ -63,7 +63,7 @@ export class ControlFormContext {
         for (const tab of tabs) {
             const tabName = tab.Name;
             if (tabName) {
-                const pascalTabName = ControlFormContext.capitalize(tabName.replace(/ /g, ''));
+                const pascalTabName = ControlFormContext.capitalize(tabName.replace(/\W/g, ''));
                 const methodName = `    static get${pascalTabName}Tab(formContext: FormContext): Xrm.Controls.Tab {`;
                 const returnString = `return formContext.ui.tabs.get('${tabName}');`;
                 tabsControlsString += `${methodName}\n        ${returnString}\n    }\n`;
@@ -86,7 +86,7 @@ export class ControlFormContext {
         for (const section of sections) {
             const {Name: sectionName} = section;
             if (sectionName) {
-                const pascalSectionName = ControlFormContext.capitalize(sectionName.replace(/ /g, ''));
+                const pascalSectionName = ControlFormContext.capitalize(sectionName.replace(/\W/g, ''));
                 const methodName = `    static get${pascalSectionName}Section(formContext: FormContext): Xrm.Controls.Section {`;
                 const returnString = `return formContext.ui.tabs.get('${tab.Name}').sections.get('${sectionName}');`;
                 sectionsControlsString += `${methodName}\n        ${returnString}\n    }\n`;
