@@ -63,7 +63,7 @@ export class ControlFormContext {
         for (const tab of tabs) {
             const tabName = tab.Name;
             if (tabName) {
-                const pascalTabName = ControlFormContext.capitalize(tabName.replace(/ /g, ''));
+                const pascalTabName = ControlFormContext.capitalize(tabName.replace(/\W/g, ''));
                 const methodName = `    static get${pascalTabName}Tab(formContext: FormContext): Xrm.Controls.Tab {`;
                 const returnString = `return formContext.ui.tabs.get('${tabName}');`;
                 tabsControlsString += `${methodName}\n        ${returnString}\n    }\n`;
@@ -86,7 +86,7 @@ export class ControlFormContext {
         for (const section of sections) {
             const {Name: sectionName} = section;
             if (sectionName) {
-                const pascalSectionName = ControlFormContext.capitalize(sectionName.replace(/ /g, ''));
+                const pascalSectionName = ControlFormContext.capitalize(sectionName.replace(/\W/g, ''));
                 const methodName = `    static get${pascalSectionName}Section(formContext: FormContext): Xrm.Controls.Section {`;
                 const returnString = `return formContext.ui.tabs.get('${tab.Name}').sections.get('${sectionName}');`;
                 sectionsControlsString += `${methodName}\n        ${returnString}\n    }\n`;
@@ -127,12 +127,12 @@ export class ControlFormContext {
 
     private async getXrmControlType(attributeMetadata: AttributeMetadata, type: number, id: string): Promise<string> {
         if (attributeMetadata) {
-            const {AttributeType: attributeType} = attributeMetadata;
+            const {AttributeType: attributeType, AttributeTypeName: attributeTypeName} = attributeMetadata;
             if (['String', 'Memo', 'Customer', 'Owner', 'Uniqueidentifier'].includes(attributeType)) {
                 return 'Xrm.Controls.StringControl';
             } else if (['DateTime'].includes(attributeType)) {
                 return 'Xrm.Controls.DateControl';
-            } else if (['Boolean', 'Picklist'].includes(attributeType)) {
+            } else if (['Boolean', 'Picklist'].includes(attributeType) || attributeTypeName.Value === 'MultiSelectPicklistType') {
                 return 'Xrm.Controls.OptionSetControl';
             } else if (['Lookup'].includes(attributeType)) {
                 return `Xrm.Controls.LookupControl`;
