@@ -127,12 +127,12 @@ export class ControlFormContext {
 
     private async getXrmControlType(attributeMetadata: AttributeMetadata, type: number, id: string): Promise<string> {
         if (attributeMetadata) {
-            const {AttributeType: attributeType} = attributeMetadata;
+            const {AttributeType: attributeType, AttributeTypeName: attributeTypeName} = attributeMetadata;
             if (['String', 'Memo', 'Customer', 'Owner', 'Uniqueidentifier'].includes(attributeType)) {
                 return 'Xrm.Controls.StringControl';
             } else if (['DateTime'].includes(attributeType)) {
                 return 'Xrm.Controls.DateControl';
-            } else if (['Boolean', 'Picklist'].includes(attributeType)) {
+            } else if (['Boolean', 'Picklist'].includes(attributeType) || attributeTypeName.Value === 'MultiSelectPicklistType') {
                 return 'Xrm.Controls.OptionSetControl';
             } else if (['Lookup'].includes(attributeType)) {
                 return `Xrm.Controls.LookupControl`;
