@@ -1,6 +1,6 @@
 {
   "name": "@hso/d365-cli",
-  "version": "5.4.2",
+  "version": "5.4.3",
   "author": "HSO Innovation <innovation@hso.com> (http://www.hso.com)",
   "description": "HSO D365 Command Line Interface",
   "repository": {
@@ -8,9 +8,14 @@
     "url": "https://github.com/hso-nn/d365-cli.git"
   },
   "keywords": [
+    "dynamics crm",
+    "dynamics d365",
+    "webapi",
+    "xrm",
+    "typescript",
     "d365",
+    "dataverse",
     "cli",
-    "dynamics",
     "crm",
     "ce",
     "hso"
