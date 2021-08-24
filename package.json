@@ -8,9 +8,14 @@
     "url": "https://github.com/hso-nn/d365-cli.git"
   },
   "keywords": [
+    "dynamics crm",
+    "dynamics d365",
+    "webapi",
+    "xrm",
+    "typescript",
     "d365",
+    "dataverse",
     "cli",
-    "dynamics",
     "crm",
     "ce",
     "hso"
