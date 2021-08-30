@@ -13,7 +13,6 @@ export class EnvironmentVariable extends AdalRouter {
         return null;
     }
 
-    // eslint-disable-next-line max-lines-per-function
     protected async onAuthenticated(): Promise<void> {
         await this.log(`Generating EnvironmentVariable`);
         await this.writeEnvironmentVariablesFiles();

@@ -30,10 +30,12 @@ interface Option {
 }
 
 interface OptionSet {
+    Name: string;
     IsGlobal: boolean;
     FalseOption?: Option;
     TrueOption?: Option;
     Options: Option[];
+    OptionSetType: 'Boolean' | 'Picklist'
 }
 
 interface NodeApiResponse {
@@ -170,6 +172,17 @@ export class NodeApi {
         //         };
         //     });
         // }
+    }
+
+    public static async getGlobalOptionSetDefinitions(bearer: string): Promise<OptionSet[]> {
+        const {crm} = NodeApi.getSettings(),
+            {url, version} = crm,
+            // eslint-disable-next-line max-len
+            uri = `${url}/api/data/v${version}/GlobalOptionSetDefinitions`,
+            {body} = await NodeApi.request('GET', uri, null, {
+                'Authorization': `Bearer ${bearer}`
+            });
+        return body.value;
     }
 
     public static async getBooleanOptionSet(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSet> {
