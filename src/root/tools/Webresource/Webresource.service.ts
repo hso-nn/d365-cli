@@ -44,10 +44,12 @@ export class WebresourceService {
     }
 
     private static async getWebresourcetype(extension: string, bearer: string): Promise<number> {
-        const options = await NodeApi.getPicklistOptionSet(WebresourceService.logicalName, 'webresourcetype', bearer);
+        const optionSet = await NodeApi.getPicklistOptionSet(WebresourceService.logicalName, 'webresourcetype', bearer);
         let webresourcetype: number,
             scriptvalue: number;
-        for (const {value, label} of options) {
+        for (const option of optionSet.Options) {
+            const value = option.Value;
+            const label = option.Label.UserLocalizedLabel.Label;
             if (label.toLocaleLowerCase().includes('script')) {
                 scriptvalue = parseInt(String(value), 10);
             }

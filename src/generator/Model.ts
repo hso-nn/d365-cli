@@ -188,11 +188,11 @@ export class Model {
         } else if (['Integer', 'Double', 'BigInt', 'Decimal', 'Double', 'Money'].includes(attributeType)) {
             return 'number';
         } else if (['Status'].includes(attributeType)) {
-            const options = await NodeApi.getStatusOptionSet(this.entityLogicalName, this.bearer);
-            return options.map(option => option.value).join(' | ');
+            const optionSet = await NodeApi.getStatusOptionSet(this.entityLogicalName, this.bearer);
+            return optionSet.Options.map(option => option.Value).join(' | ');
         } else if (['State'].includes(attributeType)) {
-            const options = await NodeApi.getStateOptionSet(this.entityLogicalName, this.bearer);
-            return options.map(option => option.value).join(' | ');
+            const optionSet = await NodeApi.getStateOptionSet(this.entityLogicalName, this.bearer);
+            return optionSet.Options.map(option => option.Value).join(' | ');
         } else if (attributeTypeName.Value === 'MultiSelectPicklistType') {
             return 'number[]';
         }
@@ -202,10 +202,15 @@ export class Model {
         let typeStrings = '';
         const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
         for (const attribute of attributesMetadata) {
-            const {AttributeType: attributeType, LogicalName: logicalName, SchemaName: schemaName} = attribute;
-            if (attributeType === 'Picklist') {
-                const options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer),
-                    types = options.map(option => option.value).join(' | ');
+            const {AttributeType: attributeType, LogicalName: logicalName, SchemaName: schemaName, AttributeTypeName: attributeTypeName} = attribute;
+            if (attributeType === 'Picklist' || attributeTypeName.Value === 'MultiSelectPicklistType') {
+                let optionSet;
+                if (attributeType === 'Picklist') {
+                    optionSet = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
+                } else {
+                    optionSet = await NodeApi.getMultiSelectPicklistAttributeMetadata(this.entityLogicalName, logicalName, this.bearer);
+                }
+                const types = optionSet.Options.map(option => option.Value).join(' | ');
                 typeStrings += `type ${schemaName}Values = ${types};\n`;
             }
         }

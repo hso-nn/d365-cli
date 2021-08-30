@@ -93,22 +93,24 @@ export class Enum {
         for (const attribute of attributesMetadata) {
             const {AttributeType: attributeType, LogicalName: logicalName, SchemaName: schemaName, AttributeTypeName: attributeTypeName} = attribute;
             if (attributeType === 'Picklist' || attributeTypeName.Value === 'MultiSelectPicklistType') {
-                const pascalSchemaName = Enum.capitalize(schemaName);
-                enumStrings += `export enum ${pascalSchemaName} {\n`;
-                let options;
+                let optionSet;
                 if (attributeType === 'Picklist') {
-                    options = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
+                    optionSet = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
                 } else {
-                    options = await NodeApi.getMultiSelectPicklistAttributeMetadata(this.entityLogicalName, logicalName, this.bearer);
+                    optionSet = await NodeApi.getMultiSelectPicklistAttributeMetadata(this.entityLogicalName, logicalName, this.bearer);
                 }
-                for (const option of options) {
-                    let label = option.label.replace(/\W/g, '');
-                    if (!label.charAt(0).match(/^[a-zA-Z]/)) {
-                        label = `'${label}'`;
+                if (!optionSet.IsGlobal) {
+                    const pascalSchemaName = Enum.capitalize(schemaName);
+                    enumStrings += `export enum ${pascalSchemaName} {\n`;
+                    for (const option of optionSet.Options) {
+                        let label = option.Label.UserLocalizedLabel.Label.replace(/\W/g, '');
+                        if (!label.charAt(0).match(/^[a-zA-Z]/)) {
+                            label = `'${label}'`;
+                        }
+                        enumStrings += `    ${label} = ${option.Value},\n`;
                     }
-                    enumStrings += `    ${label} = ${option.value},\n`;
+                    enumStrings += '}\n';
                 }
-                enumStrings += '}\n';
             }
         }
         if (enumStrings) {

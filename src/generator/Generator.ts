@@ -5,10 +5,11 @@ import {Webresource} from './Webresource';
 import {ModelRouter} from './ModelRouter';
 import {EnvironmentVariable} from './EnvironmentVariable';
 import {LicenseValidator} from './LicenseValidator';
+import {GlobalOptionSet} from './GlobalOptionSet';
 
 export class Generator {
     public static generate(schematic: string, name: string, options: unknown): Promise<void> {
-        const supportedSchematics = ['entity', 'webresource', 'model', 'licensevalidator', 'environmentvariable'];
+        const supportedSchematics = ['entity', 'webresource', 'model', 'licensevalidator', 'environmentvariable', 'globaloptionset'];
         if (!shell.test('-e', 'src')) {
             console.log(colors.red(`You are not inside the project Webresources folder!`));
         } else if (!schematic) {
@@ -25,6 +26,8 @@ export class Generator {
             return LicenseValidator.generateLicenseValidator(name);
         } else if(schematic.toLowerCase() === 'environmentvariable') {
             return EnvironmentVariable.generateEnvironmentVariable();
+        } else if(schematic.toLowerCase() === 'globaloptionsets') {
+            return GlobalOptionSet.generateGlobalOptionSets();
         }
     }
 
