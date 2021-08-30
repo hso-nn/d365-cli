@@ -12,17 +12,28 @@ interface HttpHeaders {
     [index: string]: string | number;
 }
 
-interface OptionSetOption {
-    value?: number;
-    externalValue?: number;
-    label?: string;
-}
-
 interface JsonHttpHeaders extends HttpHeaders {
     'OData-MaxVersion': string;
     'OData-Version': string;
     'Accept': string;
     'Content-Type': string;
+}
+
+interface Option {
+    Value: number;
+    ExternalValue: number;
+    Label: {
+        UserLocalizedLabel: {
+            Label: string;
+        }
+    }
+}
+
+interface OptionSet {
+    IsGlobal: boolean;
+    FalseOption?: Option;
+    TrueOption?: Option;
+    Options: Option[];
 }
 
 interface NodeApiResponse {
@@ -85,7 +96,7 @@ export class NodeApi {
         return body;
     }
 
-    public static async getStatusOptionSet(entityLogicalName: string, bearer: string): Promise<OptionSetOption[]> {
+    public static async getStatusOptionSet(entityLogicalName: string, bearer: string): Promise<OptionSet> {
         const {crm} = NodeApi.getSettings(),
             {url, version} = crm,
             // eslint-disable-next-line max-len
@@ -93,16 +104,17 @@ export class NodeApi {
             {body} = await NodeApi.request('GET', uri, null, {
                 'Authorization': `Bearer ${bearer}`
             });
-        return body.value[0].OptionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
-            return {
-                value: option.Value,
-                externalValue: option.ExternalValue,
-                label: option.Label.UserLocalizedLabel.Label
-            };
-        });
+        return body.value[0].OptionSet;
+        // return body.value[0].OptionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
+        //     return {
+        //         value: option.Value,
+        //         externalValue: option.ExternalValue,
+        //         label: option.Label.UserLocalizedLabel.Label
+        //     };
+        // });
     }
 
-    public static async getStateOptionSet(entityLogicalName: string, bearer: string): Promise<OptionSetOption[]> {
+    public static async getStateOptionSet(entityLogicalName: string, bearer: string): Promise<OptionSet> {
         const {crm} = NodeApi.getSettings(),
             {url, version} = crm,
             // eslint-disable-next-line max-len
@@ -110,66 +122,76 @@ export class NodeApi {
             {body} = await NodeApi.request('GET', uri, null, {
                 'Authorization': `Bearer ${bearer}`
             });
-        return body.value[0].OptionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
-            return {
-                value: option.Value,
-                externalValue: option.ExternalValue,
-                label: option.Label.UserLocalizedLabel.Label
-            };
-        });
+        return body.value[0].OptionSet;
+        // return optionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
+        //     return {
+        //         value: option.Value,
+        //         externalValue: option.ExternalValue,
+        //         label: option.Label.UserLocalizedLabel.Label
+        //     };
+        // });
     }
 
-    public static async getMultiSelectPicklistAttributeMetadata(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSetOption[]> {
+    public static async getMultiSelectPicklistAttributeMetadata(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSet> {
         const {crm} = NodeApi.getSettings(),
             {url, version} = crm,
             // eslint-disable-next-line max-len
-            uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attribute}')/Microsoft.Dynamics.CRM.MultiSelectPicklistAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=Options)`,
+            uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attribute}')/Microsoft.Dynamics.CRM.MultiSelectPicklistAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=Options,IsGlobal)`,
             {body} = await NodeApi.request('GET', uri, null, {
                 'Authorization': `Bearer ${bearer}`
             });
-        return body.OptionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
-            return {
-                value: option.Value,
-                externalValue: option.ExternalValue,
-                label: option.Label.UserLocalizedLabel.Label
-            };
-        });
+        return body.OptionSet;
+        // if (!optionSet.IsGlobal) {
+        //     return optionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
+        //         return {
+        //             value: option.Value,
+        //             externalValue: option.ExternalValue,
+        //             label: option.Label.UserLocalizedLabel.Label
+        //         };
+        //     });
+        // }
     }
 
-    public static async getPicklistOptionSet(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSetOption[]> {
+    public static async getPicklistOptionSet(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSet> {
         const {crm} = NodeApi.getSettings(),
             {url, version} = crm,
             // eslint-disable-next-line max-len
-            uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attribute}')/Microsoft.Dynamics.CRM.PicklistAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=Options)`,
+            uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attribute}')/Microsoft.Dynamics.CRM.PicklistAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=Options,IsGlobal)`,
             {body} = await NodeApi.request('GET', uri, null, {
                 'Authorization': `Bearer ${bearer}`
             });
-        return body.OptionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
-            return {
-                value: option.Value,
-                externalValue: option.ExternalValue,
-                label: option.Label.UserLocalizedLabel.Label
-            };
-        });
+        return body.OptionSet;
+        // if (!optionSet.IsGlobal) {
+        //     return optionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
+        //         return {
+        //             value: option.Value,
+        //             externalValue: option.ExternalValue,
+        //             label: option.Label.UserLocalizedLabel.Label
+        //         };
+        //     });
+        // }
     }
 
-    public static async getBooleanOptionSet(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSetOption[]> {
+    public static async getBooleanOptionSet(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSet> {
         const {crm} = NodeApi.getSettings(),
             {url, version} = crm,
             // eslint-disable-next-line max-len
-            uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attribute}')/Microsoft.Dynamics.CRM.BooleanAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=TrueOption,FalseOption)`,
+            uri = `${url}/api/data/v${version}/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attribute}')/Microsoft.Dynamics.CRM.BooleanAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=TrueOption,FalseOption,IsGlobal)`,
             {body} = await NodeApi.request('GET', uri, null, {
                 'Authorization': `Bearer ${bearer}`
-            }),
+            })/*,
             optionSet = body.OptionSet,
-            {FalseOption, TrueOption} = optionSet;
-        return [{
-            value: FalseOption.Value,
-            label: FalseOption.Label.UserLocalizedLabel.Label
-        }, {
-            value: TrueOption.Value,
-            label: TrueOption.Label.UserLocalizedLabel.Label
-        }];
+            {FalseOption, TrueOption, IsGlobal} = optionSet*/;
+        return body.OptionSet;
+        // if (!IsGlobal) {
+        //     return [{
+        //         value: FalseOption.Value,
+        //         label: FalseOption.Label.UserLocalizedLabel.Label
+        //     }, {
+        //         value: TrueOption.Value,
+        //         label: TrueOption.Label.UserLocalizedLabel.Label
+        //     }];
+        // }
     }
 
     private static jsonHeaders: JsonHttpHeaders = {
