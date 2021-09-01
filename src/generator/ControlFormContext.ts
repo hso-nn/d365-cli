@@ -81,8 +81,10 @@ export class ControlFormContext {
         return columnsControlsString;
     }
 
+    private static usedNames: string[];
     private async getSectionsString(tab: FormJsonTab, sections: FormJsonSection[]): Promise<string> {
         let sectionsControlsString = '';
+        ControlFormContext.usedNames = [];
         for (const section of sections) {
             const {Name: sectionName} = section;
             if (sectionName) {
@@ -116,9 +118,14 @@ export class ControlFormContext {
                 if (xrmControlType) {
                     const pascalSchemaName = dataFieldName === id ?
                         ControlFormContext.capitalize(attributeMetadata.SchemaName) : ControlFormContext.capitalize(id);
-                    const methodName = `    static get${pascalSchemaName}Control(formContext: FormContext): ${xrmControlType} {`;
-                    const returnString = `return formContext.getControl('${id}');`;
-                    cellControlsString += `${methodName}\n        ${returnString}\n    }\n`;
+                    if (!ControlFormContext.usedNames.includes(pascalSchemaName)) {
+                        ControlFormContext.usedNames.push(pascalSchemaName);
+                        const methodName = `    static get${pascalSchemaName}Control(formContext: FormContext): ${xrmControlType} {`;
+                        const returnString = `return formContext.getControl('${id}');`;
+                        cellControlsString += `${methodName}\n        ${returnString}\n    }\n`;
+                    } else {
+                        await this.log(`Duplicate control name found: '${pascalSchemaName}'`);
+                    }
                 }
             }
         }
