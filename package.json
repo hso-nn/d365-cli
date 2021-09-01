@@ -2,7 +2,7 @@
   "name": "@hso/d365-cli",
   "version": "5.5.1",
   "author": "HSO Innovation <innovation@hso.com> (http://www.hso.com)",
-  "description": "HSO D365 Command Line Interface",
+  "description": "Dynamics 365 Command Line Interface for TypeScript projects for Dataverse",
   "repository": {
     "type": "git",
     "url": "https://github.com/hso-nn/d365-cli.git"
