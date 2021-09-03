@@ -1,6 +1,7 @@
 import colors from 'colors';
 import * as shell from 'shelljs';
 import * as inquirer from 'inquirer';
+import * as fs from 'fs';
 
 interface CreateAnswers {
     publisher?: string;
@@ -36,6 +37,7 @@ export class Create {
         shell.mkdir('Webresources');
         shell.cp('-R', `${__dirname}/root/*`, 'Webresources');
         shell.cp('-R', `${__dirname}/root/.*`, 'Webresources');
+        fs.copyFileSync(`${__dirname}/root/.gitignore`, 'Webresources/.gitignore'); // some people didn't got this file
 
         Create.initCrmJson(answers);
         Create.initPackageJson(projectname, answers);
@@ -88,7 +90,7 @@ export class Create {
         }, {
             type: 'input',
             name: 'namespace',
-            message: 'Namespace (eg. Customer or Product name):'
+            message: 'Customer or Product name'
         }]);
     }
 }

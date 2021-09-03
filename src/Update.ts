@@ -35,6 +35,7 @@ export class Update {
 
         console.log(`Updating .gitignore...`);
         shell.cp('-R', `${__dirname}/root/.gitignore`, '.');
+        fs.copyFileSync(`${__dirname}/root/.gitignore`, './.gitignore'); // some people didn't got this file
 
         console.log(`Updating .eslintrc.json...`);
         shell.cp('-R', `${__dirname}/root/.eslintrc.json`, '.');
@@ -128,19 +129,26 @@ export class Update {
 
     private static async updateWebpackConfig(): Promise<void> {
         console.log(`Updating webpack.config...`);
-        const origWebpackConfigFile = shell.cat('webpack.config.js');
-        const content = origWebpackConfigFile.stdout;
-        const start = content.indexOf('entry:') + 7;
-        const end = content.indexOf('output:');
-        const entryPart = content.substr(start, end - start);
-        const cutEntry = entryPart.replace(/\s*},\s*/gm, '');
-        shell.cp('-R', `${__dirname}/root/webpack.config.ts`, '.');
-        const webpackConfigFile = shell.ls('webpack.config.ts')[0];
+        let tsFileData;
+        if (fs.existsSync('./webpack.config.js')) {
+            console.log('webpack.config.js exists');
+            const jsFileData = String(fs.readFileSync('webpack.config.js'));
+            const regexpJsEntries = /entry: (?<entries>{[^{]*)}/mg;
+            const oldJsEntry = regexpJsEntries.exec(jsFileData);
+            shell.cp('-R', `${__dirname}/root/webpack.config.ts`, '.');
+            tsFileData = String(fs.readFileSync('webpack.config.ts'));
+            tsFileData = tsFileData.replace(new RegExp('entry: {...entry, ...{', 'ig'), `entry: {...entry, ...${oldJsEntry.groups.entries}`);
+            shell.ShellString(tsFileData).to('./webpack.config.ts');
+        }
+        tsFileData = String(fs.readFileSync('webpack.config.ts'));
         const variables = await Variables.get();
-        shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), variables.publisher, webpackConfigFile);
-        shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), variables.namespace, webpackConfigFile);
-        shell.sed('-i', new RegExp('<%= description %>', 'ig'), variables.description, webpackConfigFile);
-        shell.sed('-i', new RegExp('entry: {...entry, ...{', 'ig'), `entry: {...entry, ...${cutEntry}\r\n        `, webpackConfigFile);
+        tsFileData.replace(new RegExp('<%= publisher %>', 'ig'), variables.publisher);
+        tsFileData.replace(new RegExp('<%= namespace %>', 'ig'), variables.namespace);
+        tsFileData.replace(new RegExp('<%= description %>', 'ig'), variables.description);
+        const regexpTsEntries = /entry: {...entry, ...(?<entries>{[^{]*)}/mg;
+        const oldTsEntry = regexpTsEntries.exec(tsFileData);
+        tsFileData.replace(new RegExp('entry: {...entry, ...{', 'ig'), `entry: {...entry, ...${oldTsEntry.groups.entries}`);
+        shell.ShellString(tsFileData).to('./webpack.config.ts');
         shell.exec('git rm webpack.config.js');
         shell.exec('git add webpack.config.ts');
     }
