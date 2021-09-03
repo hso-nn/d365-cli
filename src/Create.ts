@@ -88,7 +88,7 @@ export class Create {
         }, {
             type: 'input',
             name: 'namespace',
-            message: 'Namespace (eg. Customer or Product name):'
+            message: 'Customer or Product name'
         }]);
     }
 }
