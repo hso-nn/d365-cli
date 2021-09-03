@@ -35,6 +35,7 @@ export class Update {
 
         console.log(`Updating .gitignore...`);
         shell.cp('-R', `${__dirname}/root/.gitignore`, '.');
+        fs.copyFileSync(`${__dirname}/root/.gitignore`, './.gitignore'); // some people didn't got this file
 
         console.log(`Updating .eslintrc.json...`);
         shell.cp('-R', `${__dirname}/root/.eslintrc.json`, '.');
