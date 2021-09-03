@@ -48,9 +48,10 @@ export class ControlFormContext {
         await this.log(`Generated ${formName}/${formName}.formContext.ts<br/>`);
     }
 
-    // eslint-disable-next-line max-lines-per-function
+    private static usedControlNames: string[];
     private async getFormContextControlsString(systemForm: SystemFormModel): Promise<string> {
         let formContextControlsString = '';
+        ControlFormContext.usedControlNames = [];
         const formJson: FormJson = JSON.parse(systemForm.formjson);
         formContextControlsString += await this.getTabsString(formJson.Tabs.$values);
         formContextControlsString += await this.getControlsString(formJson.Header.Controls.$values);
@@ -83,10 +84,8 @@ export class ControlFormContext {
         return columnsControlsString;
     }
 
-    private static usedControlNames: string[];
     private async getSectionsString(tab: FormJsonTab, sections: FormJsonSection[]): Promise<string> {
         let sectionsControlsString = '';
-        ControlFormContext.usedControlNames = [];
         for (const section of sections) {
             const {Name: sectionName} = section;
             if (sectionName) {

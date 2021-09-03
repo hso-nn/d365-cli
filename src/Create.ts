@@ -1,4 +1,4 @@
-import * as colors from 'colors';
+import colors from 'colors';
 import * as shell from 'shelljs';
 import * as inquirer from 'inquirer';
 
