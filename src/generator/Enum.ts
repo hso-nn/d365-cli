@@ -37,7 +37,6 @@ export class Enum {
         shell.ShellString(fileData + enumAttributeNames + navigationPropertyNames + enumStrings + savedQueries).to(enumFilepath);
     }
 
-    // eslint-disable-next-line max-lines-per-function
     private async getSavedQueriesString(): Promise<string> {
         let savedQueriesString = '';
         savedQueriesString += `export const ${this.entityName.charAt(0).toLowerCase()}${this.entityName.slice(1)}Views = {\n`;

@@ -41,9 +41,9 @@ export class ControlFormContext {
         shell.sed('-i', new RegExp('Entity', 'g'), this.entityName, formContextFilepath);
         shell.sed('-i', new RegExp('FormName', 'g'), formName, formContextFilepath);
         shell.exec(`git add ${formContextFilepath}`);
-        const filedata = String(fs.readFileSync(formContextFilepath));
-        const replaceString = `${formName}FormContext extends ${this.entityName}FormContext {`;
-        const newFileData = filedata.replace(replaceString, `${replaceString}\n${formContextControlsString}`);
+        const fileData = String(fs.readFileSync(formContextFilepath));
+        const replaceString = fileData.match(new RegExp(`${formName}FormContext extends AttributeFormContext {`, 'ig'))[0];
+        const newFileData = fileData.replace(replaceString, `${replaceString}\n${formContextControlsString}`);
         shell.ShellString(newFileData).to(formContextFilepath);
         await this.log(`Generated ${formName}/${formName}.formContext.ts<br/>`);
     }
@@ -58,13 +58,15 @@ export class ControlFormContext {
         return formContextControlsString;
     }
 
+    private static usedSectionNames: string[];
     private async getTabsString(tabs: FormJsonTab[]): Promise<string> {
         let tabsControlsString = '';
+        ControlFormContext.usedSectionNames = [];
         for (const tab of tabs) {
             const tabName = tab.Name;
             if (tabName) {
                 const pascalTabName = ControlFormContext.capitalize(tabName.replace(/\W/g, ''));
-                const methodName = `    static get${pascalTabName}Tab(formContext: FormContext): Xrm.Controls.Tab {`;
+                const methodName = `    static get${pascalTabName}Tab(formContext: Xrm.FormContext): Xrm.Controls.Tab {`;
                 const returnString = `return formContext.ui.tabs.get('${tabName}');`;
                 tabsControlsString += `${methodName}\n        ${returnString}\n    }\n`;
                 tabsControlsString += await this.getColumnsString(tab, tab.Columns.$values);
@@ -81,17 +83,20 @@ export class ControlFormContext {
         return columnsControlsString;
     }
 
-    private static usedNames: string[];
+    private static usedControlNames: string[];
     private async getSectionsString(tab: FormJsonTab, sections: FormJsonSection[]): Promise<string> {
         let sectionsControlsString = '';
-        ControlFormContext.usedNames = [];
+        ControlFormContext.usedControlNames = [];
         for (const section of sections) {
             const {Name: sectionName} = section;
             if (sectionName) {
                 const pascalSectionName = ControlFormContext.capitalize(sectionName.replace(/\W/g, ''));
-                const methodName = `    static get${pascalSectionName}Section(formContext: FormContext): Xrm.Controls.Section {`;
-                const returnString = `return formContext.ui.tabs.get('${tab.Name}').sections.get('${sectionName}');`;
-                sectionsControlsString += `${methodName}\n        ${returnString}\n    }\n`;
+                if (!ControlFormContext.usedSectionNames.includes(pascalSectionName)) {
+                    ControlFormContext.usedSectionNames.push(pascalSectionName);
+                    const methodName = `    static get${pascalSectionName}Section(formContext: Xrm.FormContext): Xrm.Controls.Section {`;
+                    const returnString = `return formContext.ui.tabs.get('${tab.Name}').sections.get('${sectionName}');`;
+                    sectionsControlsString += `${methodName}\n        ${returnString}\n    }\n`;
+                }
                 sectionsControlsString += await this.getRowsString(section.Rows.$values);
             }
         }
@@ -118,9 +123,9 @@ export class ControlFormContext {
                 if (xrmControlType) {
                     const pascalSchemaName = dataFieldName === id ?
                         ControlFormContext.capitalize(attributeMetadata.SchemaName) : ControlFormContext.capitalize(id);
-                    if (!ControlFormContext.usedNames.includes(pascalSchemaName)) {
-                        ControlFormContext.usedNames.push(pascalSchemaName);
-                        const methodName = `    static get${pascalSchemaName}Control(formContext: FormContext): ${xrmControlType} {`;
+                    if (!ControlFormContext.usedControlNames.includes(pascalSchemaName)) {
+                        ControlFormContext.usedControlNames.push(pascalSchemaName);
+                        const methodName = `    static get${pascalSchemaName}Control(formContext: Xrm.FormContext): ${xrmControlType} {`;
                         const returnString = `return formContext.getControl('${id}');`;
                         cellControlsString += `${methodName}\n        ${returnString}\n    }\n`;
                     } else {

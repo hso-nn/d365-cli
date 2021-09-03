@@ -45,7 +45,7 @@ export class AttributeFormContext {
             const xrmAttributeType = await this.getXrmAttributeType(attributeType);
             if (xrmAttributeType) {
                 const pascalSchemaName = AttributeFormContext.capitalize(schemaName);
-                const methodName = `    static get${pascalSchemaName}Attribute(formContext: FormContext): ${xrmAttributeType} {`;
+                const methodName = `    static get${pascalSchemaName}Attribute(formContext: Xrm.FormContext): ${xrmAttributeType} {`;
                 const returnString = `return formContext.getAttribute(${this.entityName}AttributeNames.${pascalSchemaName});`;
                 formContextAttributesString += `${methodName}\n        ${returnString}\n    }\n`;
             }
