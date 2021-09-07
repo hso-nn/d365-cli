@@ -1,7 +1,8 @@
 import * as colors from 'colors';
 import * as shell from 'shelljs';
 import * as fs from 'fs';
-import {AllVariables, Variables} from './Variables';
+import {AllVariables, Variables, WebpackConfigVariables} from './Variables';
+import readline from 'readline';
 
 export class Update {
     public static updateProject(): Promise<void> {
@@ -129,27 +130,58 @@ export class Update {
 
     private static async updateWebpackConfig(): Promise<void> {
         console.log(`Updating webpack.config...`);
-        let tsFileData;
+        let oldEntries;
+        let publisher;
+        let namespace;
+        if (fs.existsSync('./webpack.config.ts')) {
+            const regexpTsEntries = /entry: {...entry, ...(?<entries>{[^{]*)}/mg;
+            const tsOldFileData = String(fs.readFileSync('./webpack.config.ts'));
+            oldEntries = regexpTsEntries.exec(tsOldFileData);
+            const oldVariables = await Variables.get();
+            publisher = oldVariables.publisher;
+            namespace = oldVariables.namespace;
+        }
         if (fs.existsSync('./webpack.config.js')) {
             console.log('webpack.config.js exists');
             const jsFileData = String(fs.readFileSync('webpack.config.js'));
-            const regexpJsEntries = /entry: (?<entries>{[^{]*)}/mg;
-            const oldJsEntry = regexpJsEntries.exec(jsFileData);
-            shell.cp('-R', `${__dirname}/root/webpack.config.ts`, '.');
-            tsFileData = String(fs.readFileSync('webpack.config.ts'));
-            tsFileData = tsFileData.replace(new RegExp('entry: {...entry, ...{', 'ig'), `entry: {...entry, ...${oldJsEntry.groups.entries}`);
-            shell.ShellString(tsFileData).to('./webpack.config.ts');
+            const regexpJsEntries = /entry: (?<entries>{[^{]*})/mg;
+            oldEntries = regexpJsEntries.exec(jsFileData);
+            const oldVariables = await Update.readWebpackConfigJS();
+            publisher = oldVariables.publisher;
+            namespace = oldVariables.namespace;
+            shell.exec('git rm webpack.config.js');
         }
-        tsFileData = String(fs.readFileSync('webpack.config.ts'));
+        shell.cp('-R', `${__dirname}/root/webpack.config.ts`, '.');
         const variables = await Variables.get();
-        tsFileData.replace(new RegExp('<%= publisher %>', 'ig'), variables.publisher);
-        tsFileData.replace(new RegExp('<%= namespace %>', 'ig'), variables.namespace);
-        tsFileData.replace(new RegExp('<%= description %>', 'ig'), variables.description);
-        const regexpTsEntries = /entry: {...entry, ...(?<entries>{[^{]*)}/mg;
-        const oldTsEntry = regexpTsEntries.exec(tsFileData);
-        tsFileData.replace(new RegExp('entry: {...entry, ...{', 'ig'), `entry: {...entry, ...${oldTsEntry.groups.entries}`);
+        let tsFileData = String(fs.readFileSync('./webpack.config.ts'));
+        tsFileData = tsFileData.replace(new RegExp('<%= publisher %>', 'ig'), publisher);
+        tsFileData = tsFileData.replace(new RegExp('<%= namespace %>', 'ig'), namespace);
+        tsFileData = tsFileData.replace(new RegExp('<%= description %>', 'ig'), variables.description);
+        tsFileData = tsFileData.replace(new RegExp('entry: {...entry, ...{}', 'ig'), `entry: {...entry, ...${oldEntries.groups.entries}`);
         shell.ShellString(tsFileData).to('./webpack.config.ts');
-        shell.exec('git rm webpack.config.js');
         shell.exec('git add webpack.config.ts');
+    }
+
+    private static readWebpackConfigJS(): Promise<WebpackConfigVariables> {
+        return new Promise((resolve): void => {
+            let publisher, namespace;
+            const lineReader = readline.createInterface({
+                input: fs.createReadStream(`./webpack.config.js`)
+            });
+            lineReader.on('line', (line: string) => {
+                if (line.includes('dir_build =')) {
+                    const split = line.split(`"`),
+                        publisherNamespace = split[1],
+                        pnSplit = publisherNamespace.split('_/');
+                    publisher = pnSplit[0].replace('dist/', '');
+                    namespace = pnSplit[1];
+                    lineReader.close();
+                    resolve({
+                        publisher: publisher,
+                        namespace: namespace
+                    });
+                }
+            });
+        });
     }
 }
