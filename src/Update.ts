@@ -33,19 +33,24 @@ export class Update {
     private static updateProjectRootFolder(): void {
         console.log(`Updating .eslintignore...`);
         shell.cp('-R', `${__dirname}/root/.eslintignore`, '.');
+        shell.exec('git add .eslintignore');
 
         console.log(`Updating .gitignore...`);
-        shell.cp('-R', `${__dirname}/root/.gitignore`, '.');
-        fs.copyFileSync(`${__dirname}/root/.gitignore`, './.gitignore'); // some people didn't got this file
+        shell.cp('-R', `${__dirname}/root/gitignore`, '.');
+        fs.renameSync(`./gitignore`, './.gitignore');
+        shell.exec('git add .gitignore');
 
         console.log(`Updating .eslintrc.json...`);
         shell.cp('-R', `${__dirname}/root/.eslintrc.json`, '.');
+        shell.exec('git add .eslintrc.json');
 
         console.log(`Updating postcss.config.js`);
         shell.cp('-R', `${__dirname}/root/postcss.config.js`, '.');
+        shell.exec('git add postcss.config.js');
 
         console.log(`Updating karma.conf.js`);
         shell.cp('-R', `${__dirname}/root/karma.conf.js`, '.');
+        shell.exec('git add karma.conf.js');
 
         console.log(`Updating tsconfig.json`);
         shell.cp('-R', `${__dirname}/root/tsconfig.json`, '.');

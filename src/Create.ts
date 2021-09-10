@@ -37,7 +37,7 @@ export class Create {
         shell.mkdir('Webresources');
         shell.cp('-R', `${__dirname}/root/*`, 'Webresources');
         shell.cp('-R', `${__dirname}/root/.*`, 'Webresources');
-        fs.copyFileSync(`${__dirname}/root/.gitignore`, 'Webresources/.gitignore'); // some people didn't got this file
+        fs.renameSync(`./Webresources/gitignore`, './Webresources/.gitignore');
 
         Create.initCrmJson(answers);
         Create.initPackageJson(projectname, answers);
