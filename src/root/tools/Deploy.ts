@@ -183,7 +183,7 @@ export class Deploy extends AdalRouter {
     }
 
     private static get translationRegex(): RegExp {
-        return /\.translate\("([^']*)"\)/gm;
+        return /\.translate\(["'](.*)["']\)/gm;
     }
 
     private async generateWebresourceXmlDoc(webresource: WebresourceModel, data: Buffer): Promise<XmlDoc> {
