@@ -9,7 +9,7 @@ import {GlobalOptionSet} from './GlobalOptionSet';
 
 export class Generator {
     public static generate(schematic: string, name: string, options: unknown): Promise<void> {
-        const supportedSchematics = ['entity', 'webresource', 'model', 'licensevalidator', 'environmentvariable', 'globaloptionset'];
+        const supportedSchematics = ['entity', 'webresource', 'model', 'licensevalidator', 'environmentvariable', 'globaloptionsets'];
         if (!shell.test('-e', 'src')) {
             console.log(colors.red(`You are not inside the project Webresources folder!`));
         } else if (!schematic) {
