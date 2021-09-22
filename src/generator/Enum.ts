@@ -53,7 +53,7 @@ export class Enum {
             if (savedQuery && savedQuery.returnedtypecode === this.entityLogicalName) {
                 const {name, savedqueryid} = savedQuery;
                 savedQueriesString += `    ${Enum.capitalize(name.replace(/\W/g, ''))}: {\n`;
-                savedQueriesString += `        name: '${name}',\n`;
+                savedQueriesString += `        name: '${name.replace(/'/g, `\\'`)}',\n`;
                 savedQueriesString += `        savedqueryid: '${savedqueryid}',\n`;
                 savedQueriesString += `    },\n`;
             }
