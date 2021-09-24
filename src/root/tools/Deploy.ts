@@ -221,7 +221,7 @@ export class Deploy extends AdalRouter {
     }
 
     private static get localesResxRegex(): RegExp {
-        return /locales\/locales(\.)?(\d{4})?\.resx/gm;
+        return /locales\/locales[.]?(\d{4})?.resx/gm;
     }
 
     private static get localesJsonRegex(): RegExp {
