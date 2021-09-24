@@ -1,6 +1,8 @@
 import * as shell from 'shelljs';
 import * as fs from 'fs';
 import {NodeApi} from '../root/tools/NodeApi/NodeApi';
+import * as inquirer from 'inquirer';
+import colors from 'colors';
 
 interface InterfaceTypes {
     [key: string]: string;
@@ -9,21 +11,49 @@ interface InterfaceTypes {
 export class Model {
     private readonly bearer: string;
     private readonly entityName: string;
-    private readonly entityLogicalName: string;
     private readonly log: (message: string) => Promise<void>;
-    constructor(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>) {
+    private entityLogicalName: string;
+
+    constructor(bearer: string, entityName: string, log: (message: string) => Promise<void>) {
         this.bearer = bearer;
         this.entityName = entityName;
-        this.entityLogicalName = entityLogicalName;
         this.log = log;
     }
 
-    public static async generateModel(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>): Promise<void> {
-        const model = new Model(bearer, entityName, entityLogicalName, log);
-        await model.writeModelFile();
+    public async generate(): Promise<void> {
+        await this.generateModelFile();
     }
 
-    private async writeModelFile(): Promise<void> {
+    private async generateModelFile(): Promise<void> {
+        const folderPath = `src/${this.entityName}`;
+        if (!shell.test('-d', folderPath)) {
+            const answers = await inquirer.prompt([{
+                type: 'input',
+                name: 'entityLogicalName',
+                message: 'Entity LogicalName:'
+            }]);
+            this.entityLogicalName = answers.entityLogicalName;
+            try {
+                await NodeApi.getEntityDefinition(this.entityLogicalName, this.bearer, ['PrimaryIdAttribute']);
+            } catch (e) {
+                console.log(colors.red(`Failed: Entity ${this.entityName} has no LogicalName ${this.entityLogicalName}`));
+                throw e;
+            }
+            shell.mkdir(`src/${this.entityName}`);
+            await this.addModelFile();
+        } else {
+            const serviceFilepath = `src/${this.entityName}/${this.entityName}.service.ts`;
+            const fileData = String(fs.readFileSync(serviceFilepath));
+            const match = fileData.match(new RegExp(`static logicalName = '([a-zA-Z_]*)';`));
+            this.entityLogicalName = match[1];
+            // console.log(colors.green(`Entity ${this.entityName} already exist`));
+            await this.log(`<span style="color:green">Entity ${this.entityName} already exist</span>`);
+            await this.addModelFile();
+        }
+        await this.log('Generating files finished');
+    }
+
+    private async addModelFile(): Promise<void> {
         await this.log(`Generating ${this.entityName}.model.ts<br/>`);
         const modelFilepath = `src/${this.entityName}/${this.entityName}.model.ts`;
         shell.cp('-r', `${__dirname}/Entity/Entity.model.ts`, `src/${this.entityName}`);
@@ -46,6 +76,8 @@ export class Model {
         shell.ShellString(fileData).to(modelFilepath);
         await this.log(`Generated ${this.entityName}.model.ts<br/>`);
     }
+
+
 
     /**
      Import strings is not needed anymore, since interfaces do not need an import

@@ -1,11 +1,11 @@
 import colors from 'colors';
 import * as shell from 'shelljs';
-import {Entity} from './Entity';
 import {Webresource} from './Webresource';
 import {ModelRouter} from './ModelRouter';
-import {EnvironmentVariable} from './EnvironmentVariable';
 import {LicenseValidator} from './LicenseValidator';
-import {GlobalOptionSet} from './GlobalOptionSet';
+import {EntityRouter} from './EntityRouter';
+import {GlobalOptionSetRouter} from './GlobalOptionSetRouter';
+import {EnvironmentVariableRouter} from './EnvironmentVariableRouter';
 
 export class Generator {
     public static generate(schematic: string, name: string, options: unknown): Promise<void> {
@@ -17,7 +17,7 @@ export class Generator {
         } else if (!supportedSchematics.includes(schematic.toLowerCase())) {
             console.log(colors.red(`Schematic ${schematic} not supported!`));
         } else if (schematic.toLowerCase() === 'entity') {
-            return Entity.generateEntity(name, options);
+            return EntityRouter.generateEntity(name, options);
         } else if (schematic.toLowerCase() === 'webresource') {
             return Webresource.generateWebresource(name);
         } else if(schematic.toLocaleLowerCase() === 'model') {
@@ -25,9 +25,9 @@ export class Generator {
         } else if (schematic.toLowerCase() === 'licensevalidator') {
             return LicenseValidator.generateLicenseValidator(name);
         } else if(schematic.toLowerCase() === 'environmentvariable') {
-            return EnvironmentVariable.generateEnvironmentVariable();
+            return EnvironmentVariableRouter.generateEnvironmentVariable();
         } else if(schematic.toLowerCase() === 'globaloptionsets') {
-            return GlobalOptionSet.generateGlobalOptionSets();
+            return GlobalOptionSetRouter.generateGlobalOptionSets();
         }
     }
 

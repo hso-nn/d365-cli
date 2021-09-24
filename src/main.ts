@@ -8,6 +8,7 @@ import {Deploy} from './root/tools/Deploy';
 import {Resx} from './root/tools/Resx';
 import {SetFormCustomizable} from './root/tools/SetFormCustomizable';
 import packageJson from '../package.json';
+import {RegeneratorRouter} from './generator/RegerenatorRouter';
 
 program
     .version(packageJson.version)
@@ -23,6 +24,18 @@ program
     .on('--help', () => {
         Create.showCreateHelp();
     });
+
+program
+    .command('regenerate')
+    .alias('rg')
+    .description('Regenerates files')
+    .action(async () => {
+        await RegeneratorRouter.regenerate();
+    })
+    .on('--help', () => {
+        console.log(`Regenerates files`);
+    });
+
 
 program
     .command('generate <schematic> [name]')

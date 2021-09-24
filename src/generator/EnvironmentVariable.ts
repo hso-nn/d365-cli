@@ -1,19 +1,21 @@
 import * as shell from 'shelljs';
 import * as fs from 'fs';
-import {AdalRouter} from '../root/tools/AdalRouter';
 import {PublisherService} from '../root/tools/Publisher/Publisher.service';
 import {SolutionService} from '../root/tools/Solution/Solution.service';
 import {SolutionComponentService} from '../root/tools/SolutionComponent/SolutionComponent.service';
 import {EnvironmentVariableDefinitionService} from '../root/tools/EnvironmentVariableDefinition/EnvironmentVariableDefinition.service';
 import {EnvironmentVariableDefinitionModel} from '../root/tools/EnvironmentVariableDefinition/EnvironmentVariableDefinition.model';
 
-export class EnvironmentVariable extends AdalRouter {
-    public static generateEnvironmentVariable(): Promise<void> {
-        new EnvironmentVariable();
-        return null;
+export class EnvironmentVariable {
+    private readonly bearer: string;
+    private readonly log: (message: string) => Promise<void>;
+
+    constructor(bearer: string, log: (message: string) => Promise<void>) {
+        this.bearer = bearer;
+        this.log = log;
     }
 
-    protected async onAuthenticated(): Promise<void> {
+    public async generate(): Promise<void> {
         await this.log(`Generating EnvironmentVariable`);
         await this.writeEnvironmentVariablesFiles();
         await this.log('Generated EnvironmentVariable');

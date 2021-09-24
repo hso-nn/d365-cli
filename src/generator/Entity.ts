@@ -2,7 +2,6 @@ import colors from 'colors';
 import * as shell from 'shelljs';
 import * as inquirer from 'inquirer';
 import * as fs from 'fs';
-import {AdalRouter} from '../root/tools/AdalRouter';
 import {NodeApi} from '../root/tools/NodeApi/NodeApi';
 import {Model} from './Model';
 import {Enum} from './Enum';
@@ -13,33 +12,25 @@ interface EntityOptions {
     skipForms?: boolean;
 }
 
-export class Entity extends AdalRouter {
-    public static async generateEntity(entityName: string, options: EntityOptions): Promise<void> {
-        if (!entityName) {
-            console.log(colors.red('Entity name missing'));
-        } else if(!new RegExp('[A-Z]').test(entityName[0])) {
-            console.log(colors.red(`Entity name must be UpperCamelCase!`));
-        } else if (!options.skipForms && process.argv[5] || process.argv[6]) {
-            console.log(colors.red(`No spaces allowed!`));
-        } else {
-            new Entity(entityName, options);
-        }
-        return null;
-    }
-
-    private entityLogicalName: string;
+export class Entity {
+    private readonly bearer: string;
     private readonly entityName: string;
     private readonly options: EntityOptions;
-    constructor(entityName: string, options: EntityOptions) {
-        super();
+    private readonly log: (message: string) => Promise<void>;
+    private entityLogicalName: string;
+
+    constructor(bearer: string, entityName: string, log: (message: string) => Promise<void>, options: EntityOptions) {
+        this.bearer = bearer;
         this.entityName = entityName;
+        this.log = log;
         this.options = options;
     }
 
-    protected async onAuthenticated(): Promise<void> {
-        await this.generateEntity();
+    public async generate(): Promise<void> {
+        await this.generateEntityFiles();
         await this.log(`Generating files for Entity '${this.entityName}'<br/>Using entityLogicalName '${this.entityLogicalName}'</br>`);
-        await Model.generateModel(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
+        const model = new Model(this.bearer, this.entityName, async (message: string) => this.log(message));
+        await model.generate();
         await Enum.generateEnum(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
         if (!this.options.skipForms) {
             await AttributeFormContext.generateFormContext(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
@@ -50,7 +41,7 @@ export class Entity extends AdalRouter {
         await this.log('Generating files finished');
     }
 
-    private async generateEntity(): Promise<void> {
+    private async generateEntityFiles(): Promise<void> {
         const serviceFilepath = `src/${this.entityName}/${this.entityName}.service.ts`;
         if (!shell.test('-f', serviceFilepath)) {
             const answers = await inquirer.prompt([{
@@ -67,12 +58,12 @@ export class Entity extends AdalRouter {
             }
             shell.mkdir(`src/${this.entityName}`);
             await this.addEntityFiles(this.entityName);
-            // Entity.registerWebpackConfig(this.entityName);
         } else {
             const fileData = String(fs.readFileSync(serviceFilepath));
             const match = fileData.match(new RegExp(`static logicalName = '([a-zA-Z_]*)';`));
             this.entityLogicalName = match[1];
-            console.log(colors.green(`Entity ${this.entityName} already exist`));
+            // console.log(colors.green(`Entity ${this.entityName} already exist`));
+            await this.log(`<span style="color:green">Entity ${this.entityName} already exist</span>`);
         }
     }
 
