@@ -8,6 +8,8 @@ export class EnvironmentVariableService {
         return WebApi.retrieveMultipleRecords(EnvironmentVariableService.logicalName, multipleSystemQueryOptions);
     }
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     private static async getEnvironmentVariableValue(schemaname: string): Promise<EnvironmentVariableModel> {
         const environmentvariabledefinitions = await WebApi.retrieveMultipleRecords('environmentvariabledefinition', {
             select: ['environmentvariabledefinitionid'],

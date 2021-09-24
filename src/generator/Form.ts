@@ -6,7 +6,7 @@ import {SolutionService} from '../root/tools/Solution/Solution.service';
 import {SolutionComponentService} from '../root/tools/SolutionComponent/SolutionComponent.service';
 import {SystemFormModel} from '../root/tools/SystemForm/SystemForm.model';
 import {ControlFormContext} from './ControlFormContext';
-import colors from 'colors';
+// import colors from 'colors';
 import {Variables} from '../Variables';
 
 export class Form {
@@ -37,7 +37,8 @@ export class Form {
                 await this.addEntityFiles(systemForm);
                 await this.updateBuildFile(systemForm);
             } else {
-                console.log(colors.green(`${this.entityName}/${folderName} already exist`));
+                // console.log(colors.green(`${this.entityName}/${folderName} already exist`));
+                await this.log(`<span style="color:green">${this.entityName}/${folderName} already exist</span>`);
             }
             await ControlFormContext.generateFormContext(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message), systemForm);
         }

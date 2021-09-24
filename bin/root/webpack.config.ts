@@ -37,7 +37,7 @@ interface Entry {
     [index: string]: string[];
 }
 
-const buildFiles = shell.ls('./**/build.json');
+const buildFiles = shell.ls('./src/**/build.json');
 const entry: Entry = {};
 for (const filepath of buildFiles) {
     const pathSplit = filepath.split('/');

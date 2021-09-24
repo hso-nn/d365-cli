@@ -1,15 +1,17 @@
 import * as shell from 'shelljs';
-import {AdalRouter} from '../root/tools/AdalRouter';
 import {NodeApi} from '../root/tools/NodeApi/NodeApi';
 import fs from 'fs';
 
-export class GlobalOptionSet extends AdalRouter {
-    public static generateGlobalOptionSets(): Promise<void> {
-        new GlobalOptionSet();
-        return null;
+export class GlobalOptionSet {
+    private readonly bearer: string;
+    private readonly log: (message: string) => Promise<void>;
+
+    constructor(bearer: string, log: (message: string) => Promise<void>) {
+        this.bearer = bearer;
+        this.log = log;
     }
 
-    protected async onAuthenticated(): Promise<void> {
+    public async generate(): Promise<void> {
         await this.log(`Generating Global OptionSet`);
         await this.writeGlobalOptionSetsFile();
         await this.log('Generated Global OptionSet');
