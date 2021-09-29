@@ -5,7 +5,7 @@ import {AdalRouter} from './AdalRouter';
 import * as crypto from 'crypto';
 import * as xml2js from 'xml2js';
 import * as shell from 'shelljs';
-import * as colors from 'colors';
+import colors from 'colors';
 
 interface LibraryItem {
     name: string;
@@ -32,6 +32,8 @@ export class Deploy extends AdalRouter {
     public static async deployProject(force: boolean): Promise<void> {
         if (process.argv[4]) {
             console.log(colors.red(`No spaces allowed after update command!`));
+        } else if (!fs.existsSync('./dist')) {
+            console.log(colors.red(`No dist folder found. Please run 'npm run build:prod' or 'hso-d365 build' first`));
         } else {
             new Deploy(force);
         }

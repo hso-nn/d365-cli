@@ -1,6 +1,6 @@
 {
   "name": "@hso/d365-cli",
-  "version": "5.7.1",
+  "version": "5.7.2",
   "author": "HSO Innovation <innovation@hso.com> (https://www.hso.com)",
   "description": "Dynamics 365 Command Line Interface for TypeScript projects for Dataverse",
   "repository": {
@@ -67,7 +67,7 @@
     "colors": "^1.4.0",
     "commander": "^6.2.1",
     "express": "^4.17.1",
-    "inquirer": "^8.1.2",
+    "inquirer": "^8.1.5",
     "open": "^7.3.0",
     "shelljs": "^0.8.4",
     "xml2js": "^0.4.23"
