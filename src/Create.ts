@@ -93,7 +93,7 @@ export class Create {
         }, {
             type: 'input',
             name: 'solution',
-            message: 'D365 Solution name:',
+            message: `D365 Solution name ('Name' column):`,
             validate: async (input) => {
                 if (!input) {
                     throw new Error('You need to provide a solution');
