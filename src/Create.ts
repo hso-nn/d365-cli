@@ -74,23 +74,64 @@ export class Create {
         shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.namespace, webpackConfigFile);
     }
 
+    // eslint-disable-next-line max-lines-per-function
     private static inquirer(): Promise<CreateAnswers> {
         return inquirer.prompt([{
             type: 'input',
             name: 'environment',
-            message: 'D365 environment url (eg. https://yourproject.crm4.dynamics.com):'
+            message: 'D365 environment url (eg. https://yourproject.crm4.dynamics.com):',
+            validate: async (input) => {
+                if (!input) {
+                    throw new Error('You need to provide an environment');
+                }
+                const urlRegExp = new RegExp('https://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}');
+                if (!urlRegExp.test(input)) {
+                    throw new Error('You need to provide a valid url');
+                }
+                return true;
+            }
         }, {
             type: 'input',
             name: 'solution',
-            message: 'D365 Solution name:'
+            message: 'D365 Solution name:',
+            validate: async (input) => {
+                if (!input) {
+                    throw new Error('You need to provide a solution');
+                }
+                const solutionNameRegExp = new RegExp('[a-zA-Z_\\d]*');
+                if (!solutionNameRegExp.test(input)) {
+                    throw new Error('You need to provide a valid solution name');
+                }
+                return true;
+            }
         }, {
             type: 'input',
             name: 'publisher',
-            message: 'D365 Publisher Prefix (3 chars a-z):'
+            message: 'D365 Publisher Prefix (3 chars a-z):',
+            validate: async (input) => {
+                if (!input) {
+                    throw new Error('You need to provide a publisher');
+                }
+                const publisherRegExp = new RegExp('[a-zA-Z_\\d]*');
+                if (!publisherRegExp.test(input)) {
+                    throw new Error('You need to provide a valid publisher');
+                }
+                return true;
+            }
         }, {
             type: 'input',
             name: 'namespace',
-            message: 'Customer or Product name'
+            message: 'Customer or Product name',
+            validate: async (input) => {
+                if (!input) {
+                    throw new Error('You need to provide a customer or product name');
+                }
+                const namespaceRegExp = new RegExp('[a-zA-Z_\\d]*');
+                if (!namespaceRegExp.test(input)) {
+                    throw new Error('You need to provide a valid namespace');
+                }
+                return true;
+            }
         }]);
     }
 }
