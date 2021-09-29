@@ -216,7 +216,7 @@ export class Model {
             // return options.map(option => option.value).join(' | ');
             return 'boolean';
         } else if (['Picklist'].includes(attributeType)) {
-            return `${schemaName}Values`;
+            return `${this.entityName}_${schemaName}Values`;
         } else if (['Integer', 'Double', 'BigInt', 'Decimal', 'Double', 'Money'].includes(attributeType)) {
             return 'number';
         } else if (['Status'].includes(attributeType)) {
@@ -243,7 +243,7 @@ export class Model {
                     optionSet = await NodeApi.getMultiSelectPicklistAttributeMetadata(this.entityLogicalName, logicalName, this.bearer);
                 }
                 const types = optionSet.Options.map(option => option.Value).join(' | ');
-                typeStrings += `type ${schemaName}Values = ${types};\n`;
+                typeStrings += `type ${this.entityName}_${schemaName}Values = ${types};\n`;
             }
         }
         typeStrings += '\n';
