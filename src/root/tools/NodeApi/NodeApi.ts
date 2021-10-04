@@ -107,13 +107,6 @@ export class NodeApi {
                 'Authorization': `Bearer ${bearer}`
             });
         return body.value[0].OptionSet;
-        // return body.value[0].OptionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
-        //     return {
-        //         value: option.Value,
-        //         externalValue: option.ExternalValue,
-        //         label: option.Label.UserLocalizedLabel.Label
-        //     };
-        // });
     }
 
     public static async getStateOptionSet(entityLogicalName: string, bearer: string): Promise<OptionSet> {
@@ -125,13 +118,6 @@ export class NodeApi {
                 'Authorization': `Bearer ${bearer}`
             });
         return body.value[0].OptionSet;
-        // return optionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
-        //     return {
-        //         value: option.Value,
-        //         externalValue: option.ExternalValue,
-        //         label: option.Label.UserLocalizedLabel.Label
-        //     };
-        // });
     }
 
     public static async getMultiSelectPicklistAttributeMetadata(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSet> {
@@ -143,15 +129,6 @@ export class NodeApi {
                 'Authorization': `Bearer ${bearer}`
             });
         return body.OptionSet;
-        // if (!optionSet.IsGlobal) {
-        //     return optionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
-        //         return {
-        //             value: option.Value,
-        //             externalValue: option.ExternalValue,
-        //             label: option.Label.UserLocalizedLabel.Label
-        //         };
-        //     });
-        // }
     }
 
     public static async getPicklistOptionSet(entityLogicalName: string, attribute: string, bearer: string): Promise<OptionSet> {
@@ -163,15 +140,6 @@ export class NodeApi {
                 'Authorization': `Bearer ${bearer}`
             });
         return body.OptionSet;
-        // if (!optionSet.IsGlobal) {
-        //     return optionSet.Options.map((option: {Value: number; ExternalValue: number; Label: {UserLocalizedLabel: {Label: string}}}) => {
-        //         return {
-        //             value: option.Value,
-        //             externalValue: option.ExternalValue,
-        //             label: option.Label.UserLocalizedLabel.Label
-        //         };
-        //     });
-        // }
     }
 
     public static async getGlobalOptionSetDefinitions(bearer: string): Promise<OptionSet[]> {
