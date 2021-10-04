@@ -5,7 +5,8 @@ import * as fs from 'fs';
 
 interface CreateAnswers {
     publisher?: string;
-    solution?: string;
+    solution_name_deploy?: string;
+    solution_name_generate?: string;
     environment?: string;
     namespace?: string;
 }
@@ -55,7 +56,8 @@ export class Create {
     private static initCrmJson(answers: CreateAnswers): void {
         const crmJsonFile = shell.ls('Webresources/tools/crm.json')[0];
         shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, crmJsonFile);
-        shell.sed('-i', new RegExp('<%= solution %>', 'ig'), answers.solution, crmJsonFile);
+        shell.sed('-i', new RegExp('<%= solution_name_deploy %>', 'ig'), answers.solution_name_deploy, crmJsonFile);
+        shell.sed('-i', new RegExp('<%= solution_name_generate %>', 'ig'), answers.solution_name_generate || answers.solution_name_deploy, crmJsonFile);
         shell.sed('-i', new RegExp('<%= environment %>', 'ig'), answers.environment, crmJsonFile);
         shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), answers.namespace, crmJsonFile);
     }
@@ -63,7 +65,7 @@ export class Create {
     private static initPackageJson(projectName: string, answers: CreateAnswers): void {
         const packageJsonFile = shell.ls('Webresources/package.json')[0];
         shell.sed('-i', '<%= projectname %>', projectName.toLowerCase(), packageJsonFile);
-        shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.solution, packageJsonFile);
+        shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.solution_name_deploy, packageJsonFile);
         shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, packageJsonFile);
     }
 
@@ -92,8 +94,8 @@ export class Create {
             }
         }, {
             type: 'input',
-            name: 'solution',
-            message: `D365 Solution name ('Name' column):`,
+            name: 'solution_name_deploy',
+            message: `D365 deployment Solution ('Name' column):`,
             validate: async (input) => {
                 if (!input) {
                     throw new Error('You need to provide a solution');
@@ -101,6 +103,19 @@ export class Create {
                 const solutionNameRegExp = new RegExp('[a-zA-Z_\\d]*');
                 if (!solutionNameRegExp.test(input)) {
                     throw new Error('You need to provide a valid solution name');
+                }
+                return true;
+            }
+        }, {
+            type: 'input',
+            name: 'solution_name_generate',
+            message: `D365 generate Solution ('Name' column)\nIf equal to deployment Solution keep blank:`,
+            validate: async (input) => {
+                if (input) {
+                    const solutionNameRegExp = new RegExp('[a-zA-Z_\\d]*');
+                    if (!solutionNameRegExp.test(input)) {
+                        throw new Error('You need to provide a valid solution name');
+                    }
                 }
                 return true;
             }

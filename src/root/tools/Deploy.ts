@@ -115,7 +115,7 @@ export class Deploy extends AdalRouter {
         const data = fs.readFileSync(filepath),
             base64 = data.toString('base64');
         try {
-            const solutionUniqueName = this.settings.crm.solution_name,
+            const solutionUniqueName = this.settings.crm.solution_name_deploy,
                 webresourceModel: WebresourceModel = {
                     content: base64,
                     name: path,

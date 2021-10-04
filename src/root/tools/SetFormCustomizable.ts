@@ -5,6 +5,8 @@ import {SystemFormService} from './SystemForm/SystemForm.service';
 import {SolutionModel} from './Solution/Solution.model';
 import {SolutionComponentModel} from './SolutionComponent/SolutionComponent.model';
 import {SystemFormModel} from './SystemForm/SystemForm.model';
+import {CrmJson} from './CrmJson';
+import fs from 'fs';
 
 export class SetFormCustomizable extends AdalRouter {
     private readonly customizable: boolean;
@@ -19,8 +21,10 @@ export class SetFormCustomizable extends AdalRouter {
     }
 
     private async setFormCustomizable(): Promise<void> {
-        await this.log(`Solution name: ${this.settings.crm.solution_name}`);
-        const solution = await SolutionService.getSolution(['solutionid'], this.bearer);
+        await this.log(`Solution name: ${this.settings.crm.solution_name_deploy}`);
+        const settings: CrmJson = JSON.parse(fs.readFileSync('tools/crm.json', 'utf8'));
+        const {solution_name_deploy} = settings.crm;
+        const solution = await SolutionService.getSolution(solution_name_deploy,['solutionid'], this.bearer);
         await this.log(`Solution id: ${solution.solutionid}`);
         await this.log(``);
         const solutionComponents = await this.getSolutionComponents(solution);

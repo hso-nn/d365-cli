@@ -1,6 +1,8 @@
 import {NodeApi} from '../NodeApi/NodeApi';
 import {PublisherModel} from './Publisher.model';
 import {SolutionService} from '../Solution/Solution.service';
+import {CrmJson} from '../CrmJson';
+import fs from 'fs';
 
 export class PublisherService {
     private static entitySetName = 'publishers';
@@ -10,7 +12,9 @@ export class PublisherService {
     }
 
     public static async getPublisher(bearer: string): Promise<PublisherModel> {
-        const solution = await SolutionService.getSolution(['_publisherid_value'], bearer);
+        const settings: CrmJson = JSON.parse(fs.readFileSync('tools/crm.json', 'utf8'));
+        const {solution_name_deploy} = settings.crm;
+        const solution = await SolutionService.getSolution(solution_name_deploy,['_publisherid_value'], bearer);
         // eslint-disable-next-line no-underscore-dangle
         return PublisherService.retrieveRecord(solution._publisherid_value, {
             select: ['publisherid', 'customizationprefix']
