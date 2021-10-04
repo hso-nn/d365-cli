@@ -27,7 +27,7 @@
     "@types/react-dom": "^17.0.0",
     "@types/shelljs": "^0.8.9",
     "@types/webpack": "^5.28.0",
-    "@types/xrm": "^9.0.33",
+    "@types/xrm": "^9.0.47",
     "@typescript-eslint/eslint-plugin": "^4.10.0",
     "@typescript-eslint/parser": "^4.10.0",
     "adal-angular": "^1.0.18",

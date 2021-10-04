@@ -235,11 +235,15 @@ export class Model {
         const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
         for (const attribute of attributesMetadata) {
             const {AttributeType: attributeType, LogicalName: logicalName, SchemaName: schemaName, AttributeTypeName: attributeTypeName} = attribute;
-            if (attributeType === 'Picklist' || attributeTypeName.Value === 'MultiSelectPicklistType') {
+            if (['Picklist', 'State', 'Status'].includes(attributeType) || attributeTypeName.Value === 'MultiSelectPicklistType') {
                 let optionSet;
                 if (attributeType === 'Picklist') {
                     optionSet = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
-                } else {
+                } else if (attributeType === 'State') {
+                    optionSet = await NodeApi.getStateOptionSet(this.entityLogicalName, this.bearer);
+                } else if (attributeType === 'Status') {
+                    optionSet = await NodeApi.getStatusOptionSet(this.entityLogicalName, this.bearer);
+                } else if (attributeTypeName?.Value === 'MultiSelectPicklistType') {
                     optionSet = await NodeApi.getMultiSelectPicklistAttributeMetadata(this.entityLogicalName, logicalName, this.bearer);
                 }
                 const types = optionSet.Options.map(option => option.Value).join(' | ');

@@ -41,8 +41,8 @@ export class AttributeFormContext {
     private async getFormContextAttributesString(): Promise<string> {
         let formContextAttributesString = '';
         for (const attribute of this.attributesMetadata) {
-            const {AttributeType: attributeType, SchemaName: schemaName} = attribute;
-            const xrmAttributeType = await this.getXrmAttributeType(attributeType);
+            const {SchemaName: schemaName} = attribute;
+            const xrmAttributeType = await this.getXrmAttributeType(attribute);
             if (xrmAttributeType) {
                 const pascalSchemaName = AttributeFormContext.capitalize(schemaName);
                 const methodName = `    static get${pascalSchemaName}Attribute(formContext: Xrm.FormContext): ${xrmAttributeType} {`;
@@ -55,7 +55,8 @@ export class AttributeFormContext {
 
     // https://docs.microsoft.com/en-us/dotnet/api/microsoft.xrm.sdk.metadata.attributemetadata?view=dynamics-general-ce-9
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private async getXrmAttributeType(attributeType: string): Promise<string> {
+    private async getXrmAttributeType(attribute: AttributeMetadata): Promise<string> {
+        const {AttributeType: attributeType, SchemaName: schemaName} = attribute;
         if (['String', 'Memo', 'Uniqueidentifier'].includes(attributeType)) {
             return 'Xrm.Attributes.StringAttribute';
         } else if (['DateTime'].includes(attributeType)) {
@@ -63,7 +64,8 @@ export class AttributeFormContext {
         } else if (['Boolean'].includes(attributeType)) {
             return 'Xrm.Attributes.BooleanAttribute | Xrm.Attributes.EnumAttribute<number>';
         } else if (['Picklist', 'Status', 'State'].includes(attributeType)) {
-            return 'Xrm.Attributes.OptionSetAttribute';
+            const typeName = `${this.entityName}_${schemaName}Values`;
+            return `Xrm.Attributes.OptionSetAttribute<${typeName}>`;
         } else if (['Integer', 'Double', 'BigInt', 'Decimal', 'Double', 'Money'].includes(attributeType)) {
             return 'Xrm.Attributes.NumberAttribute';
         } else if (['Lookup', 'Customer', 'Owner'].includes(attributeType)) {
