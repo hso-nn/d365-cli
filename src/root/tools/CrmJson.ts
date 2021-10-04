@@ -5,7 +5,8 @@ export interface CrmJson {
     crm: {
         version: string;
         publisher_prefix: string;
-        solution_name: string;
+        solution_name_deploy: string;
+        solution_name_generate: string;
         url: string;
     };
     webresource: {

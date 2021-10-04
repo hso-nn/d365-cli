@@ -8,6 +8,7 @@ import {SystemFormModel} from '../root/tools/SystemForm/SystemForm.model';
 import {ControlFormContext} from './ControlFormContext';
 // import colors from 'colors';
 import {Variables} from '../Variables';
+import {CrmJson} from '../root/tools/CrmJson';
 
 export class Form {
     private readonly bearer: string;
@@ -93,7 +94,9 @@ export class Form {
 
     private async getSystemForms(): Promise<SystemFormModel[]> {
         const systemForms: SystemFormModel[] = [];
-        const solution = await SolutionService.getSolution(['solutionid'], this.bearer);
+        const settings: CrmJson = JSON.parse(fs.readFileSync('tools/crm.json', 'utf8'));
+        const {solution_name_generate} = settings.crm;
+        const solution = await SolutionService.getSolution(solution_name_generate, ['solutionid'], this.bearer);
         const solutionComponents = await SolutionComponentService.retrieveMultipleRecords({
             select: ['objectid'],
             filters: [{

@@ -1,6 +1,7 @@
 import * as colors from 'colors';
 import * as shell from 'shelljs';
 import * as fs from 'fs';
+import {CrmJson} from './root/tools/CrmJson';
 import {AllVariables, Variables, WebpackConfigVariables} from './Variables';
 import readline from 'readline';
 
@@ -105,6 +106,17 @@ export class Update {
     }
 
     private static updateToolsFolder(): void {
+        const filepath = './tools/crm.json';
+        const settings: CrmJson = JSON.parse(fs.readFileSync(filepath, 'utf8'));
+        const {crm} = settings;
+        if (!crm.solution_name_deploy) {
+            const solutionName = (crm as unknown as { solution_name: string }).solution_name;
+            crm.solution_name_deploy = solutionName;
+            crm.solution_name_generate = solutionName;
+            delete (crm as unknown as { solution_name: string }).solution_name;
+            shell.ShellString(JSON.stringify(settings, null, 2)).to(filepath);
+            shell.exec('git add ./tools/crm.json');
+        }
         if (shell.ls(['./tools/resx.js']).length === 1) {
             shell.rm('-rf', `./tools/resx.js`);
             shell.exec('git rm ./tools/resx.js');

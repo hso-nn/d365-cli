@@ -5,6 +5,7 @@ import {SolutionService} from '../root/tools/Solution/Solution.service';
 import {SolutionComponentService} from '../root/tools/SolutionComponent/SolutionComponent.service';
 import {EnvironmentVariableDefinitionService} from '../root/tools/EnvironmentVariableDefinition/EnvironmentVariableDefinition.service';
 import {EnvironmentVariableDefinitionModel} from '../root/tools/EnvironmentVariableDefinition/EnvironmentVariableDefinition.model';
+import {CrmJson} from '../root/tools/CrmJson';
 
 export class EnvironmentVariable {
     private readonly bearer: string;
@@ -90,7 +91,9 @@ export class EnvironmentVariable {
 
     private async getEnvironmentVariableDefinitions(): Promise<EnvironmentVariableDefinitionModel[]> {
         const environmentVariableDefinitions: EnvironmentVariableDefinitionModel[] = [];
-        const solution = await SolutionService.getSolution(['solutionid'], this.bearer);
+        const settings: CrmJson = JSON.parse(fs.readFileSync('tools/crm.json', 'utf8'));
+        const {solution_name_generate} = settings.crm;
+        const solution = await SolutionService.getSolution(solution_name_generate, ['solutionid'], this.bearer);
         const solutionComponents = await SolutionComponentService.retrieveMultipleRecords({
             select: ['objectid'],
             filters: [{
