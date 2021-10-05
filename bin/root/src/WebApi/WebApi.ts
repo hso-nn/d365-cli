@@ -219,12 +219,18 @@ export class WebApi {
             if (modelKeys.includes(`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname`)) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                model[`${attribute}_LogicalName`] = model[`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname`];
+                model[`${attribute}@Microsoft.Dynamics.CRM.lookuplogicalname`] = model[`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname`];
+            }
+            if (modelKeys.includes(`_${attribute}_value@Microsoft.Dynamics.CRM.associatednavigationproperty`)) {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                // eslint-disable-next-line max-len
+                model[`${attribute}@Microsoft.Dynamics.CRM.associatednavigationproperty`] = model[`_${attribute}_value@Microsoft.Dynamics.CRM.associatednavigationproperty`];
             }
             if (modelKeys.includes(`_${attribute}_value@OData.Community.Display.V1.FormattedValue`)) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                model[`${attribute}_FormattedValue`] = model[`_${attribute}_value@OData.Community.Display.V1.FormattedValue`];
+                model[`${attribute}@OData.Community.Display.V1.FormattedValue`] = model[`_${attribute}_value@OData.Community.Display.V1.FormattedValue`];
             }
         }
         return model;

@@ -13,6 +13,7 @@ export class Model {
     private readonly entityName: string;
     private readonly log: (message: string) => Promise<void>;
     private entityLogicalName: string;
+    private attributesMetadata: AttributeMetadata[];
 
     constructor(bearer: string, entityName: string, log: (message: string) => Promise<void>) {
         this.bearer = bearer;
@@ -62,6 +63,7 @@ export class Model {
         shell.sed('-i', new RegExp('Entity', 'g'), this.entityName, modelFilepath);
         shell.exec(`git add ${modelFilepath}`);
         let fileData = String(fs.readFileSync(modelFilepath));
+        this.attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
         const attributeInterfaceTypes = await this.getAttributeInterfaceTypes();
         const relationshipInterfaceTypes = await this.getRelationshipInterfaceTypes();
         const importsString = await this.getImportStrings(relationshipInterfaceTypes);
@@ -122,6 +124,9 @@ export class Model {
                 if (!relatedModelFilePathFound) {
                     combinedString += ` // entity ${displayName} needs to be generated`;
                 }
+                combinedString += `\n    '${referencingEntityNavigationPropertyName}@Microsoft.Dynamics.CRM.associatednavigationproperty'?: string;`;
+                combinedString += `\n    '${referencingEntityNavigationPropertyName}@Microsoft.Dynamics.CRM.lookuplogicalname'?: string;`;
+                combinedString += `\n    '${referencingEntityNavigationPropertyName}@OData.Community.Display.V1.FormattedValue'?: string;`;
             }
         }
         if (combinedString) {
@@ -183,17 +188,32 @@ export class Model {
                 logicalName !== PrimaryNameAttribute &&
                 !relationshipNames.includes(logicalName)
             ) {
-                attributesString += `\n    ${logicalName}?: ${interfaceType};`;
+                // attributesString += `\n    ${logicalName}?: ${interfaceType};`;
+                attributesString += this.getAttributeStrings(logicalName, interfaceType);
             }
         }
         attributesString += `\n`;
         return attributesString;
     }
 
+    private getAttributeStrings(logicalName: string, interfaceType: string): string {
+        const attribute = this.attributesMetadata.find(attributeMetadata => attributeMetadata.LogicalName === logicalName);
+        const {AttributeType: attributeType, AttributeTypeName: attributeTypeName} = attribute;
+        let attributeStrings = `\n    ${logicalName}?: ${interfaceType}; // ${attributeType}`;
+        if (['BigInt', 'Boolean', 'DateTime', 'Decimal', 'Double', 'Integer', 'Money', 'Picklist', 'State', 'Status'].includes(attributeType) ||
+            attributeTypeName.Value === 'MultiSelectPicklistType') {
+            attributeStrings += `\n    '${logicalName}@OData.Community.Display.V1.FormattedValue'?: string;`;
+        } else if (['Lookup', 'Customer', 'Owner'].includes(attributeType)) {
+            attributeStrings += `\n    '${logicalName}@Microsoft.Dynamics.CRM.associatednavigationproperty'?: string;`;
+            attributeStrings += `\n    '${logicalName}@Microsoft.Dynamics.CRM.lookuplogicalname'?: string;`;
+            attributeStrings += `\n    '${logicalName}@OData.Community.Display.V1.FormattedValue'?: string;`;
+        }
+        return attributeStrings;
+    }
+
     private async getAttributeInterfaceTypes(): Promise<InterfaceTypes> {
-        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer),
-            attributesInterfaces: InterfaceTypes = {};
-        for (const attribute of attributesMetadata) {
+        const attributesInterfaces: InterfaceTypes = {};
+        for (const attribute of this.attributesMetadata) {
             const {AttributeType, LogicalName} = attribute,
                 interfaceType = await this.getInterfaceType(attribute);
             if (interfaceType) {
@@ -232,8 +252,7 @@ export class Model {
 
     private async getTypeStrings(): Promise<string> {
         let typeStrings = '';
-        const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
-        for (const attribute of attributesMetadata) {
+        for (const attribute of this.attributesMetadata) {
             const {AttributeType: attributeType, LogicalName: logicalName, SchemaName: schemaName, AttributeTypeName: attributeTypeName} = attribute;
             if (['Picklist', 'State', 'Status'].includes(attributeType) || attributeTypeName.Value === 'MultiSelectPicklistType') {
                 let optionSet;
