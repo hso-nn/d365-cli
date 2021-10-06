@@ -6,7 +6,6 @@ import {Express, Router} from 'express';
 import * as http from 'http';
 import {Socket} from 'net';
 import * as fs from 'fs';
-import rateLimit from 'express-rate-limit';
 import sanitizeHtml from 'sanitize-html';
 import {Request, Response} from 'express-serve-static-core';
 import {CrmJson} from './CrmJson';
@@ -21,13 +20,6 @@ export class AdalRouter {
 
     constructor() {
         this.express = express();
-
-        const limiter = rateLimit({
-            windowMs: 30*60*1000, // 30 minutes
-            max: 5000,
-            message: 'Too many requests, please log issue and mention rateLimit'
-        });
-        this.express.use('/authenticated/', limiter);
         this.express.use(express.static('node_modules/adal-angular/dist'));
         this.mountRoutes();
         this.startListen();
@@ -119,23 +111,24 @@ export class AdalRouter {
     }
 
     private mountAuthenticatedRoute(router: Router): void {
-        router.get('/authenticated', async (req: Request, res: Response): Promise<void> => {
+        router.get('/authenticated', (req: Request, res: Response): void => {
             res.setHeader('Connection', 'Transfer-Encoding');
             res.setHeader('Content-Type', 'text/html; charset=utf-8');
             res.setHeader('Transfer-Encoding', 'chunked');
 
             res.flushHeaders();
             this.response = res;
-            await this.onAuthenticated();
-            setTimeout(() => {
-                this.httpServer.close((): void => {
-                    return console.log(`server stopped listening`);
-                });
-                for (const socket of this.sockets) {
-                    socket.destroy();
-                }
-            }, 100);
-            res.send();
+            this.onAuthenticated().then(() => {
+                setTimeout(() => {
+                    this.httpServer.close((): void => {
+                        return console.log(`server stopped listening`);
+                    });
+                    for (const socket of this.sockets) {
+                        socket.destroy();
+                    }
+                }, 100);
+                res.send();
+            });
         });
     }
 
