@@ -2,6 +2,7 @@ import * as shell from 'shelljs';
 import * as fs from 'fs';
 import {NodeApi} from '../root/tools/NodeApi/NodeApi';
 import {SavedQueryService} from '../root/tools/SavedQuery/SavedQuery.service';
+import cp from 'child_process';
 
 export class Enum {
     private readonly bearer: string;
@@ -31,7 +32,8 @@ export class Enum {
         shell.cp('-r', `${__dirname}/Entity/Entity.enum.ts`, `src/${this.entityName}`);
         shell.cp('-r', `src/${this.entityName}/Entity.enum.ts`, enumFilepath);
         shell.rm('-rf', `src/${this.entityName}/Entity.enum.ts`);
-        shell.exec(`git add ${enumFilepath}`);
+        // shell.exec(`git add ${enumFilepath}`);
+        cp.execFileSync('git', ['add', enumFilepath]);
         const fileData = String(fs.readFileSync(enumFilepath));
         await this.log(`Generated ${this.entityName}.enum.ts<br/>`);
         shell.ShellString(fileData + enumAttributeNames + navigationPropertyNames + enumStrings + savedQueries).to(enumFilepath);
@@ -53,7 +55,7 @@ export class Enum {
             if (savedQuery && savedQuery.returnedtypecode === this.entityLogicalName) {
                 const {name, savedqueryid} = savedQuery;
                 savedQueriesString += `    ${Enum.capitalize(name.replace(/\W/g, ''))}: {\n`;
-                savedQueriesString += `        name: '${name.replace(/'/g, `\\'`)}',\n`;
+                savedQueriesString += `        name: \`${name}\`,\n`;
                 savedQueriesString += `        savedqueryid: '${savedqueryid}',\n`;
                 savedQueriesString += `    },\n`;
             }

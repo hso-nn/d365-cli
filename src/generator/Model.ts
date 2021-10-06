@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import {NodeApi} from '../root/tools/NodeApi/NodeApi';
 import * as inquirer from 'inquirer';
 import colors from 'colors';
+import cp from 'child_process';
 
 interface InterfaceTypes {
     [key: string]: string;
@@ -61,7 +62,8 @@ export class Model {
         shell.cp('-r', `src/${this.entityName}/Entity.model.ts`, modelFilepath);
         shell.rm('-rf', `src/${this.entityName}/Entity.model.ts`);
         shell.sed('-i', new RegExp('Entity', 'g'), this.entityName, modelFilepath);
-        shell.exec(`git add ${modelFilepath}`);
+        // shell.exec(`git add ${modelFilepath}`);
+        cp.execFileSync('git', ['add', modelFilepath]);
         let fileData = String(fs.readFileSync(modelFilepath));
         this.attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
         const attributeInterfaceTypes = await this.getAttributeInterfaceTypes();

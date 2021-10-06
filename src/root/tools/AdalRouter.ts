@@ -6,6 +6,8 @@ import {Express, Router} from 'express';
 import * as http from 'http';
 import {Socket} from 'net';
 import * as fs from 'fs';
+import rateLimit from 'express-rate-limit';
+import sanitizeHtml from 'sanitize-html';
 import {Request, Response} from 'express-serve-static-core';
 import {CrmJson} from './CrmJson';
 
@@ -19,6 +21,13 @@ export class AdalRouter {
 
     constructor() {
         this.express = express();
+
+        const limiter = rateLimit({
+            windowMs: 30*60*1000, // 30 minutes
+            max: 5000,
+            message: 'Too many requests, please log issue and mention rateLimit'
+        });
+        this.express.use('/authenticated/', limiter);
         this.express.use(express.static('node_modules/adal-angular/dist'));
         this.mountRoutes();
         this.startListen();
@@ -136,7 +145,11 @@ export class AdalRouter {
 
     protected log(message: string): Promise<void> {
         return new Promise(resolve => {
-            this.response.write(`${message}<br/>`, () => {
+            this.response.write(`${sanitizeHtml(message, {
+                allowedAttributes: {
+                    'span': ['style'],
+                },
+            })}<br/>`, () => {
                 this.response.flushHeaders();
                 resolve();
             });
