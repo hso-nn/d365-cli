@@ -6,6 +6,7 @@ import {Express, Router} from 'express';
 import * as http from 'http';
 import {Socket} from 'net';
 import * as fs from 'fs';
+import rateLimit from 'express-rate-limit';
 import sanitizeHtml from 'sanitize-html';
 import {Request, Response} from 'express-serve-static-core';
 import {CrmJson} from './CrmJson';
@@ -111,24 +112,28 @@ export class AdalRouter {
     }
 
     private mountAuthenticatedRoute(router: Router): void {
-        router.get('/authenticated', (req: Request, res: Response): void => {
+        const authenticatedLimiter = rateLimit({
+            windowMs: 30 * 60 * 1000, // 30 minutes
+            max: 5000, //enough :)
+            message: 'Rate limit exceeded. Please log issue'
+        });
+        router.get('/authenticated', authenticatedLimiter, async (req: Request, res: Response): Promise<void> => {
             res.setHeader('Connection', 'Transfer-Encoding');
             res.setHeader('Content-Type', 'text/html; charset=utf-8');
             res.setHeader('Transfer-Encoding', 'chunked');
 
             res.flushHeaders();
             this.response = res;
-            this.onAuthenticated().then(() => {
-                setTimeout(() => {
-                    this.httpServer.close((): void => {
-                        return console.log(`server stopped listening`);
-                    });
-                    for (const socket of this.sockets) {
-                        socket.destroy();
-                    }
-                }, 100);
-                res.send();
-            });
+            await this.onAuthenticated();
+            setTimeout(() => {
+                this.httpServer.close((): void => {
+                    return console.log(`server stopped listening`);
+                });
+                for (const socket of this.sockets) {
+                    socket.destroy();
+                }
+            }, 100);
+            res.send();
         });
     }
 
