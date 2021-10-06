@@ -3,7 +3,6 @@
 [![npm](https://img.shields.io/npm/dt/@hso/d365-cli.svg)](https://www.npmjs.com/package/@hso/d365-cli)
 [![npm](https://img.shields.io/npm/v/@hso/d365-cli.svg)](https://www.npmjs.com/package/@hso/d365-cli)
 [![npm](https://img.shields.io/github/workflow/status/hso-nn/d365-cli/CodeQL?label=CodeQL&logo=github)](https://www.npmjs.com/package/@hso/d365-cli)
-[![Package Quality](https://packagequality.com/shield/d365-cli.svg)](https://packagequality.com/#?package=d365-cli)
 
 # Introduction
 A [Command-line interface](https://en.wikipedia.org/wiki/Command-line_interface) for D365 Project
