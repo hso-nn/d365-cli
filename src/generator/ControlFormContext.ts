@@ -1,5 +1,6 @@
 import * as shell from 'shelljs';
 import * as fs from 'fs';
+import cp from 'child_process';
 import {NodeApi} from '../root/tools/NodeApi/NodeApi';
 import {
     FormJson,
@@ -40,7 +41,8 @@ export class ControlFormContext {
         shell.rm('-rf', `src/${this.entityName}/${formName}/Entity.formContext.ts`);
         shell.sed('-i', new RegExp('Entity', 'g'), this.entityName, formContextFilepath);
         shell.sed('-i', new RegExp('FormName', 'g'), formName, formContextFilepath);
-        shell.exec(`git add ${formContextFilepath}`);
+        // shell.exec(`git add ${formContextFilepath}`);
+        cp.execFileSync('git', ['add', formContextFilepath]);
         const fileData = String(fs.readFileSync(formContextFilepath));
         const replaceString = fileData.match(new RegExp(`${formName}FormContext extends AttributeFormContext {`, 'ig'))[0];
         const newFileData = fileData.replace(replaceString, `${replaceString}\n${formContextControlsString}`);

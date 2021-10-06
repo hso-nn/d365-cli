@@ -1,5 +1,6 @@
 import * as shell from 'shelljs';
 import * as fs from 'fs';
+import cp from 'child_process';
 // import {NodeApi} from '../root/tools/NodeApi/NodeApi';
 import {SystemFormService} from '../root/tools/SystemForm/SystemForm.service';
 import {SolutionService} from '../root/tools/Solution/Solution.service';
@@ -61,7 +62,8 @@ export class Form {
         shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), namespace, filepath);
         shell.sed('-i', new RegExp('<%= formname %>', 'ig'), systemForm.name, filepath);
         shell.sed('-i', new RegExp('<%= entity %>', 'ig'), this.entityName, filepath);
-        shell.exec(`git add ${filepath}`);
+        // shell.exec(`git add ${filepath}`);
+        cp.execFileSync('git', ['add', filepath]);
         await this.log(`Added ${this.entityName}/${formName}/${formName}.ts`);
     }
 
@@ -71,7 +73,8 @@ export class Form {
         const filepath = `src/${this.entityName}/${formName}/${formName}.form.ts`;
         shell.cp('-r', `${__dirname}/Entity/Entity.form.ts`, filepath);
         shell.sed('-i', new RegExp('Entity', 'g'), formName, filepath);
-        shell.exec(`git add ${filepath}`);
+        // shell.exec(`git add ${filepath}`);
+        cp.execFileSync('git', ['add', filepath]);
         await this.log(`Added ${this.entityName}/${formName}/${formName}.form.ts`);
     }
 
@@ -87,7 +90,8 @@ export class Form {
                 build: true
             });
             shell.ShellString(JSON.stringify(buildJson, null, 2)).to(filepath);
-            shell.exec(`git add ${filepath}`);
+            // shell.exec(`git add ${filepath}`);
+            cp.execFileSync('git', ['add', filepath]);
         }
         await this.log(`Updated ${this.entityName}/build.json`);
     }

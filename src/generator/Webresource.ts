@@ -3,6 +3,7 @@ import * as shell from 'shelljs';
 import * as inquirer from 'inquirer';
 import * as fs from 'fs';
 import {Variables} from '../Variables';
+import cp from 'child_process';
 
 interface Answers {
     template: 'React' | 'HTML';
@@ -60,7 +61,9 @@ export class Webresource {
             shell.sed('-i', new RegExp('Webresource', 'ig'), webresourcename, `src/${webresourcename}/${newfilename}`);
             shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher, `src/${webresourcename}/${newfilename}`);
             shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), namespace, `src/${webresourcename}/${newfilename}`);
-            shell.exec(`git add src/${webresourcename}/${newfilename}`);
+            const filepath = `src/${webresourcename}/${newfilename}`;
+            // shell.exec(`git add filepath`);
+            cp.execFileSync('git', ['add', filepath]);
         });
     }
 
@@ -78,7 +81,8 @@ export class Webresource {
             });
             shell.ShellString(JSON.stringify(buildJson, null, 2)).to(filepath);
         }
-        shell.exec(`git add ${filepath}`);
+        // shell.exec(`git add ${filepath}`);
+        cp.execFileSync('git', ['add', filepath]);
         console.log(`Added ${webresourcename}/build.json`);
     }
 }

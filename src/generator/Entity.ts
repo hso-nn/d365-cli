@@ -2,6 +2,7 @@ import colors from 'colors';
 import * as shell from 'shelljs';
 import * as inquirer from 'inquirer';
 import * as fs from 'fs';
+import cp from 'child_process';
 import {NodeApi} from '../root/tools/NodeApi/NodeApi';
 import {Model} from './Model';
 import {Enum} from './Enum';
@@ -85,7 +86,8 @@ export class Entity {
         shell.cp('-r', `${__dirname}/Entity/Entity.service.ts`, filepath);
         shell.sed('-i', new RegExp('EntityLogicalName', 'g'), this.entityLogicalName, filepath);
         shell.sed('-i', new RegExp('Entity', 'g'), entityName, filepath);
-        shell.exec(`git add ${filepath}`);
+        // shell.exec(`git add ${filepath}`);
+        cp.execFileSync('git', ['add', filepath]);
         await this.log(`Added ${entityName}/${entityName}.service.ts`);
     }
 
@@ -93,7 +95,8 @@ export class Entity {
         await this.log(`Adding ${this.entityName}/build.json`);
         const filepath = `src/${this.entityName}/build.json`;
         shell.cp('-r', `${__dirname}/Entity/build.json`, filepath);
-        shell.exec(`git add ${filepath}`);
+        // shell.exec(`git add ${filepath}`);
+        cp.execFileSync('git', ['add', filepath]);
         await this.log(`Added ${this.entityName}/build.json`);
     }
 
