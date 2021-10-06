@@ -111,24 +111,23 @@ export class AdalRouter {
     }
 
     private mountAuthenticatedRoute(router: Router): void {
-        router.get('/authenticated', (req: Request, res: Response): void => {
+        router.get('/authenticated',async (req: Request, res: Response): Promise<void> => {
             res.setHeader('Connection', 'Transfer-Encoding');
             res.setHeader('Content-Type', 'text/html; charset=utf-8');
             res.setHeader('Transfer-Encoding', 'chunked');
 
             res.flushHeaders();
             this.response = res;
-            this.onAuthenticated().then(() => {
-                setTimeout(() => {
-                    this.httpServer.close((): void => {
-                        return console.log(`server stopped listening`);
-                    });
-                    for (const socket of this.sockets) {
-                        socket.destroy();
-                    }
-                }, 100);
-                res.send();
-            });
+            await this.onAuthenticated();
+            setTimeout(() => {
+                this.httpServer.close((): void => {
+                    return console.log(`server stopped listening`);
+                });
+                for (const socket of this.sockets) {
+                    socket.destroy();
+                }
+            }, 100);
+            res.send();
         });
     }
 
