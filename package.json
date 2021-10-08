@@ -29,6 +29,9 @@
     "build:prod": "npm run clean && webpack --mode production --bail --progress",
     "clean": "IF exist bin\\root\\deploy (rmdir /s /q bin\\root\\deploy)"
   },
+  "engines": {
+    "node": ">=14"
+  },
   "bin": {
     "hso-d365": "bin/hso-d365"
   },
