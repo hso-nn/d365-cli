@@ -77,7 +77,7 @@ To add an Webresource to the project use following commands:
 ```
 
 ## Deploy
-To build and deploy changes made to the Entity and Webresource use following command:
+To build changes made to Entities and Webresources to be deployed use following command:
 
 ```powershell
   npm run build:prod

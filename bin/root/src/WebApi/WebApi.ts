@@ -13,6 +13,10 @@ interface RelationMetadata {
     ReferencingAttribute: string;
 }
 
+type ActionData<K extends string, T> = {
+    [P in K]?: T
+}
+
 const dateReviver = <V>(key: string, value: V | Date): V | Date => {
     if (typeof value === 'string') {
         const d = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?::(\d*))?Z$/.exec(value);
@@ -127,7 +131,7 @@ export class WebApi {
         return WebApi.request('DELETE', uri);
     }
 
-    public static async executeAction<D>(actionName: string, data?: D, entityLogicalName?: string, id?: string): Promise<JSON> {
+    public static async executeAction<R, I extends string, V>(actionName: string, data?: ActionData<I, V>, entityLogicalName?: string, id?: string): Promise<R> {
         if (entityLogicalName) {
             return this.executeBoundAction(actionName, data, entityLogicalName, id);
         } else {
@@ -135,13 +139,13 @@ export class WebApi {
         }
     }
 
-    private static async executeBoundAction<D>(actionName: string, data: D, entityLogicalName: string, id: string): Promise<JSON> {
+    private static async executeBoundAction<R>(actionName: string, data: unknown, entityLogicalName: string, id: string): Promise<R> {
         const metadata = await Xrm.Utility.getEntityMetadata(entityLogicalName),
             xmlHttpRequest = await WebApi.request('POST', `${metadata.EntitySetName}(${id})/Microsoft.Dynamics.CRM.${actionName}`, data);
         return xmlHttpRequest.response && JSON.parse(xmlHttpRequest.response, dateReviver);
     }
 
-    private static async executeUnboundAction<D>(actionName: string, data?: D): Promise<JSON> {
+    private static async executeUnboundAction<R>(actionName: string, data?: unknown): Promise<R> {
         const xmlHttpRequest = await WebApi.request('POST', `${actionName}`, data);
         return xmlHttpRequest.response && JSON.parse(xmlHttpRequest.response, dateReviver);
     }
