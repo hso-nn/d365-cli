@@ -1,6 +1,6 @@
 {
   "name": "@hso/d365-cli",
-  "version": "5.10.6",
+  "version": "5.10.7",
   "author": "HSO Innovation <innovation@hso.com> (https://www.hso.com)",
   "description": "Dynamics 365 Command Line Interface for TypeScript projects for Dataverse",
   "repository": {
@@ -28,6 +28,9 @@
     "build": "npm run clean && webpack --mode development",
     "build:prod": "npm run clean && webpack --mode production --bail --progress",
     "clean": "IF exist bin\\root\\deploy (rmdir /s /q bin\\root\\deploy)"
+  },
+  "engines": {
+    "node": ">=14"
   },
   "bin": {
     "hso-d365": "bin/hso-d365"
