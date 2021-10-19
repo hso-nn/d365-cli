@@ -9,7 +9,7 @@ import {SystemFormModel} from '../root/tools/SystemForm/SystemForm.model';
 import {ControlFormContext} from './ControlFormContext';
 // import colors from 'colors';
 import {Variables} from '../Variables';
-import {CrmJson} from '../root/tools/CrmJson';
+import {CrmJson} from '../root/Webresources/tools/CrmJson';
 
 export class Form {
     private readonly bearer: string;

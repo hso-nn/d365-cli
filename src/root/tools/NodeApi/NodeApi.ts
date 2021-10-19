@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as https from 'https';
 import { IncomingMessage } from 'http';
-import {CrmJson} from '../CrmJson';
+import {CrmJson} from '../../Webresources/tools/CrmJson';
 import { RequestOptions } from 'https';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

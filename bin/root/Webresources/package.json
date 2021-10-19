@@ -10,7 +10,7 @@
     "watch": "webpack --watch --mode development",
     "start": "webpack serve",
     "starthttps": "webpack serve --https",
-    "lint": "eslint ./ --ext .js,.ts,.tsx",
+    "lint": "eslint .. --ext .js,.ts,.tsx",
     "deploy": "hso-d365 deploy",
     "resx": "hso-d365 extractTranslations",
     "setFormCustomizable:true": "hso-d365 setFormCustomizable true",

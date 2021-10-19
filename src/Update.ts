@@ -1,7 +1,7 @@
 import * as colors from 'colors';
 import * as shell from 'shelljs';
 import * as fs from 'fs';
-import {CrmJson} from './root/tools/CrmJson';
+import {CrmJson} from './root/Webresources/tools/CrmJson';
 import {AllVariables, Variables, WebpackConfigVariables} from './Variables';
 import readline from 'readline';
 
@@ -33,28 +33,28 @@ export class Update {
 
     private static updateProjectRootFolder(): void {
         console.log(`Updating .eslintignore...`);
-        shell.cp('-R', `${__dirname}/root/.eslintignore`, '.');
+        shell.cp('-R', `${__dirname}/root/Webresources/.eslintignore`, '.');
         shell.exec('git add .eslintignore');
 
         console.log(`Updating .gitignore...`);
-        shell.cp('-R', `${__dirname}/root/gitignore`, '.');
+        shell.cp('-R', `${__dirname}/root/Webresources/gitignore`, '.');
         fs.renameSync(`./gitignore`, './.gitignore');
         shell.exec('git add .gitignore');
 
         console.log(`Updating .eslintrc.json...`);
-        shell.cp('-R', `${__dirname}/root/.eslintrc.json`, '.');
+        shell.cp('-R', `${__dirname}/root/Webresources/.eslintrc.json`, '.');
         shell.exec('git add .eslintrc.json');
 
         console.log(`Updating postcss.config.js`);
-        shell.cp('-R', `${__dirname}/root/postcss.config.js`, '.');
+        shell.cp('-R', `${__dirname}/root/Webresources/postcss.config.js`, '.');
         shell.exec('git add postcss.config.js');
 
         console.log(`Updating karma.conf.js`);
-        shell.cp('-R', `${__dirname}/root/karma.conf.js`, '.');
+        shell.cp('-R', `${__dirname}/root/Webresources/karma.conf.js`, '.');
         shell.exec('git add karma.conf.js');
 
         console.log(`Updating tsconfig.json`);
-        shell.cp('-R', `${__dirname}/root/tsconfig.json`, '.');
+        shell.cp('-R', `${__dirname}/root/Webresources/tsconfig.json`, '.');
         shell.exec('git add tsconfig.json');
     }
 
@@ -86,23 +86,23 @@ export class Update {
 
     private static updateSrcFolder(): void {
         console.log(`Updating WebApi...`);
-        shell.cp('-R', `${__dirname}/root/src/WebApi`, './src');
+        shell.cp('-R', `${__dirname}/root/Webresources/src/WebApi`, './src');
         shell.exec('git add src/WebApi/SystemQueryOptions.ts');
         shell.exec('git add src/WebApi/Service.ts');
 
         console.log(`Updating Http...`);
-        shell.cp('-R', `${__dirname}/root/src/Http`, './src');
+        shell.cp('-R', `${__dirname}/root/Webresources/src/Http`, './src');
         shell.exec('git add src/Http/HttpHeaders.ts');
 
         console.log(`Updating util...`);
-        shell.cp('-R', `${__dirname}/root/src/util`, './src');
+        shell.cp('-R', `${__dirname}/root/Webresources/src/util`, './src');
         shell.exec('git add src/util/Geolocation.ts');
 
         console.log(`Updating Annotation...`);
-        shell.cp('-R', `${__dirname}/root/src/Annotation`, './src');
+        shell.cp('-R', `${__dirname}/root/Webresources/src/Annotation`, './src');
 
         console.log(`Updating Translation...`);
-        shell.cp('-R', `${__dirname}/root/src/translation`, './src');
+        shell.cp('-R', `${__dirname}/root/Webresources/src/translation`, './src');
     }
 
     private static updateToolsFolder(): void {
@@ -134,7 +134,7 @@ export class Update {
     private static updatePackageJson(variables: AllVariables): void {
         console.log(`Updating package.json...`);
         const {projectname, description, publisher, version} = variables;
-        shell.cp('-R', `${__dirname}/root/package.json`, '.');
+        shell.cp('-R', `${__dirname}/root/Webresources/package.json`, '.');
         const packageJsonFile = shell.ls('package.json')[0];
         shell.sed('-i', new RegExp('<%= projectname %>', 'ig'), projectname, packageJsonFile);
         shell.sed('-i', new RegExp('<%= description %>', 'ig'), description, packageJsonFile);
@@ -168,7 +168,7 @@ export class Update {
             namespace = oldVariables.namespace;
             shell.exec('git rm webpack.config.js');
         }
-        shell.cp('-R', `${__dirname}/root/webpack.config.ts`, '.');
+        shell.cp('-R', `${__dirname}/root/Webresources/webpack.config.ts`, '.');
         const variables = await Variables.get();
         let tsFileData = String(fs.readFileSync('./webpack.config.ts'));
         tsFileData = tsFileData.replace(new RegExp('<%= publisher %>', 'ig'), publisher);

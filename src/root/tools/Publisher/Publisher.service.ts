@@ -1,7 +1,7 @@
 import {NodeApi} from '../NodeApi/NodeApi';
 import {PublisherModel} from './Publisher.model';
 import {SolutionService} from '../Solution/Solution.service';
-import {CrmJson} from '../CrmJson';
+import {CrmJson} from '../../Webresources/tools/CrmJson';
 import fs from 'fs';
 
 export class PublisherService {

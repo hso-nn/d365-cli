@@ -2,11 +2,14 @@ import colors from 'colors';
 import * as shell from 'shelljs';
 import * as inquirer from 'inquirer';
 import * as fs from 'fs';
+import {PCF} from './pcf/PCF';
 
 interface CreateAnswers {
-    publisher?: string;
+    publisher_name?: string;
+    publisher_prefix?: string;
     solution_name_deploy?: string;
     solution_name_generate?: string;
+    solution_name_pcf?: string;
     environment?: string;
     namespace?: string;
 }
@@ -35,14 +38,29 @@ export class Create {
             shell.mkdir(projectname);
         }
         shell.cd(projectname);
+
+        Create.setupWebresources(projectname, answers);
+        Create.setupPCF(projectname, answers);
+    }
+
+    private static setupPCF(projectname: string, answers: CreateAnswers): void {
+        shell.mkdir('PCF');
+        shell.cd('PCF');
+        const {publisher_name, publisher_prefix, solution_name_pcf} = answers;
+        PCF.initPcfSolution(solution_name_pcf, publisher_name, publisher_prefix);
+        shell.cd('..');
+        console.log(colors.green(`Please fill ${projectname}/PCF/Solutions/src/Other/Solution.xml`));
+    }
+
+    private static setupWebresources(projectname: string, answers: CreateAnswers): void {
         shell.mkdir('Webresources');
-        shell.cp('-R', `${__dirname}/root/*`, 'Webresources');
-        shell.cp('-R', `${__dirname}/root/.*`, 'Webresources');
+        shell.cp('-R', `${__dirname}/root/Webresources/*`, 'Webresources');
+        shell.cp('-R', `${__dirname}/root/Webresources/.*`, 'Webresources');
         fs.renameSync(`./Webresources/gitignore`, './Webresources/.gitignore');
 
-        Create.initCrmJson(answers);
-        Create.initPackageJson(projectname, answers);
-        Create.initWebpackConfig(answers);
+        Create.initWebresourcesCrmJson(answers);
+        Create.initWebresourcesPackageJson(projectname, answers);
+        Create.initWebresourcesWebpackConfig(answers);
 
         shell.cd('Webresources');
         console.log(`Installing npm packages. This may take a while...`);
@@ -51,27 +69,27 @@ export class Create {
         console.log(`${colors.blue('hso-d365 generate Entity x')} in Webresources folder generates Entity x files and settings.`);
         console.log(`${colors.blue('npm run build:prod')} in Webresources folder creates the deployment package.`);
         console.log(`See package.json#scripts for all options.`);
+        shell.cd('..');
     }
 
-    private static initCrmJson(answers: CreateAnswers): void {
+    private static initWebresourcesCrmJson(answers: CreateAnswers): void {
         const crmJsonFile = shell.ls('Webresources/tools/crm.json')[0];
-        shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, crmJsonFile);
+        shell.sed('-i', new RegExp('<%= publisher_prefix %>', 'ig'), answers.publisher_prefix, crmJsonFile);
         shell.sed('-i', new RegExp('<%= solution_name_deploy %>', 'ig'), answers.solution_name_deploy, crmJsonFile);
         shell.sed('-i', new RegExp('<%= solution_name_generate %>', 'ig'), answers.solution_name_generate || answers.solution_name_deploy, crmJsonFile);
         shell.sed('-i', new RegExp('<%= environment %>', 'ig'), answers.environment, crmJsonFile);
         shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), answers.namespace, crmJsonFile);
     }
 
-    private static initPackageJson(projectName: string, answers: CreateAnswers): void {
+    private static initWebresourcesPackageJson(projectName: string, answers: CreateAnswers): void {
         const packageJsonFile = shell.ls('Webresources/package.json')[0];
         shell.sed('-i', '<%= projectname %>', projectName.toLowerCase(), packageJsonFile);
         shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.solution_name_deploy, packageJsonFile);
-        shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, packageJsonFile);
     }
 
-    private static initWebpackConfig(answers: CreateAnswers): void {
+    private static initWebresourcesWebpackConfig(answers: CreateAnswers): void {
         const webpackConfigFile = shell.ls('Webresources/webpack.config.ts')[0];
-        shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), answers.publisher, webpackConfigFile);
+        shell.sed('-i', new RegExp('<%= publisher_prefix %>', 'ig'), answers.publisher_prefix, webpackConfigFile);
         shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), answers.namespace, webpackConfigFile);
         shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.namespace, webpackConfigFile);
     }
@@ -121,7 +139,34 @@ export class Create {
             }
         }, {
             type: 'input',
-            name: 'publisher',
+            name: 'solution_name_pcf',
+            message: `D365 PCF Solution ('Name' column)\nIf equal to deployment Solution keep blank:`,
+            validate: async (input) => {
+                if (input) {
+                    const solutionNameRegExp = new RegExp('[a-zA-Z_\\d]*');
+                    if (!solutionNameRegExp.test(input)) {
+                        throw new Error('You need to provide a valid solution name');
+                    }
+                }
+                return true;
+            }
+        }, {
+            type: 'input',
+            name: 'publisher_name',
+            message: 'D365 Publisher Name (not Display Name):',
+            validate: async (input) => {
+                if (!input) {
+                    throw new Error('You need to provide a publisher name');
+                }
+                const publisherRegExp = new RegExp('[a-zA-Z_0-9]*');
+                if (!publisherRegExp.test(input)) {
+                    throw new Error('You need to provide a valid publisher');
+                }
+                return true;
+            }
+        }, {
+            type: 'input',
+            name: 'publisher_prefix',
             message: 'D365 Publisher Prefix (3 chars a-z):',
             validate: async (input) => {
                 if (!input) {
@@ -136,7 +181,7 @@ export class Create {
         }, {
             type: 'input',
             name: 'namespace',
-            message: 'Customer or Product name',
+            message: 'Customer or Product name:',
             validate: async (input) => {
                 if (!input) {
                     throw new Error('You need to provide a customer or product name');

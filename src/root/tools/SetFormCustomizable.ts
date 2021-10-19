@@ -5,7 +5,7 @@ import {SystemFormService} from './SystemForm/SystemForm.service';
 import {SolutionModel} from './Solution/Solution.model';
 import {SolutionComponentModel} from './SolutionComponent/SolutionComponent.model';
 import {SystemFormModel} from './SystemForm/SystemForm.model';
-import {CrmJson} from './CrmJson';
+import {CrmJson} from '../Webresources/tools/CrmJson';
 import fs from 'fs';
 
 export class SetFormCustomizable extends AdalRouter {
