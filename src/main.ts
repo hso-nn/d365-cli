@@ -137,10 +137,10 @@ program
     .description('Show the Fiddler AutoResponder Rule Editor lines')
     .action(async () => {
         const path = process.cwd();
-        if (shell.test('-f', 'pcfconfig.json')) {
-            const settings: CrmJson = JSON.parse(fs.readFileSync('../../Webresources/tools/crm.json', 'utf8'));
+        if (shell.test('-e', 'Solutions')) {
+            const settings: CrmJson = JSON.parse(fs.readFileSync('../Webresources/tools/crm.json', 'utf8'));
             const regexPCF = `REGEX:(?insx).+\\/cc_${settings.crm.publisher_prefix}.(?'foldername'[^?]*)\\/(?'fname'[^?]*.js)`;
-            const locationPCF = `${path}\\out\\controls\\\${foldername}\\\${fname}`;
+            const locationPCF = `${path}\\\${foldername}\\out\\controls\\\${foldername}\\\${fname}`;
             console.log(`Please add to first Rule Editor line (including REGEX:): \n${regexPCF}`);
             console.log(`Please add to second Rule Editor line: \n${locationPCF}`);
         } else {
