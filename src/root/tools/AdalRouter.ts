@@ -9,7 +9,7 @@ import * as fs from 'fs';
 import rateLimit from 'express-rate-limit';
 import sanitizeHtml from 'sanitize-html';
 import {Request, Response} from 'express-serve-static-core';
-import {CrmJson} from './CrmJson';
+import {CrmJson} from '../Webresources/tools/CrmJson';
 
 export class AdalRouter {
     public express: Express;

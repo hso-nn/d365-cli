@@ -5,7 +5,7 @@ import {SolutionService} from '../root/tools/Solution/Solution.service';
 import {SolutionComponentService} from '../root/tools/SolutionComponent/SolutionComponent.service';
 import {EnvironmentVariableDefinitionService} from '../root/tools/EnvironmentVariableDefinition/EnvironmentVariableDefinition.service';
 import {EnvironmentVariableDefinitionModel} from '../root/tools/EnvironmentVariableDefinition/EnvironmentVariableDefinition.model';
-import {CrmJson} from '../root/tools/CrmJson';
+import {CrmJson} from '../root/Webresources/tools/CrmJson';
 
 export class EnvironmentVariable {
     private readonly bearer: string;

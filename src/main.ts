@@ -9,17 +9,24 @@ import {Resx} from './root/tools/Resx';
 import {SetFormCustomizable} from './root/tools/SetFormCustomizable';
 import packageJson from '../package.json';
 import {RegeneratorRouter} from './generator/RegerenatorRouter';
+import {PCF} from './pcf/PCF';
+import {CrmJson} from './root/Webresources/tools/CrmJson';
+import fs from 'fs';
 
 program
     .version(packageJson.version)
     .usage('<command> [options]');
 
 program
-    .command('new <project>')
+    .command('new <name>')
     .alias('n')
-    .description('Creates a new workspace and an initial Webresource setup')
-    .action((project: string) => {
-        Create.createProject(project);
+    .description('Creates a new workspace and an initial Webresource and PCF setup or creates a new PCF component')
+    .action((name: string) => {
+        if (shell.test('-e', '../pcf')) {
+            PCF.createComponent(name);
+        } else {
+            Create.createProject(name);
+        }
     })
     .on('--help', () => {
         Create.showCreateHelp();
@@ -78,7 +85,11 @@ program
     .alias('b')
     .description('Compiles project into an output directory named dist')
     .action(() => {
-        shell.exec('npm run build:prod');
+        if (shell.test('-f', 'Solutions.cdsproj')) {
+            PCF.build();
+        } else {
+            shell.exec('npm run build:prod');
+        }
     })
     .on('--help', () => {
         console.log(`The command can be used to build the project to be distributed to the D365 environment using the 'deploy' command`);
@@ -89,7 +100,11 @@ program
     .option('-f, --force', 'Force unmodified files as well')
     .description('Invokes the deploy builder')
     .action(({force}) => {
-        Deploy.deployProject(force);
+        if (shell.test('-f', 'Solutions.cdsproj') || shell.test('-f', 'pcfconfig.json')) {
+            PCF.deploy();
+        } else {
+            Deploy.deployProject(force);
+        }
     }).on('--help', () => {
         console.log(`Distributes the project to the D365 environment. You need to run the 'build' command first`);
     });
@@ -121,14 +136,22 @@ program
     .alias('fiddler')
     .description('Show the Fiddler AutoResponder Rule Editor lines')
     .action(async () => {
-        const variables = await Variables.get(),
-            publisher = variables.publisher,
-            namespace = variables.namespace,
-            regex = `REGEX:(?insx).+\\/${publisher}_\\/${namespace}\\/(?'foldername'[^?]*)\\/(?'fname'[^?]*.js)`,
-            path = process.cwd(),
-            location = `${path}\\dist\\${publisher}_\\${namespace}\\\${foldername}\\\${fname}`;
-        console.log(`Please add to first Rule Editor line (including REGEX:): \n${regex}`);
-        console.log(`Please add to second Rule Editor line: \n${location}`);
+        const path = process.cwd();
+        if (shell.test('-f', 'pcfconfig.json')) {
+            const settings: CrmJson = JSON.parse(fs.readFileSync('../../Webresources/tools/crm.json', 'utf8'));
+            const regexPCF = `REGEX:(?insx).+\\/cc_${settings.crm.publisher_prefix}.(?'foldername'[^?]*)\\/(?'fname'[^?]*.js)`;
+            const locationPCF = `${path}\\out\\controls\\\${foldername}\\\${fname}`;
+            console.log(`Please add to first Rule Editor line (including REGEX:): \n${regexPCF}`);
+            console.log(`Please add to second Rule Editor line: \n${locationPCF}`);
+        } else {
+            const variables = await Variables.get(),
+                publisher = variables.publisher,
+                namespace = variables.namespace;
+            const regexWR = `REGEX:(?insx).+\\/${publisher}_\\/${namespace}\\/(?'foldername'[^?]*)\\/(?'fname'[^?]*.js)`;
+            const locationWR = `${path}\\dist\\${publisher}_\\${namespace}\\\${foldername}\\\${fname}`;
+            console.log(`Please add to first Rule Editor line (including REGEX:): \n${regexWR}`);
+            console.log(`Please add to second Rule Editor line: \n${locationWR}`);
+        }
     });
 
 program

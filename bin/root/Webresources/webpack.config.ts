@@ -15,7 +15,7 @@ import TerserPlugin from 'terser-webpack-plugin';
 import ReplaceInFileWebpackPlugin from 'replace-in-file-webpack-plugin';
 
 import packageJson from './package.json';
-const dir_build = path.resolve(__dirname, 'dist/<%= publisher %>_/<%= namespace %>');
+const dir_build = path.resolve(__dirname, 'dist/<%= publisher_prefix %>_/<%= namespace %>');
 import * as shell from 'shelljs';
 import * as fs from 'fs';
 
@@ -73,14 +73,14 @@ const configFunction = (env: unknown, argv: {mode: string }): unknown => {
         output: {
             path: dir_build,
             filename: '[name]/[name].js',
-            library: ['<%= publisher %>', '<%= namespace %>', '[name]'],
+            library: ['<%= publisher_prefix %>', '<%= namespace %>', '[name]'],
             libraryTarget: 'var',
         },
         resolve: {
             extensions: ['.js', '.json', '.ts', '.tsx']
         },
         devServer: {
-            contentBase: path.resolve(__dirname, 'dist/<%= publisher %>_'),
+            contentBase: path.resolve(__dirname, 'dist/<%= publisher_prefix %>_'),
             hot: true,
             inline: true
         },
