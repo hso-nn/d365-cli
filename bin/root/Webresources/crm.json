@@ -1,0 +1,6 @@
+{
+  "crm": {
+    "solution_name_deploy": "<%= solution_name_deploy %>",
+    "solution_name_generate": "<%= solution_name_generate %>"
+  }
+}

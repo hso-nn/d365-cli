@@ -1,9 +1,9 @@
-import crmJson from '../../tools/crm.json';
+import crmJson from '../../../crm.json';
 
 export class Translation {
     public static translate(text: string): string {
         try {
-            const relativePath = `${crmJson.crm.publisher_prefix}_/${(crmJson).webresource.namespace}/locales`;
+            const relativePath = `${crmJson.crm.publisher_prefix}_/${(crmJson).crm.namespace}/locales`;
             return Xrm.Utility.getResourceString(`${relativePath}/locales`, text);
         } catch (e) {
             console.log('You probably miss resx dependencies on your javascript file. Please read https://github.com/hso-nn/d365-cli/wiki/Translations');
