@@ -159,12 +159,12 @@ export class WebApi {
                 if ([1, 6, 9].includes(attributeMetadata.AttributeType)) { // Customer, Lookup, Owner
                     const bindingId = requestData[attribute as keyof Model] as string;
                     if (bindingId) {
-                        const targetEntity = model[`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname` as keyof Model] as string;
+                        const targetEntity = model[`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname` as unknown as keyof Model] as string;
                         const binding = await WebApi.getBinding(attribute, bindingId, metadata, targetEntity);
                         Object.assign(requestData, binding);
                     }
                     delete requestData[attribute as keyof Model];
-                    delete requestData[`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname` as keyof Model];
+                    delete requestData[`_${attribute}_value@Microsoft.Dynamics.CRM.lookuplogicalname` as unknown as keyof Model];
                 }
             }
         }
