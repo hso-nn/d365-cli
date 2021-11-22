@@ -40,7 +40,7 @@ export class Deploy extends AdalRouter {
         }
     }
 
-    protected webresourceSettings: WebresourcesCrmJson = JSON.parse(fs.readFileSync('./crm.json', 'utf8'));
+    protected webresourceSettings: WebresourcesCrmJson = JSON.parse(fs.readFileSync('../crm.json', 'utf8'));
     private md5 = (contents: string): string => crypto.createHash('md5').update(contents).digest('hex');
     private force: boolean;
 
