@@ -39,6 +39,7 @@ export class Create {
         }
         shell.cd(projectname);
 
+        shell.cp('-R', `${__dirname}/root/crm.json`, '.');
         Create.setupWebresources(projectname, answers);
         Create.setupPCF(projectname, answers);
     }
