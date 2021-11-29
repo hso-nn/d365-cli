@@ -46,7 +46,7 @@ export class Model {
         } else {
             const serviceFilepath = `src/${this.entityName}/${this.entityName}.service.ts`;
             const fileData = String(fs.readFileSync(serviceFilepath));
-            const match = fileData.match(new RegExp(`static logicalName = '([a-zA-Z_]*)';`));
+            const match = fileData.match(new RegExp(`static logicalName = '([a-zA-Z0-9_]*)';`));
             this.entityLogicalName = match[1];
             // console.log(colors.green(`Entity ${this.entityName} already exist`));
             await this.log(`<span style="color:green">Entity ${this.entityName} already exist</span>`);
