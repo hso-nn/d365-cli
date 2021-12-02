@@ -29,7 +29,7 @@ export class PCF {
 
     private static pacInit(name: string): void {
         shell.exec('pac install latest');
-        const settings: CrmJson = JSON.parse(fs.readFileSync('../crm.json', 'utf8'));
+        const settings: CrmJson = JSON.parse(fs.readFileSync('../../crm.json', 'utf8'));
         const namespace = settings.crm.publisher_prefix;
         if (namespace) {
             // --template field|dataset // dataset is model driven only
@@ -51,7 +51,7 @@ export class PCF {
 
         shell.exec('npm install --save-dev @fluentui/react eslint-plugin-react eslint-plugin-react-hooks rxjs');
 
-        if (shell.test('-e', '../.git')) {
+        if (shell.test('-e', '../../.git')) {
             cp.execFileSync('git', ['add', `../${name}`]);
         }
     }
