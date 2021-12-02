@@ -8,12 +8,14 @@ interface PCFComponentInputProps {
     contextObserver: Observable<ComponentFramework.Context<IInputs>>;
 }
 
-export const LinearComponent: React.FC<PCFComponentInputProps> = (linearInputProps) => {
+export const PCFComponent: React.FC<PCFComponentInputProps> = (linearInputProps) => {
     const {notifyOutputChanged, contextObserver} = linearInputProps;
+    const [context, setContext] = useState<ComponentFramework.Context<IInputs>>();
     const [sampleValue, setSampleValue] = useState<string>();
 
     useEffect(() => {
         contextObserver.subscribe((context: ComponentFramework.Context<IInputs>) => {
+            setContext(context);
             const value = context.parameters.sampleProperty.raw ?? '';
             setSampleValue(value);
         });
