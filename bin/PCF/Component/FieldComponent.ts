@@ -8,6 +8,7 @@ import { Observable, Subscriber } from 'rxjs';
 export class FieldComponent implements ComponentFramework.StandardControl<IInputs, IOutputs> {
     private container: HTMLDivElement;
     protected notifyOutputChanged: () => void;
+    protected outputs: IOutputs;
 
     public init(
         context: ComponentFramework.Context<IInputs>,
@@ -38,7 +39,7 @@ export class FieldComponent implements ComponentFramework.StandardControl<IInput
     }
 
     public getOutputs(): IOutputs {
-        return {}; // override
+        return this.outputs;
     }
 
     public updateView(context: ComponentFramework.Context<IInputs>): void {
