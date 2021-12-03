@@ -1,10 +1,10 @@
-import React, {useState, useEffect} from 'react';
-import { IInputs } from './generated/ManifestTypes';
+import React, {useState, useEffect, useCallback} from 'react';
+import { IInputs, IOutputs } from './generated/ManifestTypes';
 import { Observable } from 'rxjs';
 import { Label } from '@fluentui/react';
 
 interface PCFComponentInputProps {
-    notifyOutputChanged: (value: string) => void;
+    notifyOutputChanged: (outputs: IOutputs) => void;
     contextObserver: Observable<ComponentFramework.Context<IInputs>>;
 }
 
@@ -21,11 +21,13 @@ export const PCFComponent: React.FC<PCFComponentInputProps> = (linearInputProps)
         });
     }, []);
 
-    const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.currentTarget.value;
         setSampleValue(value);
-        notifyOutputChanged(value);
-    };
+        notifyOutputChanged({
+            value: value
+        });
+    }, [notifyOutputChanged]);
 
     return (
         <div>
