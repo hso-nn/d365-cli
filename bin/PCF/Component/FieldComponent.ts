@@ -46,6 +46,6 @@ export class FieldComponent implements ComponentFramework.StandardControl<IInput
     }
 
     public destroy(): void {
-        // ReactDOM.unmountComponentAtNode(this.container);
+        ReactDOM.unmountComponentAtNode(this.container);
     }
 }
