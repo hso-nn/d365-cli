@@ -4,7 +4,8 @@ export class Translation {
     public static translate(text: string): string {
         try {
             const relativePath = `${crmJson.crm.publisher_prefix}_/${(crmJson).crm.namespace}/locales`;
-            return Xrm.Utility.getResourceString(`${relativePath}/locales`, text);
+            const translatedText = Xrm.Utility.getResourceString(`${relativePath}/locales`, text);
+            return translatedText || text;
         } catch (e) {
             console.log('You probably miss resx dependencies on your javascript file. Please read https://github.com/hso-nn/d365-cli/wiki/Translations');
             throw e;
