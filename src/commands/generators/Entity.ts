@@ -8,6 +8,7 @@ import {Model} from './Model';
 import {Enum} from './Enum';
 import {AttributeFormContext} from './AttributeFormContext';
 import {Form} from './Form';
+import {AttributeTypings} from './AttributeTypings';
 
 interface EntityOptions {
     skipForms?: boolean;
@@ -34,6 +35,7 @@ export class Entity {
         await model.generate();
         await Enum.generateEnum(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
         if (!this.options.skipForms) {
+            await AttributeTypings.generate(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
             await AttributeFormContext.generateFormContext(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
             await Form.generateFormFiles(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
         } else {

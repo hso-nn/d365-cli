@@ -27,6 +27,7 @@ export class ControlFormContext {
     public static async generateFormContext(bearer: string, entityName: string, entityLogicalName: string,
         log: (message: string) => Promise<void>, systemForm: SystemFormModel): Promise<void> {
         const formContext = new ControlFormContext(bearer, entityName, entityLogicalName, log);
+        console.log('generateFormContext');
         await formContext.writeFormContextFile(systemForm);
     }
 
@@ -74,8 +75,8 @@ export class ControlFormContext {
                 const methodName = `    static get${pascalTabName}Tab(formContext: Xrm.FormContext): Xrm.Controls.Tab {`;
                 const returnString = `return formContext.ui.tabs.get('${tabName}');`;
                 tabsControlsString += `${methodName}\n        ${returnString}\n    }\n`;
-                tabsControlsString += await this.getColumnsString(tab, tab.Columns.$values);
             }
+            tabsControlsString += await this.getColumnsString(tab, tab.Columns.$values);
         }
         return tabsControlsString;
     }
@@ -100,8 +101,8 @@ export class ControlFormContext {
                     const returnString = `return formContext.ui.tabs.get('${tab.Name}').sections.get('${sectionName}');`;
                     sectionsControlsString += `${methodName}\n        ${returnString}\n    }\n`;
                 }
-                sectionsControlsString += await this.getRowsString(section.Rows.$values);
             }
+            sectionsControlsString += await this.getRowsString(section.Rows.$values);
         }
         return sectionsControlsString;
     }
@@ -125,7 +126,7 @@ export class ControlFormContext {
                 const xrmControlType = await this.getXrmControlType(attributeMetadata, type, id);
                 if (xrmControlType) {
                     const pascalSchemaName = dataFieldName === id ?
-                        ControlFormContext.capitalize(attributeMetadata.SchemaName) : ControlFormContext.capitalize(id);
+                        ControlFormContext.capitalize(attributeMetadata?.SchemaName || id) : ControlFormContext.capitalize(id);
                     if (!ControlFormContext.usedControlNames.includes(pascalSchemaName)) {
                         ControlFormContext.usedControlNames.push(pascalSchemaName);
                         const methodName = `    static get${pascalSchemaName}Control(formContext: Xrm.FormContext): ${xrmControlType} {`;
@@ -162,12 +163,12 @@ export class ControlFormContext {
         } else if (type === 14) {
             return 'Xrm.Controls.StandardControl';
         } else {
-            await this.log(`<span style="color:blue;">${this.entityLogicalName} control ${id} falls back to Xrm.Controls.StandardControl.</span>`);
+            await this.log(`<span style="color:blue;">${this.entityLogicalName} control ${id} type '${type}' falls back to Xrm.Controls.StandardControl.</span>`);
             return 'Xrm.Controls.StandardControl';
         }
     }
 
-    private static capitalize(text: string): string {
+    private static capitalize(text = ''): string {
         return text.charAt(0).toUpperCase() + text.slice(1);
     }
 }

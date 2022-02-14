@@ -54,6 +54,18 @@ export class NodeApi {
         return NodeApi.cachedSettings;
     }
 
+    public static async fetchXml(entitySetName: string, fetchXml: string, bearer: string): Promise<Model[]> {
+        const {crm} = NodeApi.getSettings(),
+            {url, version} = crm,
+            uri = `${url}/api/data/v${version}/${entitySetName}?fetchXml=${encodeURIComponent(fetchXml)}`,
+            response = await NodeApi.request('GET', uri, null, {
+                'Authorization': `Bearer ${bearer}`
+            });
+        console.log(`URI: ${uri}`);
+        // console.log(`fetchXml: ${JSON.stringify(response)}`);
+        return response as unknown as Model[];
+    }
+
     public static async retrieveMultipleRecords(entitySetName: string, options: MultipleSystemQueryOptions, bearer: string): Promise<Model[]> {
         const query = NodeApi.getSystemQueryOptions(options),
             {crm} = NodeApi.getSettings(),
