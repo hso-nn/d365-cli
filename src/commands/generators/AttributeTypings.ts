@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import cp from 'child_process';
 import {NodeApi} from '../../node/NodeApi/NodeApi';
 
-export class AttributeFormContext {
+export class AttributeTypings {
     private readonly bearer: string;
     private readonly entityName: string;
     private readonly entityLogicalName: string;
@@ -17,49 +17,46 @@ export class AttributeFormContext {
         this.log = log;
     }
 
-    public static async generateFormContext(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>): Promise<void> {
-        const formContext = new AttributeFormContext(bearer, entityName, entityLogicalName, log);
-        await formContext.writeFormContextFile();
+    public static async generate(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>): Promise<void> {
+        const formContext = new AttributeTypings(bearer, entityName, entityLogicalName, log);
+        await formContext.writeTypingsFile();
     }
 
-    private async writeFormContextFile(): Promise<void> {
-        await this.log(`Generating ${this.entityName}.formContext.ts<br/>`);
+    private async writeTypingsFile(): Promise<void> {
+        await this.log(`Generating ${this.entityName}.d.ts<br/>`);
         this.attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
-        const formContextAttributesString = await this.getFormContextAttributesString();
-        const formContextFilepath = `src/${this.entityName}/${this.entityName}.formContext.ts`;
-        shell.cp('-r', `${__dirname}/Entity/Entity.attributesContext.ts`, `src/${this.entityName}`);
-        shell.cp('-r', `src/${this.entityName}/Entity.attributesContext.ts`, formContextFilepath);
-        shell.rm('-rf', `src/${this.entityName}/Entity.attributesContext.ts`);
-        shell.sed('-i', new RegExp('Entity', 'g'), this.entityName, formContextFilepath);
-        // shell.exec(`git add ${formContextFilepath}`);
+        const typingsAttributesString = await this.getTypingsAttributesString();
+        const typingsFilepath = `src/${this.entityName}/${this.entityName}.d.ts`;
+        shell.cp('-r', `${__dirname}/Entity/Entity.d.ts`, `src/${this.entityName}`);
+        shell.cp('-r', `src/${this.entityName}/Entity.d.ts`, typingsFilepath);
+        shell.rm('-rf', `src/${this.entityName}/Entity.d.ts`);
+        shell.sed('-i', new RegExp('Entity', 'g'), this.entityName, typingsFilepath);
         if (shell.test('-e', '../.git')) {
-            cp.execFileSync('git', ['add', formContextFilepath]);
+            cp.execFileSync('git', ['add', typingsFilepath]);
         }
-        const filedata = String(fs.readFileSync(formContextFilepath));
-        const replaceString = `${this.entityName}FormContext {`;
-        const newFileData = filedata.replace(replaceString, `${replaceString}\n${formContextAttributesString}`);
-        shell.ShellString(newFileData).to(formContextFilepath);
+        const filedata = String(fs.readFileSync(typingsFilepath));
+        const replaceString = `interface ${this.entityName}Attributes {`;
+        const newFileData = filedata.replace(replaceString, `${replaceString}\n${typingsAttributesString}`);
+        shell.ShellString(newFileData).to(typingsFilepath);
         await this.log(`Generated ${this.entityName}.formContext.ts<br/>`);
     }
 
-    private async getFormContextAttributesString(): Promise<string> {
-        let formContextAttributesString = '';
+    private async getTypingsAttributesString(): Promise<string> {
+        let typingsAttributesString = '';
         for (const attribute of this.attributesMetadata) {
-            const {SchemaName: schemaName} = attribute;
+            const {LogicalName: logicalName} = attribute;
             const xrmAttributeType = await this.getXrmAttributeType(attribute);
             if (xrmAttributeType) {
-                const pascalSchemaName = AttributeFormContext.capitalize(schemaName);
-                const methodName = `    static get${pascalSchemaName}Attribute(formContext: Xrm.FormContext): ${xrmAttributeType} {`;
-                const returnString = `return formContext.getAttribute(${this.entityName}AttributeNames.${pascalSchemaName});`;
-                formContextAttributesString += `${methodName}\n        ${returnString}\n    }\n`;
+                typingsAttributesString += `        getAttribute(attributeName: '${logicalName}'): ${xrmAttributeType};\n`;
             }
         }
-        return formContextAttributesString;
+        return typingsAttributesString;
     }
 
+    // TODO is now duplicate of AttributeFormContext
     // https://docs.microsoft.com/en-us/dotnet/api/microsoft.xrm.sdk.metadata.attributemetadata?view=dynamics-general-ce-9
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public async getXrmAttributeType(attribute: AttributeMetadata): Promise<string> {
+    private async getXrmAttributeType(attribute: AttributeMetadata): Promise<string> {
         const {AttributeType: attributeType, SchemaName: schemaName} = attribute;
         if (['String', 'Memo', 'Uniqueidentifier'].includes(attributeType)) {
             return 'Xrm.Attributes.StringAttribute';
@@ -78,9 +75,5 @@ export class AttributeFormContext {
             await this.log(`<span style="color:blue;">${this.entityLogicalName} attribute ${attributeType} falls back to Xrm.Attributes.Attribute.</span><br/>`);
             return 'Xrm.Attributes.Attribute';
         }
-    }
-
-    private static capitalize(text: string): string {
-        return text.charAt(0).toUpperCase() + text.slice(1);
     }
 }

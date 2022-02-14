@@ -17,6 +17,7 @@ export interface SystemFormModel extends Model {
 }
 
 export interface FormJson {
+    FormId: string;
     Tabs: {
         $values: FormJsonTab[];
     };
