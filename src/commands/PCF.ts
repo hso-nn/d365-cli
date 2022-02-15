@@ -60,7 +60,10 @@ export class PCF {
         const componentFolder = process.cwd();
         shell.cd('..');
         shell.cd('Solutions');
-        shell.exec(`pac solution add-reference --path ${componentFolder}`);
+
+        // shell.exec(`pac solution add-reference --path ${componentFolder}`); OWASP
+        cp.execFileSync('pac', ['solution', 'add-reference', '--path', componentFolder]);
+
         let buildCommand = `msbuild /t:build /restore`;
         shell.exec(buildCommand);
         buildCommand += ` /p:configuration=Release`;
