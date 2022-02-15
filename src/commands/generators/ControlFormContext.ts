@@ -27,7 +27,6 @@ export class ControlFormContext {
     public static async generateFormContext(bearer: string, entityName: string, entityLogicalName: string,
         log: (message: string) => Promise<void>, systemForm: SystemFormModel): Promise<void> {
         const formContext = new ControlFormContext(bearer, entityName, entityLogicalName, log);
-        console.log('generateFormContext');
         await formContext.writeFormContextFile(systemForm);
     }
 
@@ -156,7 +155,9 @@ export class ControlFormContext {
                 return 'Xrm.Controls.NumberControl';
             }
         }
-        if (type === 5) {
+        if (type === 4) {
+            return 'Xrm.Controls.OptionSetControl';
+        } else if (type === 5) {
             return 'Xrm.Controls.GridControl';
         } else if (type === 6) {
             return 'Xrm.Controls.FramedControl';
