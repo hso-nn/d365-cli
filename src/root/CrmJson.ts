@@ -11,4 +11,5 @@ export interface CrmJson {
         redirectUri: string;
         tenant: string;
     };
+    version: string;
 }

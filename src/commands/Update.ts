@@ -115,7 +115,6 @@ export class Update {
             shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), crmSettings.crm.publisher_prefix, '../crm.json');
             shell.sed('-i', new RegExp('<%= environment %>', 'ig'), crmSettings.crm.url, '../crm.json');
             shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), (crmSettings as unknown as {webresource: {namespace:string} }).webresource.namespace, '../crm.json');
-            shell.exec('git add ../crm.json');
 
             // Webresources/crm.json
             const webresourcesSettings: WebresourcesCrmJson = JSON.parse(fs.readFileSync('./tools/crm.json', 'utf8'));
@@ -127,6 +126,9 @@ export class Update {
             shell.rm('-rf', `./tools`);
             shell.exec('git rm ./tools');
         }
+        const version = shell.exec('hso-d365 --version').stdout.replace(/\n/ig, '');
+        shell.sed('-i', new RegExp('<%= version %>', 'ig'), version, '../crm.json');
+        shell.exec('git add ../crm.json');
     }
 
     private static updatePackageJson(): void {

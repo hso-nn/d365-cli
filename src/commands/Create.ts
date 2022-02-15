@@ -79,6 +79,8 @@ export class Create {
         shell.sed('-i', new RegExp('<%= publisher_prefix %>', 'ig'), answers.publisher_prefix, crmJsonFile);
         shell.sed('-i', new RegExp('<%= environment %>', 'ig'), answers.environment, crmJsonFile);
         shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), answers.namespace, crmJsonFile);
+        const version = shell.exec('hso-d365 --version').stdout.replace(/\n/ig, '');
+        shell.sed('-i', new RegExp('<%= version %>', 'ig'), version, crmJsonFile);
     }
 
     private static initWebresourcesCrmJson(answers: CreateAnswers): void {
