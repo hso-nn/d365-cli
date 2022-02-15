@@ -1,5 +1,6 @@
 import path from 'path';
 import webpack from 'webpack';
+import ESLintPlugin from 'eslint-webpack-plugin';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 // import CopyWebpackPlugin from 'copy-webpack-plugin';
@@ -36,18 +37,6 @@ const configFunction = (env: unknown, argv: {mode: string}) =>  {
         },
         module: {
             rules: [{
-                test: /\.ts$/,
-                enforce: "pre",
-                use: [
-                    {
-                        loader: "eslint-loader",
-                        options: {
-                            failOnWarning: false,
-                            failOnError: true
-                        }
-                    }
-                ]
-            }, {
                 test: /\.tsx?$/,
                 use: "ts-loader",
                 exclude: /node_modules/
@@ -57,6 +46,9 @@ const configFunction = (env: unknown, argv: {mode: string}) =>  {
             new webpack.NoEmitOnErrorsPlugin(),
             new webpack.IgnorePlugin({resourceRegExp: /^\.\/locale$/, contextRegExp: /moment$/}),
             new webpack.BannerPlugin(`HSO D365 CLI ${packageJson.version} | (c) HSO Innovation`),
+            new ESLintPlugin({
+                extensions: ['ts', 'tsx'],
+            }),
         ].concat(mode === "development" ? [] : [
             // new CopyWebpackPlugin({
             //     patterns:[{
