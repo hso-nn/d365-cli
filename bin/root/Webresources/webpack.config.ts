@@ -80,9 +80,8 @@ const configFunction = (env: unknown, argv: {mode: string }): unknown => {
             extensions: ['.js', '.json', '.ts', '.tsx']
         },
         devServer: {
-            contentBase: path.resolve(__dirname, 'dist/<%= publisher_prefix %>_'),
+            static: path.resolve(__dirname, 'dist/<%= publisher_prefix %>_'),
             hot: true,
-            inline: true
         },
         module: {
             rules: [{
