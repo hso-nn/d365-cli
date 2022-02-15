@@ -2,7 +2,7 @@ import path from 'path';
 import webpack from 'webpack';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import CopyWebpackPlugin from 'copy-webpack-plugin';
+// import CopyWebpackPlugin from 'copy-webpack-plugin';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import TerserPlugin from 'terser-webpack-plugin';
@@ -24,7 +24,7 @@ const configFunction = (env: unknown, argv: {mode: string}) =>  {
         externals: [nodeExternals()],
         entry: {
             "main": [
-                path.resolve(__dirname, "src/main.ts")
+                path.resolve(__dirname, "src/commands/main.ts")
             ]
         },
         output: {
@@ -58,13 +58,13 @@ const configFunction = (env: unknown, argv: {mode: string}) =>  {
             new webpack.IgnorePlugin({resourceRegExp: /^\.\/locale$/, contextRegExp: /moment$/}),
             new webpack.BannerPlugin(`HSO D365 CLI ${packageJson.version} | (c) HSO Innovation`),
         ].concat(mode === "development" ? [] : [
-            new CopyWebpackPlugin({
-                patterns:[{
-                    from: "./root/**/*.json",
-                    to: dir_build,
-                    context: "src"
-                }]
-            }),
+            // new CopyWebpackPlugin({
+            //     patterns:[{
+            //         from: "./root/**/*.json",
+            //         to: dir_build,
+            //         context: "src"
+            //     }]
+            // }),
         ]),
         stats: {
             colors: true
