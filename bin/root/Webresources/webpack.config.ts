@@ -1,21 +1,20 @@
+// @ts-ignore
 import path from 'path';
+// @ts-ignore
 import webpack from 'webpack';
 import ESLintPlugin from 'eslint-webpack-plugin';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import CopyWebpackPlugin from 'copy-webpack-plugin';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import TerserPlugin from 'terser-webpack-plugin';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import ReplaceInFileWebpackPlugin from 'replace-in-file-webpack-plugin';
-
+// @ts-ignore
 import packageJson from './package.json';
-const dir_build = path.resolve(__dirname, 'dist/<%= publisher_prefix %>_/<%= namespace %>');
+// @ts-ignore
+import crmJson from '../crm.json';
+const publisherPrefix = crmJson.crm.publisher_prefix;
+const namespace = crmJson.crm.namespace;
+const dir_build = path.resolve(__dirname, `dist/${publisherPrefix}_/${namespace}`);
 import * as shell from 'shelljs';
 import * as fs from 'fs';
 
@@ -73,14 +72,14 @@ const configFunction = (env: unknown, argv: {mode: string }): unknown => {
         output: {
             path: dir_build,
             filename: '[name]/[name].js',
-            library: ['<%= publisher_prefix %>', '<%= namespace %>', '[name]'],
+            library: [publisherPrefix, namespace, '[name]'],
             libraryTarget: 'var',
         },
         resolve: {
             extensions: ['.js', '.json', '.ts', '.tsx']
         },
         devServer: {
-            static: path.resolve(__dirname, 'dist/<%= publisher_prefix %>_'),
+            static: path.resolve(__dirname, `dist/${publisherPrefix}_`),
             hot: true,
         },
         module: {
@@ -99,7 +98,7 @@ const configFunction = (env: unknown, argv: {mode: string }): unknown => {
             new webpack.NoEmitOnErrorsPlugin(),
             new webpack.ids.HashedModuleIdsPlugin(), // so that file hashes don't change unexpectedly
             new webpack.IgnorePlugin({resourceRegExp: /^\.\/locale$/, contextRegExp: /moment$/}),
-            new webpack.BannerPlugin(`<%= description %> ${packageJson.version} | (c) HSO Innovation`),
+            new webpack.BannerPlugin(`${packageJson.description} ${packageJson.version} | (c) HSO Innovation`),
             new MiniCssExtractPlugin({
                 filename: '[name]/[name].css',
             }),

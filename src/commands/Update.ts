@@ -3,11 +3,14 @@ import shell from 'shelljs';
 import fs from 'fs';
 import {WebresourcesCrmJson} from '../root/Webresources/CrmJson';
 import {CrmJson} from '../root/CrmJson';
+import cp from 'child_process';
 
 export class Update {
     public static updateProject(): Promise<void> {
         if (process.argv[3]) {
             console.log(colors.red(`No spaces allowed after update command!`));
+        } else if (!shell.test('-e', 'src')) {
+            console.log(colors.red(`You are not inside the project Webresources folder!`));
         } else {
             return Update.update();
         }
@@ -29,31 +32,50 @@ export class Update {
         console.log(`Updating D365 Project done`);
     }
 
+    // eslint-disable-next-line max-lines-per-function
     private static updateProjectRootFolder(): void {
         console.log(`Updating .eslintignore...`);
         shell.cp('-R', `${__dirname}/root/Webresources/.eslintignore`, '.');
-        shell.exec('git add .eslintignore');
+        if (shell.test('-e', '../.git')) {
+            cp.execFileSync('git', ['add', '.eslintignore']);
+        }
+        // shell.exec('git add .eslintignore');
 
         console.log(`Updating .gitignore...`);
         shell.cp('-R', `${__dirname}/root/Webresources/gitignore`, '.');
         fs.renameSync(`./gitignore`, './.gitignore');
-        shell.exec('git add .gitignore');
+        if (shell.test('-e', '../.git')) {
+            cp.execFileSync('git', ['add', '.gitignore']);
+        }
+        // shell.exec('git add .gitignore');
 
         console.log(`Updating .eslintrc.json...`);
         shell.cp('-R', `${__dirname}/root/Webresources/.eslintrc.json`, '.');
-        shell.exec('git add .eslintrc.json');
+        if (shell.test('-e', '../.git')) {
+            cp.execFileSync('git', ['add', '.eslintrc.json']);
+        }
+        // shell.exec('git add .eslintrc.json');
 
         console.log(`Updating postcss.config.js`);
         shell.cp('-R', `${__dirname}/root/Webresources/postcss.config.js`, '.');
-        shell.exec('git add postcss.config.js');
+        if (shell.test('-e', '../.git')) {
+            cp.execFileSync('git', ['add', 'postcss.config.js']);
+        }
+        // shell.exec('git add postcss.config.js');
 
         console.log(`Updating karma.conf.js`);
         shell.cp('-R', `${__dirname}/root/Webresources/karma.conf.js`, '.');
-        shell.exec('git add karma.conf.js');
+        if (shell.test('-e', '../.git')) {
+            cp.execFileSync('git', ['add', 'karma.conf.js']);
+        }
+        // shell.exec('git add karma.conf.js');
 
         console.log(`Updating tsconfig.json`);
         shell.cp('-R', `${__dirname}/root/Webresources/tsconfig.json`, '.');
-        shell.exec('git add tsconfig.json');
+        if (shell.test('-e', '../.git')) {
+            cp.execFileSync('git', ['add', 'tsconfig.json']);
+        }
+        // shell.exec('git add tsconfig.json');
     }
 
     private static updateFormFiles(): void {
@@ -85,50 +107,87 @@ export class Update {
         }
     }
 
+    // eslint-disable-next-line max-lines-per-function
     private static updateSrcFolder(): void {
         console.log(`Updating Annotation...`);
         shell.cp('-R', `${__dirname}/root/Webresources/src/Annotation`, './src');
-        shell.exec('git add src/Annotation');
+        if (shell.test('-e', '../.git')) {
+            cp.execFileSync('git', ['add', 'src/Annotation']);
+        }
+        // shell.exec('git add src/Annotation');
 
         console.log(`Updating Http...`);
         shell.cp('-R', `${__dirname}/root/Webresources/src/Http`, './src');
-        shell.exec('git add src/Http');
+        if (shell.test('-e', '../.git')) {
+            cp.execFileSync('git', ['add', 'src/Http']);
+        }
+        // shell.exec('git add src/Http');
 
         console.log(`Updating Translation...`);
         shell.cp('-R', `${__dirname}/root/Webresources/src/translation`, './src');
-        shell.exec('git add src/translation');
+        if (shell.test('-e', '../.git')) {
+            cp.execFileSync('git', ['add', 'src/translation']);
+        }
+        // shell.exec('git add src/translation');
 
         console.log(`Updating util...`);
         shell.cp('-R', `${__dirname}/root/Webresources/src/util`, './src');
-        shell.exec('git add src/util');
+        if (shell.test('-e', '../.git')) {
+            cp.execFileSync('git', ['add', 'src/util']);
+        }
+        // shell.exec('git add src/util');
 
         console.log(`Updating WebApi...`);
         shell.cp('-R', `${__dirname}/root/Webresources/src/WebApi`, './src');
-        shell.exec('git add src/WebApi');
+        if (shell.test('-e', '../.git')) {
+            cp.execFileSync('git', ['add', 'src/WebApi']);
+        }
+        // shell.exec('git add src/WebApi');
     }
 
+    // eslint-disable-next-line max-lines-per-function
     private static updateCrmJson(): void {
-        if (shell.ls(['./tools/crm.json']).length === 1) {
+        if (fs.existsSync('./tools/crm.json')) {
             //crm.json
             const crmSettings: CrmJson = JSON.parse(fs.readFileSync('./tools/crm.json', 'utf8'));
             shell.cp('-R', `${__dirname}/root/crm.json`, '../');
-            shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), crmSettings.crm.publisher_prefix, '../crm.json');
+            shell.sed('-i', new RegExp('<%= publisher_prefix %>', 'ig'), crmSettings.crm.publisher_prefix, '../crm.json');
             shell.sed('-i', new RegExp('<%= environment %>', 'ig'), crmSettings.crm.url, '../crm.json');
             shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), (crmSettings as unknown as {webresource: {namespace:string} }).webresource.namespace, '../crm.json');
+            if (shell.test('-e', '../.git')) {
+                cp.execFileSync('git', ['add', '../crm.json']);
+            }
 
             // Webresources/crm.json
             const webresourcesSettings: WebresourcesCrmJson = JSON.parse(fs.readFileSync('./tools/crm.json', 'utf8'));
             shell.cp('-R', `${__dirname}/root/Webresources/crm.json`, '.');
             shell.sed('-i', new RegExp('<%= solution_name_deploy %>', 'ig'), webresourcesSettings.crm.solution_name_deploy, './crm.json');
             shell.sed('-i', new RegExp('<%= solution_name_generate %>', 'ig'), webresourcesSettings.crm.solution_name_generate, './crm.json');
-            shell.exec('git add ./crm.json');
+            if (shell.test('-e', '../.git')) {
+                cp.execFileSync('git', ['add', './crm.json']);
+            }
+            // shell.exec('git add ./crm.json');
 
             shell.rm('-rf', `./tools`);
-            shell.exec('git rm ./tools');
+            if (shell.test('-e', '../.git')) {
+                cp.execFileSync('git', ['rm', './tools']);
+            }
+            // shell.exec('git rm ./tools');
+        }
+        const crmSettings: CrmJson = JSON.parse(fs.readFileSync('../crm.json', 'utf8'));
+        shell.cp('-R', `${__dirname}/root/crm.json`, '../');
+        shell.sed('-i', new RegExp('<%= publisher_prefix %>', 'ig'), crmSettings.crm.publisher_prefix, '../crm.json');
+        shell.sed('-i', new RegExp('<%= environment %>', 'ig'), crmSettings.crm.url, '../crm.json');
+        shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), crmSettings.crm.namespace, '../crm.json');
+        if (shell.test('-e', '../.git')) {
+            cp.execFileSync('git', ['add', '../crm.json']);
         }
         const version = shell.exec('hso-d365 --version').stdout.replace(/\n/ig, '');
         shell.sed('-i', new RegExp('<%= version %>', 'ig'), version, '../crm.json');
-        shell.exec('git add ../crm.json');
+        if (shell.test('-e', '../.git')) {
+            cp.execFileSync('git', ['add', '../crm.json']);
+        }
+        // shell.exec('git add ../crm.json');
     }
 
     private static updatePackageJson(): void {
@@ -160,19 +219,18 @@ export class Update {
             const jsFileData = String(fs.readFileSync('webpack.config.js'));
             const regexpJsEntries = /entry: (?<entries>{[^{]*})/mg;
             oldEntries = regexpJsEntries.exec(jsFileData);
-            shell.exec('git rm webpack.config.js');
+            if (shell.test('-e', '../.git')) {
+                cp.execFileSync('git', ['rm', 'webpack.config.js']);
+            }
+            // shell.exec('git rm webpack.config.js');
         }
         shell.cp('-R', `${__dirname}/root/Webresources/webpack.config.ts`, '.');
-        const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
-        const {description} = packageJson;
-        const settings: CrmJson = JSON.parse(fs.readFileSync('../crm.json', 'utf8'));
-        const {namespace, publisher_prefix} = settings.crm;
         let tsFileData = String(fs.readFileSync('./webpack.config.ts'));
-        tsFileData = tsFileData.replace(new RegExp('<%= publisher %>', 'ig'), publisher_prefix);
-        tsFileData = tsFileData.replace(new RegExp('<%= namespace %>', 'ig'), namespace);
-        tsFileData = tsFileData.replace(new RegExp('<%= description %>', 'ig'), description);
         tsFileData = tsFileData.replace(new RegExp('entry: {...entry, ...{}', 'ig'), `entry: {...entry, ...${oldEntries.groups.entries}`);
         shell.ShellString(tsFileData).to('./webpack.config.ts');
-        shell.exec('git add webpack.config.ts');
+        if (shell.test('-e', '../.git')) {
+            cp.execFileSync('git', ['add', 'webpack.config.ts']);
+        }
+        // shell.exec('git add webpack.config.ts');
     }
 }
