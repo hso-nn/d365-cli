@@ -12,6 +12,17 @@ import {PCF} from './PCF';
 import {CrmJson} from '../root/CrmJson';
 import fs from 'fs';
 
+const checkVersion = (): boolean => {
+    const cliVersion = shell.exec('hso-d365 --version').stdout.replace(/\n/ig, '');
+    const crmSettings: CrmJson = JSON.parse(fs.readFileSync('../crm.json', 'utf8'));
+    if (cliVersion !== crmSettings.version) {
+        console.log(`Version mismatch!\nCLI version: ${cliVersion}\nProject version: ${crmSettings.version}.`);
+        console.log(`Please update project or cli first.`);
+        return false;
+    }
+    return true;
+};
+
 program
     .version(packageJson.version)
     .usage('<command> [options]');
@@ -36,12 +47,13 @@ program
     .alias('rg')
     .description('Regenerates files')
     .action(async () => {
-        await RegeneratorRouter.regenerate();
+        if (checkVersion()) {
+            await RegeneratorRouter.regenerate();
+        }
     })
     .on('--help', () => {
         console.log(`Regenerates files`);
     });
-
 
 program
     .command('generate <schematic> [name]')
@@ -49,7 +61,9 @@ program
     .option('-s, --skipForms', 'Skip generating form files')
     .description('Generates and/or modifies files bases on a schematic.')
     .action((schematic: string, name: string, options) => {
-        Generator.generate(schematic, name, options);
+        if (checkVersion()) {
+            Generator.generate(schematic, name, options);
+        }
     })
     .on('--help', () => {
         Generator.showGenerateHelp();

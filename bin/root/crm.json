@@ -8,5 +8,6 @@
   "adal": {
     "clientId": "3d14ef79-de44-4358-bb18-75b54d1c4e4e",
     "redirectUri": "http://localhost:3000/auth"
-  }
+  },
+  "version": "<%= version %>"
 }
