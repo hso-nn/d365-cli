@@ -3,11 +3,15 @@ import path from 'path';
 // @ts-ignore
 import webpack from 'webpack';
 import ESLintPlugin from 'eslint-webpack-plugin';
+// @ts-ignore
 import CopyWebpackPlugin from 'copy-webpack-plugin';
+// @ts-ignore
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 // @ts-ignore
 import TerserPlugin from 'terser-webpack-plugin';
+// @ts-ignore
 import ReplaceInFileWebpackPlugin from 'replace-in-file-webpack-plugin';
+
 // @ts-ignore
 import packageJson from './package.json';
 // @ts-ignore
