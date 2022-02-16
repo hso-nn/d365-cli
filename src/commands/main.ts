@@ -11,13 +11,16 @@ import {RegeneratorRouter} from '../routers/RegerenatorRouter';
 import {PCF} from './PCF';
 import {CrmJson} from '../root/CrmJson';
 import fs from 'fs';
+import colors from 'colors';
 
 const checkVersion = (): boolean => {
     const cliVersion = shell.exec('hso-d365 --version').stdout.replace(/\n/ig, '');
     const crmSettings: CrmJson = JSON.parse(fs.readFileSync('../crm.json', 'utf8'));
     if (cliVersion !== crmSettings.version) {
-        console.log(`Version mismatch!\nCLI version: ${cliVersion}\nProject version: ${crmSettings.version}.`);
-        console.log(`Please update project or cli first.`);
+        console.log(colors.red(`Version mismatch!`));
+        console.log(`CLI version: ${colors.red(cliVersion)}`);
+        console.log(`Project version: ${colors.red(crmSettings.version)}`);
+        console.log(`Please update project (hso-d365 update) or CLI (npm i -g @hso/d365-cli@${crmSettings.version}) first.`);
         return false;
     }
     return true;
