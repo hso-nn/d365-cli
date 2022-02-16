@@ -50,9 +50,10 @@ for (const filepath of buildFiles) {
     for (const form of buildJson.forms) {
         const {name, build} = form;
         if (build) {
-            entry[`${entityName}_${name}`] = [
-                path.resolve(__dirname, `src/${entityName}/${name}/${name}.ts`)
-            ];
+            const isTsPath = fs.existsSync(path.resolve(__dirname, `src/${entityName}/${name}/${name}.ts`));
+            const isTsxPath = fs.existsSync(path.resolve(__dirname, `src/${entityName}/${name}/${name}.tsx`));
+            const extension = isTsPath ? 'ts' : isTsxPath ? 'tsx' : 'js';
+            entry[`${entityName}_${name}`] = [path.resolve(__dirname, `src/${entityName}/${name}/${name}.${extension}`)];
         }
     }
     for (const webresource of buildJson.webresources) {
