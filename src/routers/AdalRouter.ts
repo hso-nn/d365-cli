@@ -63,6 +63,11 @@ export class AdalRouter {
             res.send(`
                 <head>
                     <title>Login</title>
+                    <style>
+                        @media (prefers-color-scheme: light) { body { background-color: #f2f2f2; color: #2f2f2f; } }
+                        @media (prefers-color-scheme: dark) { body { background-color: #2f2f2f; color: #f2f2f2; } }
+                        body { font-family: Cascadia Code,SFMono-Regular,Consolas,Liberation Mono,Menlo,Courier,monospace; font-size: 10pt; }
+                    </style>
                 </head>
                 <body>
                     <script src="adal.min.js"></script>
@@ -121,8 +126,15 @@ export class AdalRouter {
             res.setHeader('Connection', 'Transfer-Encoding');
             res.setHeader('Content-Type', 'text/html; charset=utf-8');
             res.setHeader('Transfer-Encoding', 'chunked');
-
             res.flushHeaders();
+            
+            res.write(`<style>`);
+            res.write(`  @media (prefers-color-scheme: light) { body { background-color: #f2f2f2; color: #2f2f2f; } }`);
+            res.write(`  @media (prefers-color-scheme: dark) { body { background-color: #2f2f2f; color: #f2f2f2; } }`);
+            res.write(`  body { font-family: Cascadia Code,SFMono-Regular,Consolas,Liberation Mono,Menlo,Courier,monospace; font-size: 10pt; }`);
+            res.write(`</style>`);
+            res.flushHeaders();
+            
             this.response = res;
             await this.onAuthenticated();
             setTimeout(() => {
