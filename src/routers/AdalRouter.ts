@@ -27,7 +27,7 @@ export class AdalRouter {
     }
 
     private startListen(): void {
-        const redirectUriSplit = this.settings.adal.redirectUri.split('/'),
+        const redirectUriSplit = this.settings.msal.redirectUri.split('/'),
             portSplit = redirectUriSplit[redirectUriSplit.length -2].split(':'),
             port = parseInt(portSplit[1]),
             openUrl = redirectUriSplit.slice(0, redirectUriSplit.length - 1).join('/');
@@ -70,39 +70,27 @@ export class AdalRouter {
                     </style>
                 </head>
                 <body>
-                    <script src="adal.min.js"></script>
+                    <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.22.0/js/msal-browser.min.js"></script>
                     <script>
-                        var config = {
-                            clientId: "${this.settings.adal.clientId}",
-                            popUp: true,
-                            callback: function (errorDesc, id_token, error, tokenType) {
-                                if (!error) {
-                                    authContext.acquireToken('${this.settings.crm.url}', function (errorDesc, access_token, error, tokenType) {
-                                        if (!error) {
-                                            window.location.href = "/token/" + access_token;
-                                        } else {
-                                            var errorSpan = document.createElement("span");
-                                            errorSpan.innerHTML = "<b>Error during acquireToken (access_token):</b><br/>" + error + ": " + errorDesc;
-                                            document.body.appendChild(errorSpan);
-                                        }
-                                    });
-                                } else {
-                                    var errorSpan = document.createElement("span");
-                                    errorSpan.innerHTML = "<b>Error during acquireToken (id_token):</b><br/>" + error + ": " + errorDesc;
-                                    document.body.appendChild(errorSpan);
-                                }
+                        const tenant = '${this.settings.msal.tenant}' !== 'undefined' ? '${this.settings.msal.tenant}' : 'common/';
+                        const msalConfig = {
+                            auth: {
+                                clientId: "${this.settings.msal.clientId}",
+                                authority: 'https://login.microsoftonline.com/' + tenant
                             }
-                        }
-                        var tenant = "${this.settings.adal.tenant}";
-                        if (tenant !== "undefined") {
-                            config.tenant = tenant;
-                        }
-                        var authContext = new AuthenticationContext(config);
-                        if (authContext.isCallback(window.location.hash)) {
-                            authContext.handleWindowCallback();
-                        } else {
-                            authContext.login();
-                        }
+                        };
+                        const msalInstance = new msal.PublicClientApplication(msalConfig);
+                        const tokenRequest = {
+                            redirectUri: '${this.settings.msal.redirectUri}',
+                            scopes: ["${this.settings.crm.url}/.default"]
+                        };
+                        msalInstance.loginPopup(tokenRequest).then(response => {
+                            window.location.href = "/token/" + response.accessToken;
+                        }).catch(err => {
+                            var errorSpan = document.createElement("span");
+                            errorSpan.innerHTML = "<b>Error during acquireToken (access_token):</b><br/>" + err;
+                            document.body.appendChild(errorSpan);
+                        });
                     </script>
                 </body>`
             );
