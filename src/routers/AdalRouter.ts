@@ -77,20 +77,49 @@ export class AdalRouter {
                             auth: {
                                 clientId: "${this.settings.msal.clientId}",
                                 authority: 'https://login.microsoftonline.com/' + tenant
-                            }
+                            },
+                            cache: {
+                                cacheLocation: "localStorage",
+                            },
                         };
                         const msalInstance = new msal.PublicClientApplication(msalConfig);
+                        const currentAccounts = msalInstance.getAllAccounts();
                         const tokenRequest = {
                             redirectUri: '${this.settings.msal.redirectUri}',
                             scopes: ["${this.settings.crm.url}/.default"]
                         };
-                        msalInstance.loginPopup(tokenRequest).then(response => {
-                            window.location.href = "/token/" + response.accessToken;
-                        }).catch(err => {
-                            var errorSpan = document.createElement("span");
-                            errorSpan.innerHTML = "<b>Error during acquireToken (access_token):</b><br/>" + err;
-                            document.body.appendChild(errorSpan);
-                        });
+                        if (currentAccounts.length === 1) {
+                            tokenRequest.account = currentAccounts[0];
+                            msalInstance.acquireTokenSilent(tokenRequest)
+                                .then(response => {
+                                    window.location.href = "/token/" + response.accessToken;
+                                })
+                                .catch(error => {
+                                    console.warn("silent token acquisition fails. acquiring token using redirect");
+                                    if (error instanceof msal.InteractionRequiredAuthError) {
+                                        msalInstance.acquireTokenPopup(tokenRequest)
+                                            .then(response => {
+                                                window.location.href = "/token/" + response.accessToken;
+                                            }).catch(error => {
+                                                var errorSpan = document.createElement("span");
+                                                errorSpan.innerHTML = "<b>Error during acquireToken (access_token):</b><br/>" + error;
+                                                document.body.appendChild(errorSpan);
+                                            });
+                                    } else {
+                                        var errorSpan = document.createElement("span");
+                                        errorSpan.innerHTML = "<b>Error during acquireToken (access_token):</b><br/>" + error;
+                                        document.body.appendChild(errorSpan);
+                                    }
+                                });
+                        } else {
+                            msalInstance.loginPopup(tokenRequest).then(response => {
+                                window.location.href = "/token/" + response.accessToken;
+                            }).catch(err => {
+                                var errorSpan = document.createElement("span");
+                                errorSpan.innerHTML = "<b>Error during acquireToken (access_token):</b><br/>" + err;
+                                document.body.appendChild(errorSpan);
+                            });
+                        }
                     </script>
                 </body>`
             );
