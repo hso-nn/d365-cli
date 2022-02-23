@@ -21,6 +21,8 @@ export class LicenseValidator {
 
     private static async generate(licensename: string): Promise<void> {
         console.log(`Adding D365 License Validator for ${licensename}...`);
+        // shell.exec('npm install -g vsts-npm-auth --registry https://registry.npmjs.com --always-auth false');
+        // shell.exec('vsts-npm-auth -config .npmrc -F registry=https://dys-ax.pkgs.visualstudio.com/_packaging/CodePlex/npm/registry/ always-auth=true');
         // shell.exec('npm install --save dlf-core@latest');
         const settings: CrmJson = JSON.parse(fs.readFileSync('../crm.json', 'utf8'));
         const {namespace, publisher_prefix} = settings.crm;
