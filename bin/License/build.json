@@ -1,0 +1,9 @@
+{
+  "forms": [
+    {
+      "name": "Validator",
+      "build": true
+    }
+  ],
+  "webresources": []
+}
