@@ -9,17 +9,15 @@ import {WebresourcesCrmJson} from '../../root/Webresources/CrmJson';
 
 export class EnvironmentVariable {
     private readonly bearer: string;
-    private readonly log: (message: string) => Promise<void>;
 
-    constructor(bearer: string, log: (message: string) => Promise<void>) {
+    constructor(bearer: string) {
         this.bearer = bearer;
-        this.log = log;
     }
 
     public async generate(): Promise<void> {
-        await this.log(`Generating EnvironmentVariable`);
+        console.log(`Generating EnvironmentVariable`);
         await this.writeEnvironmentVariablesFiles();
-        await this.log('Generated EnvironmentVariable');
+        console.log('Generated EnvironmentVariable');
     }
 
     private async writeEnvironmentVariablesFiles(): Promise<void> {

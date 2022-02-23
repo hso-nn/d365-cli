@@ -12,22 +12,21 @@ import {ControlFormContext} from './ControlFormContext';
 import {CrmJson} from '../../root/CrmJson';
 import {SystemFormService} from '../../node/SystemForm/SystemForm.service';
 import {FormTypings} from './FormTypings';
+import colors from 'colors';
 
 export class Form {
     private readonly bearer: string;
     private readonly entityName: string;
     private readonly entityLogicalName: string;
-    private readonly log: (message: string) => Promise<void>;
 
-    constructor(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>) {
+    constructor(bearer: string, entityName: string, entityLogicalName: string) {
         this.bearer = bearer;
         this.entityName = entityName;
         this.entityLogicalName = entityLogicalName;
-        this.log = log;
     }
 
-    public static async generateFormFiles(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>): Promise<void> {
-        const form = new Form(bearer, entityName, entityLogicalName, log);
+    public static async generateFormFiles(bearer: string, entityName: string, entityLogicalName: string): Promise<void> {
+        const form = new Form(bearer, entityName, entityLogicalName);
         await form.writeFormFiles();
     }
 
@@ -41,11 +40,10 @@ export class Form {
                 await this.addEntityFiles(systemForm);
                 await this.updateBuildFile(systemForm);
             } else {
-                // console.log(colors.green(`${this.entityName}/${folderName} already exist`));
-                await this.log(`<span style="color:green">${this.entityName}/${folderName} already exist</span>`);
+                // console.log(`${this.entityName}/${folderName} already exist`);
             }
-            await FormTypings.generate(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message), systemForm);
-            await ControlFormContext.generateFormContext(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message), systemForm);
+            await FormTypings.generate(this.bearer, this.entityName, this.entityLogicalName, systemForm);
+            await ControlFormContext.generateFormContext(this.bearer, this.entityName, this.entityLogicalName, systemForm);
         }
     }
 
@@ -56,7 +54,7 @@ export class Form {
 
     private async addEntityFile(systemForm: SystemFormModel): Promise<void> {
         const formName = systemForm.name.replace(/\W/g, '');
-        await this.log(`Adding ${this.entityName}/${formName}/${formName}.ts`);
+        console.log(`Adding ${this.entityName}/${formName}/${formName}.ts`);
         const filepath = `src/${this.entityName}/${formName}/${formName}.ts`;
         const settings: CrmJson = JSON.parse(fs.readFileSync('../crm.json', 'utf8'));
         const {namespace, publisher_prefix} = settings.crm;
@@ -70,12 +68,12 @@ export class Form {
         if (shell.test('-e', '../.git')) {
             cp.execFileSync('git', ['add', filepath]);
         }
-        await this.log(`Added ${this.entityName}/${formName}/${formName}.ts`);
+        console.log(`Added ${this.entityName}/${formName}/${formName}.ts`);
     }
 
     private async addEntityFormFile(systemForm: SystemFormModel): Promise<void> {
         const formName = systemForm.name.replace(/\W/g, '');
-        await this.log(`Adding ${this.entityName}/${formName}/${formName}.form.ts`);
+        console.log(`Adding ${this.entityName}/${formName}/${formName}.form.ts`);
         const filepath = `src/${this.entityName}/${formName}/${formName}.form.ts`;
         shell.cp('-r', `${__dirname}/Entity/Entity.form.ts`, filepath);
         shell.sed('-i', new RegExp('Entity', 'g'), formName, filepath);
@@ -83,12 +81,12 @@ export class Form {
         if (shell.test('-e', '../.git')) {
             cp.execFileSync('git', ['add', filepath]);
         }
-        await this.log(`Added ${this.entityName}/${formName}/${formName}.form.ts`);
+        console.log(`Added ${this.entityName}/${formName}/${formName}.form.ts`);
     }
 
     private async updateBuildFile(systemForm: SystemFormModel): Promise<void> {
         const formName = systemForm.name.replace(/\W/g, '');
-        await this.log(`Updating ${this.entityName}/build.json`);
+        console.log(`Updating ${this.entityName}/build.json`);
         const filepath = `src/${this.entityName}/build.json`;
         const buildJsonString = String(fs.readFileSync(filepath));
         const buildJson = JSON.parse(buildJsonString);
@@ -103,7 +101,7 @@ export class Form {
                 cp.execFileSync('git', ['add', filepath]);
             }
         }
-        await this.log(`Updated ${this.entityName}/build.json`);
+        console.log(`Updated ${this.entityName}/build.json`);
     }
 
     // private async getSystemForms(): Promise<SystemFormModel[]> {
@@ -178,7 +176,7 @@ export class Form {
     private async getSystemForms(): Promise<SystemFormModel[]> {
         const systemForms = await SystemFormService.getSystemForms(this.entityLogicalName, ['objecttypecode', 'name', 'formjson'], this.bearer);
         for (const systemForm of systemForms) {
-            await this.log(`<span style="color:blue;">Form '${systemForm.name}' found</span>`);
+            console.log(colors.blue(`Form '${systemForm.name}' found`));
         }
         return systemForms;
     }

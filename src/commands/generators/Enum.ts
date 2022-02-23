@@ -8,22 +8,20 @@ export class Enum {
     private readonly bearer: string;
     private readonly entityName: string;
     private readonly entityLogicalName: string;
-    private readonly log: (message: string) => Promise<void>;
 
-    constructor(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>) {
+    constructor(bearer: string, entityName: string, entityLogicalName: string) {
         this.bearer = bearer;
         this.entityName = entityName;
         this.entityLogicalName = entityLogicalName;
-        this.log = log;
     }
 
-    public static async generateEnum(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>): Promise<void> {
-        const enumGenerator = new Enum(bearer, entityName, entityLogicalName, log);
+    public static async generateEnum(bearer: string, entityName: string, entityLogicalName: string): Promise<void> {
+        const enumGenerator = new Enum(bearer, entityName, entityLogicalName);
         await enumGenerator.writeEnumFile();
     }
 
     private async writeEnumFile(): Promise<void> {
-        await this.log(`Generating ${this.entityName}.enum.ts<br/>`);
+        console.log(`Generating ${this.entityName}.enum.ts`);
         const enumAttributeNames = await this.getAttributeNamesEnumString();
         const navigationPropertyNames = await this.getNavigationPropertyNamesString();
         const savedQueries = await this.getSavedQueriesString();
@@ -37,7 +35,7 @@ export class Enum {
             cp.execFileSync('git', ['add', enumFilepath]);
         }
         const fileData = String(fs.readFileSync(enumFilepath));
-        await this.log(`Generated ${this.entityName}.enum.ts<br/>`);
+        console.log(`Generated ${this.entityName}.enum.ts`);
         shell.ShellString(fileData + enumAttributeNames + navigationPropertyNames + enumStrings + savedQueries).to(enumFilepath);
     }
 

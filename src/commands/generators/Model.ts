@@ -12,14 +12,12 @@ interface InterfaceTypes {
 export class Model {
     private readonly bearer: string;
     private readonly entityName: string;
-    private readonly log: (message: string) => Promise<void>;
     private entityLogicalName: string;
     private attributesMetadata: AttributeMetadata[];
 
-    constructor(bearer: string, entityName: string, log: (message: string) => Promise<void>) {
+    constructor(bearer: string, entityName: string) {
         this.bearer = bearer;
         this.entityName = entityName;
-        this.log = log;
     }
 
     public async generate(): Promise<void> {
@@ -48,15 +46,14 @@ export class Model {
             const fileData = String(fs.readFileSync(serviceFilepath));
             const match = fileData.match(new RegExp(`static logicalName = '([a-zA-Z0-9_]*)';`));
             this.entityLogicalName = match[1];
-            // console.log(colors.green(`Entity ${this.entityName} already exist`));
-            await this.log(`<span style="color:green">Entity ${this.entityName} already exist</span>`);
+            console.log(colors.magenta(`Entity ${this.entityName} already exist`));
             await this.addModelFile();
         }
-        await this.log('Generating files finished');
+        console.log('Generating files finished');
     }
 
     private async addModelFile(): Promise<void> {
-        await this.log(`Generating ${this.entityName}.model.ts<br/>`);
+        console.log(`Generating ${this.entityName}.model.ts`);
         const modelFilepath = `src/${this.entityName}/${this.entityName}.model.ts`;
         shell.cp('-r', `${__dirname}/Entity/Entity.model.ts`, `src/${this.entityName}`);
         shell.cp('-r', `src/${this.entityName}/Entity.model.ts`, modelFilepath);
@@ -80,7 +77,7 @@ export class Model {
         const replaceString2 = `interface`;
         fileData = fileData.replace(replaceString2, `${importsString}${typesString}${replaceString2}`);
         shell.ShellString(fileData).to(modelFilepath);
-        await this.log(`Generated ${this.entityName}.model.ts<br/>`);
+        console.log(`Generated ${this.entityName}.model.ts`);
     }
 
 
@@ -97,13 +94,14 @@ export class Model {
                 const displayName = await this.getDisplayName(referencedEntity);
                 const relatedModelFilePath = `src/${displayName}/${displayName}.model.ts`;
                 if (!shell.test('-f', relatedModelFilePath)) {
-                    await this.log(`<span style="color:blue;">NavigationProperty '${referencingEntityNavigationPropertyName}' generated<br/>
-                        Referenced model '${displayName}Model' not found.<br/>
-                        Add referenced entity '${displayName}' by following cli command:</span><br/>
-                        <span style="color:green">hso-d365 generate Entity ${displayName}</span></br>
-                        <span style="color:blue;">And regenerate '${this.entityName}' by following cli command:</span><br/>
-                        <span style="color:green">hso-d365 generate Entity ${this.entityName}</span></br>
-                        `);
+                    console.log(colors.blue(`NavigationProperty '${referencingEntityNavigationPropertyName}' generated`));
+                    console.log(colors.blue(`Referenced model '${displayName}Model' not found.`));
+                    console.log(
+                        colors.blue(`Add referenced entity '${displayName}' by following cli command:`) +
+                        colors.green(`hso-d365 generate Entity ${displayName}`));
+                    console.log(
+                        colors.blue(`And regenerate '${this.entityName}' by following cli command:`) +
+                        colors.green(`hso-d365 generate Entity ${this.entityName}`));
                 }
             }
         }
@@ -223,7 +221,7 @@ export class Model {
             if (interfaceType) {
                 attributesInterfaces[LogicalName] = interfaceType;
             } else {
-                await this.log(`To be implemented: ${AttributeType} for ${LogicalName}<br/>`);
+                console.log(`To be implemented: ${AttributeType} for ${LogicalName}<br/>`);
             }
         }
         return attributesInterfaces;

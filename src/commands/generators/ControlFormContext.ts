@@ -9,30 +9,28 @@ import {
     FormJsonSection,
     FormJsonTab, SystemFormModel
 } from '../../node/SystemForm/SystemForm.model';
+import colors from 'colors';
 
 export class ControlFormContext {
     private readonly bearer: string;
     private readonly entityName: string;
     private readonly entityLogicalName: string;
-    private readonly log: (message: string) => Promise<void>;
     private attributesMetadata: AttributeMetadata[];
 
-    constructor(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>) {
+    constructor(bearer: string, entityName: string, entityLogicalName: string) {
         this.bearer = bearer;
         this.entityName = entityName;
         this.entityLogicalName = entityLogicalName;
-        this.log = log;
     }
 
-    public static async generateFormContext(bearer: string, entityName: string, entityLogicalName: string,
-        log: (message: string) => Promise<void>, systemForm: SystemFormModel): Promise<void> {
-        const formContext = new ControlFormContext(bearer, entityName, entityLogicalName, log);
+    public static async generateFormContext(bearer: string, entityName: string, entityLogicalName: string, systemForm: SystemFormModel): Promise<void> {
+        const formContext = new ControlFormContext(bearer, entityName, entityLogicalName);
         await formContext.writeFormContextFile(systemForm);
     }
 
     private async writeFormContextFile(systemForm: SystemFormModel): Promise<void> {
         const formName = systemForm.name.replace(/\W/g, '');
-        await this.log(`Generating ${formName}/${formName}.formContext.ts<br/>`);
+        console.log(`Generating ${formName}/${formName}.formContext.ts`);
         this.attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
         const formContextControlsString = await this.getFormContextControlsString(systemForm);
         const formContextFilepath = `src/${this.entityName}/${formName}/${formName}.formContext.ts`;
@@ -49,7 +47,7 @@ export class ControlFormContext {
         const replaceString = fileData.match(new RegExp(`${formName}FormContext extends AttributeFormContext {`, 'ig'))[0];
         const newFileData = fileData.replace(replaceString, `${replaceString}\n${formContextControlsString}`);
         shell.ShellString(newFileData).to(formContextFilepath);
-        await this.log(`Generated ${formName}/${formName}.formContext.ts<br/>`);
+        console.log(`Generated ${formName}/${formName}.formContext.ts`);
     }
 
     private static usedControlNames: string[];
@@ -132,7 +130,7 @@ export class ControlFormContext {
                         const returnString = `return formContext.getControl('${id}');`;
                         cellControlsString += `${methodName}\n        ${returnString}\n    }\n`;
                     } else {
-                        await this.log(`Duplicate control name found: '${pascalSchemaName}'`);
+                        console.log(`Duplicate control name found: '${pascalSchemaName}'`);
                     }
                 }
             }
@@ -164,7 +162,7 @@ export class ControlFormContext {
         } else if (type === 14) {
             return 'Xrm.Controls.StandardControl';
         } else {
-            await this.log(`<span style="color:blue;">${this.entityLogicalName} control ${id} type '${type}' falls back to Xrm.Controls.StandardControl.</span>`);
+            console.log(colors.blue(`${this.entityLogicalName} control ${id} type '${type}' falls back to Xrm.Controls.StandardControl.`));
             return 'Xrm.Controls.StandardControl';
         }
     }

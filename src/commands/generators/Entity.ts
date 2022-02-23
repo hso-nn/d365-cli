@@ -18,30 +18,29 @@ export class Entity {
     private readonly bearer: string;
     private readonly entityName: string;
     private readonly options: EntityOptions;
-    private readonly log: (message: string) => Promise<void>;
     private entityLogicalName: string;
 
-    constructor(bearer: string, entityName: string, log: (message: string) => Promise<void>, options: EntityOptions) {
+    constructor(bearer: string, entityName: string, options: EntityOptions) {
         this.bearer = bearer;
         this.entityName = entityName;
-        this.log = log;
         this.options = options;
     }
 
     public async generate(): Promise<void> {
         await this.generateEntityFiles();
-        await this.log(`Generating files for Entity '${this.entityName}'<br/>Using entityLogicalName '${this.entityLogicalName}'</br>`);
-        const model = new Model(this.bearer, this.entityName, async (message: string) => this.log(message));
+        console.log(`Generating files for Entity '${this.entityName}'`);
+        console.log(`Using entityLogicalName '${this.entityLogicalName}'`);
+        const model = new Model(this.bearer, this.entityName);
         await model.generate();
-        await Enum.generateEnum(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
+        await Enum.generateEnum(this.bearer, this.entityName, this.entityLogicalName);
         if (!this.options.skipForms) {
-            await AttributeTypings.generate(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
-            await AttributeFormContext.generateFormContext(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
-            await Form.generateFormFiles(this.bearer, this.entityName, this.entityLogicalName, async (message: string) => this.log(message));
+            await AttributeTypings.generate(this.bearer, this.entityName, this.entityLogicalName);
+            await AttributeFormContext.generateFormContext(this.bearer, this.entityName, this.entityLogicalName);
+            await Form.generateFormFiles(this.bearer, this.entityName, this.entityLogicalName);
         } else {
-            await this.log('Skip generate form files');
+            console.log('Skip generate form files');
         }
-        await this.log('Generating files finished');
+        console.log('Generating files finished');
     }
 
     private async generateEntityFiles(): Promise<void> {
@@ -65,8 +64,7 @@ export class Entity {
             const fileData = String(fs.readFileSync(serviceFilepath));
             const match = fileData.match(new RegExp(`static logicalName = '([a-zA-Z0-9_]*)';`));
             this.entityLogicalName = match[1];
-            // console.log(colors.green(`Entity ${this.entityName} already exist`));
-            await this.log(`<span style="color:green">Entity ${this.entityName} already exist</span>`);
+            console.log(colors.magenta(`Entity ${this.entityName} already exist`));
         }
     }
 
@@ -83,7 +81,7 @@ export class Entity {
     }
 
     private async addServiceFile(entityName: string): Promise<void> {
-        await this.log(`Adding ${entityName}/${entityName}.service.ts...`);
+        console.log(`Adding ${entityName}/${entityName}.service.ts...`);
         const filepath = `src/${this.entityName}/${this.entityName}.service.ts`;
         shell.cp('-r', `${__dirname}/Entity/Entity.service.ts`, filepath);
         shell.sed('-i', new RegExp('EntityLogicalName', 'g'), this.entityLogicalName, filepath);
@@ -92,18 +90,18 @@ export class Entity {
         if (shell.test('-e', '../.git')) {
             cp.execFileSync('git', ['add', filepath]);
         }
-        await this.log(`Added ${entityName}/${entityName}.service.ts`);
+        console.log(`Added ${entityName}/${entityName}.service.ts`);
     }
 
     private async addBuildFile(): Promise<void> {
-        await this.log(`Adding ${this.entityName}/build.json`);
+        console.log(`Adding ${this.entityName}/build.json`);
         const filepath = `src/${this.entityName}/build.json`;
         shell.cp('-r', `${__dirname}/Entity/build.json`, filepath);
         // shell.exec(`git add ${filepath}`);
         if (shell.test('-e', '../.git')) {
             cp.execFileSync('git', ['add', filepath]);
         }
-        await this.log(`Added ${this.entityName}/build.json`);
+        console.log(`Added ${this.entityName}/build.json`);
     }
 
     // private trimPrefix(name: string): string {

@@ -1,8 +1,8 @@
-import {AdalRouter} from './AdalRouter';
+import {MsalRouter} from './MsalRouter';
 import colors from 'colors';
 import {Model} from '../commands/generators/Model';
 
-export class ModelRouter extends AdalRouter {
+export class ModelRouter extends MsalRouter {
     public static async generateModel(entityName: string): Promise<void> {
         if (!entityName) {
             console.log(colors.red('Entity name missing'));
@@ -23,7 +23,7 @@ export class ModelRouter extends AdalRouter {
     }
 
     protected async onAuthenticated(): Promise<void> {
-        const model = new Model(this.bearer, this.entityName, async (message: string) => this.log(message));
+        const model = new Model(this.bearer, this.entityName);
         await model.generate();
     }
 }
