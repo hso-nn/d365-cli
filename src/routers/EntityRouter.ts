@@ -1,12 +1,12 @@
 import colors from 'colors';
-import {AdalRouter} from './AdalRouter';
+import {MsalRouter} from './MsalRouter';
 import {Entity} from '../commands/generators/Entity';
 
 interface EntityOptions {
     skipForms?: boolean;
 }
 
-export class EntityRouter extends AdalRouter {
+export class EntityRouter extends MsalRouter {
     public static async generateEntity(entityName: string, options: EntityOptions): Promise<void> {
         if (!entityName) {
             console.log(colors.red('Entity name missing'));
@@ -29,7 +29,7 @@ export class EntityRouter extends AdalRouter {
     }
 
     protected async onAuthenticated(): Promise<void> {
-        const entity = new Entity(this.bearer, this.entityName, async (message: string) => this.log(message), this.options);
+        const entity = new Entity(this.bearer, this.entityName, this.options);
         await entity.generate();
     }
 }

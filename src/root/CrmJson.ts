@@ -6,7 +6,7 @@ export interface CrmJson {
         url: string;
         namespace: string;
     };
-    adal: {
+    msal: {
         clientId: string;
         redirectUri: string;
         tenant: string;

@@ -6,29 +6,27 @@ import {
     FormJsonControl, FormJsonRow, FormJsonSection, FormJsonTab,
     SystemFormModel
 } from '../../node/SystemForm/SystemForm.model';
+import colors from 'colors';
 
 export class FormTypings {
     private readonly bearer: string;
     private readonly entityName: string;
     private readonly entityLogicalName: string;
-    private readonly log: (message: string) => Promise<void>;
     private attributesMetadata: AttributeMetadata[];
 
-    constructor(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>) {
+    constructor(bearer: string, entityName: string, entityLogicalName: string) {
         this.bearer = bearer;
         this.entityName = entityName;
         this.entityLogicalName = entityLogicalName;
-        this.log = log;
     }
 
-    public static async generate(bearer: string, entityName: string, entityLogicalName: string,
-        log: (message: string) => Promise<void>, systemForm: SystemFormModel): Promise<void> {
-        const formTypings = new FormTypings(bearer, entityName, entityLogicalName, log);
+    public static async generate(bearer: string, entityName: string, entityLogicalName: string, systemForm: SystemFormModel): Promise<void> {
+        const formTypings = new FormTypings(bearer, entityName, entityLogicalName);
         await formTypings.writeTypingsFile(systemForm);
     }
 
     private async writeTypingsFile(systemForm: SystemFormModel): Promise<void> {
-        await this.log(`Updating ${this.entityName}.d.ts<br/>`);
+        console.log(`Updating ${this.entityName}.d.ts`);
         this.attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
         let formTypingsControlsString = `declare namespace ${this.entityName} {\n`;
         const formName = systemForm.name.replace(/\W/g, '');
@@ -40,7 +38,7 @@ export class FormTypings {
         const typingsFilepath = `src/${this.entityName}/${this.entityName}.d.ts`;
         const fileData = String(fs.readFileSync(typingsFilepath));
         shell.ShellString(`${fileData}\n${formTypingsControlsString}`).to(typingsFilepath);
-        await this.log(`Updated ${this.entityName}.d.ts<br/>`);
+        console.log(`Updated ${this.entityName}.d.ts`);
     }
 
     private static usedControlNames: string[];
@@ -100,7 +98,7 @@ export class FormTypings {
                         FormTypings.usedControlNames.push(id);
                         controlsString += `        getControl(controlName: '${id}'): ${xrmControlType};\n`;
                     } else {
-                        await this.log(`Duplicate control name found: '${id}'`);
+                        console.log(`Duplicate control name found: '${id}'`);
                     }
                 }
             }
@@ -133,7 +131,7 @@ export class FormTypings {
         } else if (type === 14) {
             return 'Xrm.Controls.StandardControl';
         } else {
-            await this.log(`<span style="color:blue;">${this.entityLogicalName} control ${id} type '${type}' falls back to Xrm.Controls.StandardControl.</span>`);
+            console.log(colors.blue(`${this.entityLogicalName} control ${id} type '${type}' falls back to Xrm.Controls.StandardControl.</span>`));
             return 'Xrm.Controls.StandardControl';
         }
     }

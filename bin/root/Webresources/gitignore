@@ -2,3 +2,4 @@
 node_modules
 testresults
 dist
+/.msalcache.json

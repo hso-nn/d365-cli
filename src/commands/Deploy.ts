@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import {WebresourceService} from '../node/Webresource/Webresource.service';
 import {WebresourceModel} from '../node/Webresource/Webresource.model';
-import {AdalRouter} from '../routers/AdalRouter';
+import {MsalRouter} from '../routers/MsalRouter';
 import * as crypto from 'crypto';
 import * as xml2js from 'xml2js';
 import * as shell from 'shelljs';
@@ -29,7 +29,7 @@ interface XmlDoc {
     };
 }
 
-export class Deploy extends AdalRouter {
+export class Deploy extends MsalRouter {
     public static async deployProject(force: boolean): Promise<void> {
         if (process.argv[4]) {
             console.log(colors.red(`No spaces allowed after update command!`));
@@ -55,9 +55,9 @@ export class Deploy extends AdalRouter {
 
     private async deploy(): Promise<void> {
         const {publisher_prefix, url} = this.settings.crm;
-        this.log(`Deploying to ${url}...<br/>`);
+        console.log(`Deploying to ${url}...`);
         await this.deployDirectory(`dist/${publisher_prefix}_`);
-        this.log('Deploy finished');
+        console.log('Deploy finished');
     }
 
     private async deployDirectory(directory: string): Promise<void> {
@@ -83,7 +83,7 @@ export class Deploy extends AdalRouter {
     private async deployFile(filepath: string): Promise<void> {
         const crmPath = filepath.substr(5),
             webresource = await this.getWebresource(crmPath);
-        this.log(`${crmPath}`);
+        console.log(`${crmPath}`);
         if (webresource) {
             await this.updateWebresource(webresource, filepath);
         } else {
@@ -102,14 +102,14 @@ export class Deploy extends AdalRouter {
             webresource.dependencyxml = dependencyXML;
             try {
                 await WebresourceService.upsert(webresource, this.bearer);
-                this.log(` updated...`);
+                console.log(`updated...`);
                 await WebresourceService.publish(webresource, this.bearer);
-                this.log(` and published<br/>`);
+                console.log(`and published`);
             } catch (e) {
-                this.log(` failed ${e.message}<br/>`);
+                console.log(`failed ${e.message}`);
             }
         } else {
-            this.log(` unmodified<br/>`);
+            console.log(`unmodified`);
         }
     }
 
@@ -128,12 +128,12 @@ export class Deploy extends AdalRouter {
                 webresourceModel.dependencyxml = dependencyXML;
             }
             const webresource = await WebresourceService.upsert(webresourceModel, this.bearer);
-            this.log(` inserted...`);
+            console.log(` inserted...`);
             await WebresourceService.addToSolution(webresource, solutionUniqueName, this.bearer);
-            this.log(` and added to solution ${solutionUniqueName}<br/>`);
+            console.log(` and added to solution ${solutionUniqueName}`);
             return webresource;
         } catch (e) {
-            this.log(` failed ${e.message}<br/>`);
+            console.log(` failed ${e.message}`);
         }
     }
 
@@ -215,7 +215,7 @@ export class Deploy extends AdalRouter {
         for (const filepath of filepaths) {
             const library = dependency.Library.find(library => library.$.name === filepath);
             if (!library) {
-                this.log(`Adding dependency: ${filepath}`);
+                console.log(`Adding dependency: ${filepath}`);
                 dependency.Library.push({
                     $: Deploy.createLibraryItem(filepath)
                 });
@@ -237,7 +237,7 @@ export class Deploy extends AdalRouter {
                 name = library.$.name;
             if (Deploy.localesResxRegex.test(name)) {
                 if (!keepFilepaths.includes(name)) {
-                    this.log(`Removing dependency: ${name}`);
+                    console.log(`Removing dependency: ${name}`);
                     dependency.Library.splice(i, 1);
                 }
             }

@@ -43,7 +43,7 @@ export class Webresource {
             await Webresource.addBuildFile(webresourcename, answers);
             console.log(`Added Webresource ${webresourcename}`);
         } else {
-            console.log(colors.green(`Webresource ${webresourcename} already exist`));
+            console.log(colors.magenta(`Webresource ${webresourcename} already exist`));
         }
     }
 

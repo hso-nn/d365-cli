@@ -4,28 +4,26 @@ import fs from 'fs';
 
 export class GlobalOptionSet {
     private readonly bearer: string;
-    private readonly log: (message: string) => Promise<void>;
 
-    constructor(bearer: string, log: (message: string) => Promise<void>) {
+    constructor(bearer: string) {
         this.bearer = bearer;
-        this.log = log;
     }
 
     public async generate(): Promise<void> {
-        await this.log(`Generating Global OptionSet`);
+        console.log(`Generating Global OptionSet`);
         await this.writeGlobalOptionSetsFile();
-        await this.log('Generated Global OptionSet');
+        console.log('Generated Global OptionSet');
     }
 
     private async writeGlobalOptionSetsFile(): Promise<void> {
-        await this.log(`Generating OptionSets/OptionSets.ts`);
+        console.log(`Generating OptionSets/OptionSets.ts`);
         const globalOptionSetsString = await this.getGlobalOptionSetsString();
         shell.cp('-r', `${__dirname}/OptionSets`, `src`);
         const optionSetFilepath = 'src/OptionSets/OptionSets.ts';
         const fileData = String(fs.readFileSync(optionSetFilepath));
         shell.ShellString(fileData + globalOptionSetsString).to(optionSetFilepath);
         shell.exec(`git add src/OptionSets`);
-        await this.log(`Generated OptionSet/OptionSets.ts`);
+        console.log(`Generated OptionSet/OptionSets.ts`);
     }
 
     private async getGlobalOptionSetsString(): Promise<string> {

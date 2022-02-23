@@ -21,19 +21,17 @@ interface WebresourceJson extends FormJson {
 
 export class Regenerator {
     private readonly bearer: string;
-    private readonly log: (message: string) => Promise<void>;
 
-    constructor(bearer: string, log: (message: string) => Promise<void>) {
+    constructor(bearer: string) {
         this.bearer = bearer;
-        this.log = log;
     }
 
     public async generate(): Promise<void> {
-        await this.log('Regenerating. This may take some time...');
+        console.log('Regenerating. This may take some time...');
         await this.regenerateEntities();
         await this.regenerateGlobalOptionSets();
         await this.regenerateEnvironmentVariable();
-        await this.log('Generated');
+        console.log('Generated');
     }
 
     private async regenerateEntities(): Promise<void> {
@@ -46,7 +44,7 @@ export class Regenerator {
             const {forms} = buildJson;
             if (forms.length > 0) {
                 console.log(`hso-d365 generate Entity ${entityName}`);
-                const entity = new Entity(this.bearer, entityName, async (message: string) => this.log(message), {});
+                const entity = new Entity(this.bearer, entityName,{});
                 await entity.generate();
             }
         }
@@ -54,13 +52,13 @@ export class Regenerator {
 
     private async regenerateGlobalOptionSets(): Promise<void> {
         console.log(`hso-d365 generate GlobalOptionSets`);
-        const globalOptionSet = new GlobalOptionSet(this.bearer, async (message: string) => this.log(message));
+        const globalOptionSet = new GlobalOptionSet(this.bearer);
         await globalOptionSet.generate();
     }
 
     private async regenerateEnvironmentVariable(): Promise<void> {
         console.log(`hso-d365 generate EnvironmentVariable`);
-        const environmentVariable = new EnvironmentVariable(this.bearer, async (message: string) => this.log(message));
+        const environmentVariable = new EnvironmentVariable(this.bearer);
         await environmentVariable.generate();
     }
 }

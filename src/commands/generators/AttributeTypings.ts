@@ -1,5 +1,6 @@
 import * as shell from 'shelljs';
 import * as fs from 'fs';
+import colors from 'colors';
 import cp from 'child_process';
 import {NodeApi} from '../../node/NodeApi/NodeApi';
 
@@ -7,23 +8,21 @@ export class AttributeTypings {
     private readonly bearer: string;
     private readonly entityName: string;
     private readonly entityLogicalName: string;
-    private readonly log: (message: string) => Promise<void>;
     private attributesMetadata: AttributeMetadata[];
 
-    constructor(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>) {
+    constructor(bearer: string, entityName: string, entityLogicalName: string) {
         this.bearer = bearer;
         this.entityName = entityName;
         this.entityLogicalName = entityLogicalName;
-        this.log = log;
     }
 
-    public static async generate(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>): Promise<void> {
-        const formContext = new AttributeTypings(bearer, entityName, entityLogicalName, log);
+    public static async generate(bearer: string, entityName: string, entityLogicalName: string): Promise<void> {
+        const formContext = new AttributeTypings(bearer, entityName, entityLogicalName);
         await formContext.writeTypingsFile();
     }
 
     private async writeTypingsFile(): Promise<void> {
-        await this.log(`Generating ${this.entityName}.d.ts<br/>`);
+        console.log(`Generating ${this.entityName}.d.ts`);
         this.attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
         const typingsAttributesString = await this.getTypingsAttributesString();
         const typingsFilepath = `src/${this.entityName}/${this.entityName}.d.ts`;
@@ -38,7 +37,7 @@ export class AttributeTypings {
         const replaceString = `interface ${this.entityName}Attributes {`;
         const newFileData = filedata.replace(replaceString, `${replaceString}\n${typingsAttributesString}`);
         shell.ShellString(newFileData).to(typingsFilepath);
-        await this.log(`Generated ${this.entityName}.formContext.ts<br/>`);
+        console.log(`Generated ${this.entityName}.formContext.ts`);
     }
 
     private async getTypingsAttributesString(): Promise<string> {
@@ -72,7 +71,7 @@ export class AttributeTypings {
         } else if (['Lookup', 'Customer', 'Owner'].includes(attributeType)) {
             return 'Xrm.Attributes.LookupAttribute';
         } else {
-            await this.log(`<span style="color:blue;">${this.entityLogicalName} attribute ${attributeType} falls back to Xrm.Attributes.Attribute.</span><br/>`);
+            console.log(colors.blue(`${this.entityLogicalName} attribute ${attributeType} falls back to Xrm.Attributes.Attribute.`));
             return 'Xrm.Attributes.Attribute';
         }
     }

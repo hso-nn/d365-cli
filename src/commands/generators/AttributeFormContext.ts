@@ -2,28 +2,27 @@ import * as shell from 'shelljs';
 import * as fs from 'fs';
 import cp from 'child_process';
 import {NodeApi} from '../../node/NodeApi/NodeApi';
+import colors from 'colors';
 
 export class AttributeFormContext {
     private readonly bearer: string;
     private readonly entityName: string;
     private readonly entityLogicalName: string;
-    private readonly log: (message: string) => Promise<void>;
     private attributesMetadata: AttributeMetadata[];
 
-    constructor(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>) {
+    constructor(bearer: string, entityName: string, entityLogicalName: string) {
         this.bearer = bearer;
         this.entityName = entityName;
         this.entityLogicalName = entityLogicalName;
-        this.log = log;
     }
 
-    public static async generateFormContext(bearer: string, entityName: string, entityLogicalName: string, log: (message: string) => Promise<void>): Promise<void> {
-        const formContext = new AttributeFormContext(bearer, entityName, entityLogicalName, log);
+    public static async generateFormContext(bearer: string, entityName: string, entityLogicalName: string): Promise<void> {
+        const formContext = new AttributeFormContext(bearer, entityName, entityLogicalName);
         await formContext.writeFormContextFile();
     }
 
     private async writeFormContextFile(): Promise<void> {
-        await this.log(`Generating ${this.entityName}.formContext.ts<br/>`);
+        console.log(`Generating ${this.entityName}.formContext.ts`);
         this.attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
         const formContextAttributesString = await this.getFormContextAttributesString();
         const formContextFilepath = `src/${this.entityName}/${this.entityName}.formContext.ts`;
@@ -39,7 +38,7 @@ export class AttributeFormContext {
         const replaceString = `${this.entityName}FormContext {`;
         const newFileData = filedata.replace(replaceString, `${replaceString}\n${formContextAttributesString}`);
         shell.ShellString(newFileData).to(formContextFilepath);
-        await this.log(`Generated ${this.entityName}.formContext.ts<br/>`);
+        console.log(`Generated ${this.entityName}.formContext.ts`);
     }
 
     private async getFormContextAttributesString(): Promise<string> {
@@ -75,7 +74,7 @@ export class AttributeFormContext {
         } else if (['Lookup', 'Customer', 'Owner'].includes(attributeType)) {
             return 'Xrm.Attributes.LookupAttribute';
         } else {
-            await this.log(`<span style="color:blue;">${this.entityLogicalName} attribute ${attributeType} falls back to Xrm.Attributes.Attribute.</span><br/>`);
+            console.log(colors.blue(`${this.entityLogicalName} attribute ${attributeType} falls back to Xrm.Attributes.Attribute.`));
             return 'Xrm.Attributes.Attribute';
         }
     }
