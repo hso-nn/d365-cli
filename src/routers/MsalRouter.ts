@@ -201,7 +201,7 @@ export class MsalRouter {
                 try {
                     const authenticationResult = await this.pca.acquireTokenByCode(tokenRequest);
                     this.bearer = authenticationResult.accessToken;
-                    res.send('<span>You can close this windows</span>');
+                    res.send('You can close this window');
                     // await this.onAuthenticated();
                     setTimeout(() => {
                         this.httpServer.close((): void => {
@@ -213,7 +213,7 @@ export class MsalRouter {
                     }, 100);
                 } catch(error) {
                     console.log(error);
-                    res.status(500).send(error);
+                    res.status(500).send('Error occurred. Check console for more info \n You can close this window');
                 }
             }
         });
