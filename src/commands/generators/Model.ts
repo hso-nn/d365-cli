@@ -97,10 +97,10 @@ export class Model {
                     console.log(colors.blue(`NavigationProperty '${referencingEntityNavigationPropertyName}' generated`));
                     console.log(colors.blue(`Referenced model '${displayName}Model' not found.`));
                     console.log(
-                        colors.blue(`Add referenced entity '${displayName}' by following cli command:`) +
+                        colors.blue(`Add referenced entity '${displayName}' by following cli command: `) +
                         colors.green(`hso-d365 generate Entity ${displayName}`));
                     console.log(
-                        colors.blue(`And regenerate '${this.entityName}' by following cli command:`) +
+                        colors.blue(`And regenerate '${this.entityName}' by following cli command: `) +
                         colors.green(`hso-d365 generate Entity ${this.entityName}`));
                 }
             }
