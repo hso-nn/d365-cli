@@ -102,7 +102,7 @@ export class PCF {
             // shell.exec(`pac auth clear`);
             // shell.exec(`pac auth create --url ${settings.crm.url}`);
             shell.exec(`pac pcf push --publisher-prefix ${settings.crm.publisher_prefix}`);
-            console.log(colors.red(`When getting an error about 'No profiles found' you need to set this up by following command:`));
+            console.log(colors.red(`When getting an error about 'No profiles found' you need to set this up by following command: `));
             console.log(colors.red(`pac auth create --url ${settings.crm.url}`));
             const connectingUrl = 'https://docs.microsoft.com/en-us/powerapps/developer/component-framework/import-custom-controls#connecting-to-your-environment';
             console.log(`See further information here: ${connectingUrl}`);
