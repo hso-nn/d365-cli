@@ -3,7 +3,7 @@ import express from 'express';
 // @ts-ignore
 import open from 'open';
 import {Express} from 'express';
-import session, {Session} from 'express-session';
+import session, {Session, SessionOptions} from 'express-session';
 import * as http from 'http';
 import {Socket} from 'net';
 import * as fs from 'fs';
@@ -116,14 +116,20 @@ export class MsalRouter {
     private acquireToken(): void {
         this.express = express();
         const {publisher_prefix, namespace} = this.settings.crm;
-        const sessionConfig = {
+        const sessionConfig: SessionOptions = {
             secret: `${publisher_prefix}${namespace}`,
             resave: false,
             saveUninitialized: false,
             cookie: {
-                secure: false, // set this to true on production
-            }
+                httpOnly: true,
+            },
+            name: 'id'
         };
+        if (this.express.get('env') === 'production') {
+            this.express.set('trust proxy', 1);
+            sessionConfig.cookie.secure = true;
+        }
+        this.express.set('trust proxy', 1);
         this.express.use(session(sessionConfig));
         this.mountRoutes();
         this.startListen();
@@ -195,7 +201,7 @@ export class MsalRouter {
                 try {
                     const authenticationResult = await this.pca.acquireTokenByCode(tokenRequest);
                     this.bearer = authenticationResult.accessToken;
-                    res.send('<span>You can close this windows</span>');
+                    res.send('You can close this window');
                     // await this.onAuthenticated();
                     setTimeout(() => {
                         this.httpServer.close((): void => {
@@ -207,7 +213,7 @@ export class MsalRouter {
                     }, 100);
                 } catch(error) {
                     console.log(error);
-                    res.status(500).send(error);
+                    res.status(500).send('Error occurred. Check console for more info \n You can close this window');
                 }
             }
         });

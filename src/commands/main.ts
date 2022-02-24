@@ -14,13 +14,18 @@ import fs from 'fs';
 import colors from 'colors';
 
 const checkVersion = (): boolean => {
-    const cliVersion = shell.exec('hso-d365 --version').stdout.replace(/\n/ig, '');
-    const crmSettings: CrmJson = JSON.parse(fs.readFileSync('../crm.json', 'utf8'));
-    if (cliVersion !== crmSettings.version) {
-        console.log(colors.red(`Version mismatch!`));
-        console.log(`CLI version: ${colors.red(cliVersion)}`);
-        console.log(`Project version: ${colors.red(crmSettings.version)}`);
-        console.log(`Please update project (hso-d365 update) or CLI (npm i -g @hso/d365-cli@${crmSettings.version}) first.`);
+    if (shell.test('-e', 'src')) {
+        const cliVersion = shell.exec('hso-d365 --version').stdout.replace(/\n/ig, '');
+        const crmSettings: CrmJson = JSON.parse(fs.readFileSync('../crm.json', 'utf8'));
+        if (cliVersion !== crmSettings.version) {
+            console.log(colors.red(`Version mismatch!`));
+            console.log(`CLI version: ${colors.red(cliVersion)}`);
+            console.log(`Project version: ${colors.red(crmSettings.version)}`);
+            console.log(`Please update project (hso-d365 update) or CLI (npm i -g @hso/d365-cli@${crmSettings.version}) first.`);
+            return false;
+        }
+    } else {
+        console.log(colors.red(`You are not inside the project Webresources folder!`));
         return false;
     }
     return true;
