@@ -36,7 +36,6 @@
     "hso-d365": "bin/hso-d365"
   },
   "devDependencies": {
-    "@azure/msal-node": "^1.6.0",
     "@babel/core": "^7.14.3",
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.14.2",
@@ -70,6 +69,7 @@
     "webpack-node-externals": "^2.5.2"
   },
   "dependencies": {
+    "@azure/msal-node": "^1.6.0",
     "colors": "^1.4.0",
     "commander": "^6.2.1",
     "express": "^4.17.1",
