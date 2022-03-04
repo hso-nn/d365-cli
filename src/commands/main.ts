@@ -31,6 +31,30 @@ const checkVersion = (): boolean => {
     return true;
 };
 
+const hasHigherVersion = () => {
+    if (shell.test('-e', 'src')) {
+        const cliVersion = shell.exec('hso-d365 --version').stdout.replace(/\n/ig, '');
+        const crmSettings: CrmJson = JSON.parse(fs.readFileSync('../crm.json', 'utf8'));
+        if (crmSettings) {
+            const cliVersionSplit = cliVersion.split('.');
+            const projVersionSplit = crmSettings.version.split('.');
+            for (let i = 0; i < 3; i += 1) {
+                if (cliVersionSplit[i] < projVersionSplit[i]) {
+                    console.log(colors.red(`Version mismatch! You try to do a downgrade!`));
+                    console.log(`CLI version: ${colors.red(cliVersion)}`);
+                    console.log(`Project version: ${colors.red(crmSettings.version)}`);
+                    console.log(`Please update CLI (npm i -g @hso/d365-cli@${crmSettings.version}) first.`);
+                    return false;
+                }
+            }
+        }
+    } else {
+        console.log(colors.red(`You are not inside the project Webresources folder!`));
+        return false;
+    }
+    return true;
+};
+
 program
     .version(packageJson.version)
     .usage('<command> [options]');
@@ -135,7 +159,9 @@ program
     .alias('u')
     .description('Updates existing workspace and Webresource setup')
     .action(() => {
-        Update.updateProject();
+        if (hasHigherVersion()) {
+            Update.updateProject();
+        }
     })
     .on('--help', () => {
         Update.showUpdateHelp();
