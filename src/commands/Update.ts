@@ -26,6 +26,7 @@ export class Update {
         Update.updateCrmJson();
         Update.updatePCF();
         Update.updateProjectRootFolder();
+        Update.updateEntityFiles();
         Update.updateFormFiles();
         Update.updatePackageJson();
         await Update.updateWebpackConfig();
@@ -78,8 +79,24 @@ export class Update {
         // shell.exec('git add tsconfig.json');
     }
 
+    private static updateEntityFiles(): void {
+        console.log(`Updating Entity files...`);
+        const crmSettings: CrmJson = JSON.parse(fs.readFileSync('../crm.json', 'utf8'));
+        const crm = crmSettings.crm;
+        shell.ls(`src/**/*.ts*`).forEach(function (filepath) {
+            const fileData = String(fs.readFileSync(filepath));
+            const match = fileData.match(new RegExp(`specify Form onLoad function: ${crm.publisher_prefix}.${crm.namespace}.([^\\W]*).Form.onLoad`));
+            if (match) {
+                const entityName_formName = match[1];
+                const split = entityName_formName.split('_');
+                const newFileData = fileData.replace(new RegExp(entityName_formName, 'ig'), `${split[0]}.${split[1]}`);
+                shell.ShellString(newFileData).to(filepath);
+            }
+        });
+    }
+
     private static updateFormFiles(): void {
-        console.log(`Updating Service files...`);
+        console.log(`Updating Form files...`);
         shell.ls(`src/**/*.form.ts*`).forEach(function (filepath) {
             const fileData = String(fs.readFileSync(filepath));
             const match = fileData.match(new RegExp('export class ([a-zA-Z]*)Form {'));
@@ -208,29 +225,9 @@ export class Update {
 
     private static async updateWebpackConfig(): Promise<void> {
         console.log(`Updating webpack.config...`);
-        let oldEntries;
-        if (fs.existsSync('./webpack.config.ts')) {
-            const regexpTsEntries = /entry: {...entry, ...(?<entries>{[^{]*)}/mg;
-            const tsOldFileData = String(fs.readFileSync('./webpack.config.ts'));
-            oldEntries = regexpTsEntries.exec(tsOldFileData);
-        }
-        if (fs.existsSync('./webpack.config.js')) {
-            console.log('webpack.config.js exists');
-            const jsFileData = String(fs.readFileSync('webpack.config.js'));
-            const regexpJsEntries = /entry: (?<entries>{[^{]*})/mg;
-            oldEntries = regexpJsEntries.exec(jsFileData);
-            if (shell.test('-e', '../.git')) {
-                cp.execFileSync('git', ['rm', 'webpack.config.js']);
-            }
-            // shell.exec('git rm webpack.config.js');
-        }
         shell.cp('-R', `${__dirname}/root/Webresources/webpack.config.ts`, '.');
-        let tsFileData = String(fs.readFileSync('./webpack.config.ts'));
-        tsFileData = tsFileData.replace(new RegExp('entry: {...entry, ...{}', 'ig'), `entry: {...entry, ...${oldEntries.groups.entries}`);
-        shell.ShellString(tsFileData).to('./webpack.config.ts');
         if (shell.test('-e', '../.git')) {
             cp.execFileSync('git', ['add', 'webpack.config.ts']);
         }
-        // shell.exec('git add webpack.config.ts');
     }
 }
