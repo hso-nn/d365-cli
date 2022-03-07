@@ -40,6 +40,12 @@ interface Entry {
     [index: string]: string[];
 }
 
+const guid = () => {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0, v = c === "x" ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
 const buildFiles = shell.ls('./src/**/build.json');
 const entry: Entry = {};
 for (const filepath of buildFiles) {
@@ -53,15 +59,29 @@ for (const filepath of buildFiles) {
             const isTsPath = fs.existsSync(path.resolve(__dirname, `src/${entityName}/${name}/${name}.ts`));
             const isTsxPath = fs.existsSync(path.resolve(__dirname, `src/${entityName}/${name}/${name}.tsx`));
             const extension = isTsPath ? 'ts' : isTsxPath ? 'tsx' : 'js';
-            entry[`${entityName}_${name}`] = [path.resolve(__dirname, `src/${entityName}/${name}/${name}.${extension}`)];
+            entry[guid()] = {
+                // @ts-ignore
+                import: path.resolve(__dirname, `src/${entityName}/${name}/${name}.${extension}`),
+                filename: `${entityName}/${name}.js`,
+                library: {
+                    name: [publisherPrefix, namespace, entityName, name],
+                    type: 'var'
+                },
+            };
         }
     }
     for (const webresource of buildJson.webresources) {
         const {name, build, template} = webresource;
         if (build) {
-            entry[name] = [
-                path.resolve(__dirname, `src/${entityName}/${name}.${template === 'React' ? 'tsx' : 'ts'}`)
-            ];
+            entry[guid()] = {
+                // @ts-ignore
+                import: path.resolve(__dirname, `src/${entityName}/${name}.${template === 'React' ? 'tsx' : 'ts'}`),
+                filename: `${entityName}/${name}.js`,
+                library: {
+                    name: [publisherPrefix, namespace, entityName, name],
+                    type: 'var'
+                },
+            };
         }
     }
 }
@@ -73,12 +93,9 @@ const configFunction = (env: unknown, argv: {mode: string }): unknown => {
     const cssLoaders = [mode === 'development' ? 'style-loader' :  MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader'];
     return {
         mode: mode,
-        entry: {...entry, ...{}},
+        entry: entry,
         output: {
             path: dir_build,
-            filename: '[name]/[name].js',
-            library: [publisherPrefix, namespace, '[name]'],
-            libraryTarget: 'var',
         },
         resolve: {
             extensions: ['.js', '.json', '.ts', '.tsx']
