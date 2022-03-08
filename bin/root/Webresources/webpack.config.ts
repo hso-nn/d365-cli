@@ -40,12 +40,6 @@ interface Entry {
     [index: string]: string[];
 }
 
-const guid = () => {
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-        const r = Math.random() * 16 | 0, v = c === "x" ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
 const buildFiles = shell.ls('./src/**/build.json');
 const entry: Entry = {};
 for (const filepath of buildFiles) {
@@ -59,7 +53,7 @@ for (const filepath of buildFiles) {
             const isTsPath = fs.existsSync(path.resolve(__dirname, `src/${entityName}/${name}/${name}.ts`));
             const isTsxPath = fs.existsSync(path.resolve(__dirname, `src/${entityName}/${name}/${name}.tsx`));
             const extension = isTsPath ? 'ts' : isTsxPath ? 'tsx' : 'js';
-            entry[guid()] = {
+            entry[`${entityName}%_%${name}`] = {
                 // @ts-ignore
                 import: path.resolve(__dirname, `src/${entityName}/${name}/${name}.${extension}`),
                 filename: `${entityName}/${name}.js`,
@@ -73,7 +67,7 @@ for (const filepath of buildFiles) {
     for (const webresource of buildJson.webresources) {
         const {name, build, template} = webresource;
         if (build) {
-            entry[guid()] = {
+            entry[`${entityName}%_%${name}`] = {
                 // @ts-ignore
                 import: path.resolve(__dirname, `src/${entityName}/${name}.${template === 'React' ? 'tsx' : 'ts'}`),
                 filename: `${entityName}/${name}.js`,
@@ -122,7 +116,10 @@ const configFunction = (env: unknown, argv: {mode: string }): unknown => {
             new webpack.IgnorePlugin({resourceRegExp: /^\.\/locale$/, contextRegExp: /moment$/}),
             new webpack.BannerPlugin(`${packageJson.description} ${packageJson.version} | (c) HSO Innovation`),
             new MiniCssExtractPlugin({
-                filename: '[name]/[name].css',
+                filename: (pathData: any) => {
+                    const nameSplit = pathData.chunk.name.split('%_%');
+                    return `${nameSplit[0]}/${nameSplit[1]}.css`;
+                },
             }),
             new ESLintPlugin({
                 extensions: ['ts', 'tsx'],
