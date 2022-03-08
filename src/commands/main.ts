@@ -39,7 +39,9 @@ const hasHigherVersion = () => {
             const cliVersionSplit = cliVersion.split('.');
             const projVersionSplit = crmSettings.version.split('.');
             for (let i = 0; i < 3; i += 1) {
-                if (cliVersionSplit[i] < projVersionSplit[i]) {
+                if (cliVersionSplit[i] > projVersionSplit[i]) {
+                    return true;
+                } else if (cliVersionSplit[i] < projVersionSplit[i]) {
                     console.log(colors.red(`Version mismatch! You try to do a downgrade!`));
                     console.log(`CLI version: ${colors.red(cliVersion)}`);
                     console.log(`Project version: ${colors.red(crmSettings.version)}`);
