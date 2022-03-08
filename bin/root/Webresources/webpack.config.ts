@@ -72,7 +72,7 @@ for (const filepath of buildFiles) {
                 import: path.resolve(__dirname, `src/${entityName}/${name}.${template === 'React' ? 'tsx' : 'ts'}`),
                 filename: `${entityName}/${name}.js`,
                 library: {
-                    name: [publisherPrefix, namespace, entityName, name],
+                    name: [publisherPrefix, namespace, name],
                     type: 'var'
                 },
             };
