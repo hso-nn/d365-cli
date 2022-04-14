@@ -64,7 +64,9 @@ export class Webresource {
             shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), namespace, `src/${webresourcename}/${newfilename}`);
             const filepath = `src/${webresourcename}/${newfilename}`;
             // shell.exec(`git add filepath`);
-            cp.execFileSync('git', ['add', filepath]);
+            if (shell.test('-e', '../.git')) {
+                cp.execFileSync('git', ['add', filepath]);
+            }
         });
     }
 
@@ -83,7 +85,9 @@ export class Webresource {
             shell.ShellString(JSON.stringify(buildJson, null, 2)).to(filepath);
         }
         // shell.exec(`git add ${filepath}`);
-        cp.execFileSync('git', ['add', filepath]);
+        if (shell.test('-e', '../.git')) {
+            cp.execFileSync('git', ['add', filepath]);
+        }
         console.log(`Added ${webresourcename}/build.json`);
     }
 }
