@@ -175,11 +175,13 @@ export class Deploy extends MsalRouter {
 
     private async getDependencyXML(webresource: WebresourceModel, data: Buffer): Promise<string> {
         const xmlDoc = await this.generateWebresourceXmlDoc(webresource, data);
-        const xml = Deploy.xmlBuilder.buildObject(xmlDoc);
-        let trimmedXml = xml.replace(Deploy.xmlRegex, '');
-        const index = trimmedXml.indexOf('?>');
-        trimmedXml = trimmedXml.substr(index + 2);
-        return trimmedXml;
+        if (xmlDoc) {
+            const xml = Deploy.xmlBuilder.buildObject(xmlDoc);
+            let trimmedXml = xml.replace(Deploy.xmlRegex, '');
+            const index = trimmedXml.indexOf('?>');
+            trimmedXml = trimmedXml.substr(index + 2);
+            return trimmedXml;
+        }
     }
 
     private static get defaultDependencyxml(): string {
