@@ -221,7 +221,7 @@ export class Model {
             if (interfaceType) {
                 attributesInterfaces[LogicalName] = interfaceType;
             } else {
-                console.log(`To be implemented: ${AttributeType} for ${LogicalName}<br/>`);
+                console.log(`To be implemented: ${AttributeType} for ${LogicalName}`);
             }
         }
         return attributesInterfaces;

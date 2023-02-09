@@ -58,7 +58,7 @@ export class Form {
         const filepath = `src/${this.entityName}/${formName}/${formName}.ts`;
         const settings: CrmJson = JSON.parse(fs.readFileSync('../crm.json', 'utf8'));
         const {namespace, publisher_prefix} = settings.crm;
-        shell.cp('-r', `${__dirname}/Entity/Entity.ts`, filepath);
+        shell.cp('-r', `${__dirname}/Entity/form/Entity.ts`, filepath);
         shell.sed('-i', new RegExp('Entity', 'g'), formName, filepath);
         shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher_prefix, filepath);
         shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), namespace, filepath);
@@ -75,7 +75,7 @@ export class Form {
         const formName = systemForm.name.replace(/\W/g, '');
         console.log(`Adding ${this.entityName}/${formName}/${formName}.form.ts`);
         const filepath = `src/${this.entityName}/${formName}/${formName}.form.ts`;
-        shell.cp('-r', `${__dirname}/Entity/Entity.form.ts`, filepath);
+        shell.cp('-r', `${__dirname}/Entity/form/Entity.form.ts`, filepath);
         shell.sed('-i', new RegExp('Entity', 'g'), formName, filepath);
         // shell.exec(`git add ${filepath}`);
         if (shell.test('-e', '../.git')) {

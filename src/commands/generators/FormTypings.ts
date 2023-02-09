@@ -131,7 +131,7 @@ export class FormTypings {
         } else if (type === 14) {
             return 'Xrm.Controls.StandardControl';
         } else {
-            console.log(colors.blue(`${this.entityLogicalName} control ${id} type '${type}' falls back to Xrm.Controls.StandardControl.</span>`));
+            console.log(colors.blue(`${this.entityLogicalName} control ${id} type '${type}' falls back to Xrm.Controls.StandardControl.`));
             return 'Xrm.Controls.StandardControl';
         }
     }

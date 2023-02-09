@@ -26,9 +26,9 @@ export class AttributeFormContext {
         this.attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
         const formContextAttributesString = await this.getFormContextAttributesString();
         const formContextFilepath = `src/${this.entityName}/${this.entityName}.formContext.ts`;
-        shell.cp('-r', `${__dirname}/Entity/Entity.attributesContext.ts`, `src/${this.entityName}`);
-        shell.cp('-r', `src/${this.entityName}/Entity.attributesContext.ts`, formContextFilepath);
-        shell.rm('-rf', `src/${this.entityName}/Entity.attributesContext.ts`);
+        shell.cp('-r', `${__dirname}/Entity/Entity.formContext.ts`, `src/${this.entityName}`);
+        shell.cp('-r', `src/${this.entityName}/Entity.formContext.ts`, formContextFilepath);
+        shell.rm('-rf', `src/${this.entityName}/Entity.formContext.ts`);
         shell.sed('-i', new RegExp('Entity', 'g'), this.entityName, formContextFilepath);
         // shell.exec(`git add ${formContextFilepath}`);
         if (shell.test('-e', '../.git')) {

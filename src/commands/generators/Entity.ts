@@ -76,8 +76,22 @@ export class Entity {
     // }
 
     private async addEntityFiles(entityName: string): Promise<void> {
+        await this.addFormFile(entityName);
         await this.addServiceFile(entityName);
         await this.addBuildFile();
+    }
+
+    private async addFormFile(entityName: string): Promise<void> {
+        console.log(`Adding ${entityName}/${entityName}.form.ts...`);
+        const filepath = `src/${this.entityName}/${this.entityName}.form.ts`;
+        shell.cp('-r', `${__dirname}/Entity/Entity.form.ts`, filepath);
+        // shell.sed('-i', new RegExp('EntityLogicalName', 'g'), this.entityLogicalName, filepath);
+        shell.sed('-i', new RegExp('Entity', 'g'), entityName, filepath);
+        // shell.exec(`git add ${filepath}`);
+        if (shell.test('-e', '../.git')) {
+            cp.execFileSync('git', ['add', filepath]);
+        }
+        console.log(`Added ${entityName}/${entityName}.form.ts`);
     }
 
     private async addServiceFile(entityName: string): Promise<void> {
