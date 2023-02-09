@@ -93,18 +93,37 @@ export class Update {
                 shell.ShellString(newFileData).to(filepath);
             }
         });
+
+        // Add Entity.form.ts file when missing
+        shell.ls(`src/**/build.json`).forEach(function (buildFilepath) {
+            const split = buildFilepath.split('/');
+            const entityName = split[1];
+            if (!fs.existsSync(`src/${entityName}/${entityName}.form.ts`)) {
+                console.log(`Adding ${entityName}/${entityName}.form.ts...`);
+                const filepath = `src/${entityName}/${entityName}.form.ts`;
+                shell.cp('-r', `${__dirname}/Entity/Entity.form.ts`, filepath);
+                shell.sed('-i', new RegExp('Entity', 'g'), entityName, filepath);
+                if (shell.test('-e', '../.git')) {
+                    cp.execFileSync('git', ['add', filepath]);
+                }
+                console.log(`Added ${entityName}/${entityName}.form.ts`);
+            }
+        });
     }
 
     private static updateFormFiles(): void {
         console.log(`Updating Form files...`);
         shell.ls(`src/**/*.form.ts*`).forEach(function (filepath) {
-            const fileData = String(fs.readFileSync(filepath));
-            const match = fileData.match(new RegExp('export class ([a-zA-Z]*)Form {'));
-            if (match) {
-                const entityName = match[1];
-                const importString = `import {${entityName}FormContext} from './${entityName}.formContext';`;
-                const newExportString = `export class ${entityName}Form extends ${entityName}FormContext {`;
-                shell.sed('-i', new RegExp(`export class ${entityName}Form {`, 'i'), `${importString}\n${newExportString}`, filepath);
+            const split = filepath.split('/');
+            if (split.length === 4) { // Entity/EntityForm/EntityForm.form.ts
+                const fileData = String(fs.readFileSync(filepath));
+                const match = fileData.match(new RegExp('export class ([a-zA-Z]*)Form {'));
+                if (match) {
+                    const entityName = match[1];
+                    const importString = `import {${entityName}FormContext} from './${entityName}.formContext';`;
+                    const newExportString = `export class ${entityName}Form extends ${entityName}FormContext {`;
+                    shell.sed('-i', new RegExp(`export class ${entityName}Form {`, 'i'), `${importString}\n${newExportString}`, filepath);
+                }
             }
         });
     }

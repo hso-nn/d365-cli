@@ -34,7 +34,7 @@ export class ControlFormContext {
         this.attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
         const formContextControlsString = await this.getFormContextControlsString(systemForm);
         const formContextFilepath = `src/${this.entityName}/${formName}/${formName}.formContext.ts`;
-        shell.cp('-r', `${__dirname}/Entity/Entity.formContext.ts`, `src/${this.entityName}/${formName}`);
+        shell.cp('-r', `${__dirname}/Entity/form/Entity.formContext.ts`, `src/${this.entityName}/${formName}`);
         shell.cp('-r', `src/${this.entityName}/${formName}/Entity.formContext.ts`, formContextFilepath);
         shell.rm('-rf', `src/${this.entityName}/${formName}/Entity.formContext.ts`);
         shell.sed('-i', new RegExp('Entity', 'g'), this.entityName, formContextFilepath);
@@ -44,7 +44,7 @@ export class ControlFormContext {
             cp.execFileSync('git', ['add', formContextFilepath]);
         }
         const fileData = String(fs.readFileSync(formContextFilepath));
-        const replaceString = fileData.match(new RegExp(`${formName}FormContext extends AttributeFormContext {`, 'ig'))[0];
+        const replaceString = fileData.match(new RegExp(`${formName}FormContext extends ${this.entityName}Form {`, 'ig'))[0];
         const newFileData = fileData.replace(replaceString, `${replaceString}\n${formContextControlsString}`);
         shell.ShellString(newFileData).to(formContextFilepath);
         console.log(`Generated ${formName}/${formName}.formContext.ts`);

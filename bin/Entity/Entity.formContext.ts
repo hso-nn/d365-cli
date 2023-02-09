@@ -1,5 +1,6 @@
 /* This is a generated file, please regenerate and do not modify */
+/* eslint-disable max-len */
+import {EntityAttributeNames} from './Entity.enum';
 
-import {EntityFormContext as AttributeFormContext} from '../Entity.formContext';
-
-export class FormNameFormContext extends AttributeFormContext {}
+export class EntityFormContext {}
+/* eslint-enable max-len */
