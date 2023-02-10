@@ -20,9 +20,10 @@ export class Entity {
     private readonly options: EntityOptions;
     private entityLogicalName: string;
 
-    constructor(bearer: string, entityName: string, options: EntityOptions) {
+    constructor(bearer: string, entityName: string, entityLogicalName: string, options: EntityOptions) {
         this.bearer = bearer;
         this.entityName = entityName;
+        this.entityLogicalName = entityLogicalName;
         this.options = options;
     }
 
@@ -46,12 +47,14 @@ export class Entity {
     private async generateEntityFiles(): Promise<void> {
         const serviceFilepath = `src/${this.entityName}/${this.entityName}.service.ts`;
         if (!shell.test('-f', serviceFilepath)) {
-            const answers = await inquirer.prompt([{
-                type: 'input',
-                name: 'entityLogicalName',
-                message: 'Entity LogicalName:'
-            }]);
-            this.entityLogicalName = answers.entityLogicalName;
+            if (!this.entityLogicalName) {
+                const answers = await inquirer.prompt([{
+                    type: 'input',
+                    name: 'entityLogicalName',
+                    message: 'Entity LogicalName:'
+                }]);
+                this.entityLogicalName = answers.entityLogicalName;
+            }
             try {
                 await NodeApi.getEntityDefinition(this.entityLogicalName, this.bearer, ['PrimaryIdAttribute']);
             } catch (e) {

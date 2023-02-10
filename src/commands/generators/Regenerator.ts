@@ -1,23 +1,12 @@
-import * as shell from 'shelljs';
 import fs from 'fs';
 import {Entity} from './Entity';
 import {GlobalOptionSet} from './GlobalOptionSet';
 import {EnvironmentVariable} from './EnvironmentVariable';
-
-// TODO duplicate with webpack.config.ts
-interface BuildJson {
-    forms: FormJson[];
-    webresources: WebresourceJson[];
-}
-// TODO duplicate with webpack.config.ts
-interface FormJson {
-    name: string;
-    build: boolean;
-}
-// TODO duplicate with webpack.config.ts
-interface WebresourceJson extends FormJson {
-    template: 'React' | 'HTML';
-}
+import {WebresourcesCrmJson} from '../../root/Webresources/CrmJson';
+import {SolutionService} from '../../node/Solution/Solution.service';
+import {SolutionComponentService} from '../../node/SolutionComponent/SolutionComponent.service';
+import {EntityService} from '../../node/Entity/Entity.service';
+import { EntityModel } from '../../node/Entity/Entity.model';
 
 export class Regenerator {
     private readonly bearer: string;
@@ -35,19 +24,51 @@ export class Regenerator {
     }
 
     private async regenerateEntities(): Promise<void> {
-        const buildFiles = shell.ls('./src/**/build.json');
-        for (const filepath of buildFiles) {
-            const pathSplit = filepath.split('/');
-            const entityName = pathSplit[pathSplit.length - 2];
-            const buildJsonString = String(fs.readFileSync(filepath));
-            const buildJson = JSON.parse(buildJsonString) as BuildJson;
-            const {forms} = buildJson;
-            if (forms.length > 0) {
-                console.log(`hso-d365 generate Entity ${entityName}`);
-                const entity = new Entity(this.bearer, entityName,{});
-                await entity.generate();
-            }
+        const entityModels = await this.getEntities();
+        for (const entityModel of entityModels) {
+            const physicalName = entityModel.originallocalizedname || entityModel.physicalname;
+            const folderName = physicalName.replaceAll(' ', '');
+            const entity = new Entity(this.bearer, folderName, entityModel.logicalname, {});
+            await entity.generate();
         }
+    }
+
+    // eslint-disable-next-line max-lines-per-function
+    private async getEntities(): Promise<EntityModel[]> {
+        const settings: WebresourcesCrmJson = JSON.parse(fs.readFileSync('./crm.json', 'utf8'));
+        const {solution_name_generate} = settings.crm;
+        const solution = await SolutionService.getSolution(solution_name_generate, ['solutionid'], this.bearer);
+        const filters: Filter[] = [{
+            type: 'or',
+            conditions: [{
+                attribute: 'componenttype',
+                value: 1 // Entity
+            }]
+        }, {
+            conditions: [{
+                attribute: '_solutionid_value',
+                value: solution.solutionid
+            }]
+        }];
+        const solutionComponents = await SolutionComponentService.retrieveMultipleRecords({
+            select: ['objectid'],
+            filters: filters,
+        }, this.bearer);
+        const conditions: Condition[] = [];
+        for (const solutionComponent of solutionComponents) {
+            const objectid = solutionComponent.objectid;
+            conditions.push({
+                attribute: 'entityid',
+                value: objectid,
+            });
+        }
+        return EntityService.retrieveMultipleRecords({
+            select: ['entityid', 'collectionname', 'entitysetname', 'logicalname', 'name', 'objecttypecode', 'physicalname', 'originallocalizedname'],
+            filters: [{
+                type: 'or',
+                conditions: conditions
+            }]
+        }, this.bearer);
     }
 
     private async regenerateGlobalOptionSets(): Promise<void> {
