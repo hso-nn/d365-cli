@@ -210,6 +210,7 @@ export class MsalRouter {
                         for (const socket of this.sockets) {
                             socket.destroy();
                         }
+                        this.onAuthenticated();
                     }, 100);
                 } catch(error) {
                     console.log(error);
