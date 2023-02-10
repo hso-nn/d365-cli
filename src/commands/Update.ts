@@ -1,7 +1,6 @@
 import * as colors from 'colors';
 import shell from 'shelljs';
 import fs from 'fs';
-import {WebresourcesCrmJson} from '../root/Webresources/CrmJson';
 import {CrmJson} from '../root/CrmJson';
 import cp from 'child_process';
 
@@ -87,10 +86,10 @@ export class Update {
             const fileData = String(fs.readFileSync(filepath));
             const match = fileData.match(new RegExp(`specify Form onLoad function: ${crm.publisher_prefix}.${crm.namespace}.([^\\W]*).Form.onLoad`));
             if (match) {
-                const entityName_formName = match[1];
-                const split = entityName_formName.split('_');
-                const newFileData = fileData.replace(new RegExp(entityName_formName, 'ig'), `${split[0]}.${split[1]}`);
-                shell.ShellString(newFileData).to(filepath);
+                // const entityName_formName = match[1];
+                // const split = entityName_formName.split('_');
+                // const newFileData = fileData.replace(new RegExp(entityName_formName, 'ig'), `${split[0]}.${split[1]}`);
+                // shell.ShellString(newFileData).to(filepath);
             }
         });
 
@@ -119,10 +118,10 @@ export class Update {
                 const fileData = String(fs.readFileSync(filepath));
                 const match = fileData.match(new RegExp('export class ([a-zA-Z]*)Form {'));
                 if (match) {
-                    const entityName = match[1];
-                    const importString = `import {${entityName}FormContext} from './${entityName}.formContext';`;
-                    const newExportString = `export class ${entityName}Form extends ${entityName}FormContext {`;
-                    shell.sed('-i', new RegExp(`export class ${entityName}Form {`, 'i'), `${importString}\n${newExportString}`, filepath);
+                    // const entityName = match[1];
+                    // const importString = `import {${entityName}FormContext} from './${entityName}.formContext';`;
+                    // const newExportString = `export class ${entityName}Form extends ${entityName}FormContext {`;
+                    // shell.sed('-i', new RegExp(`export class ${entityName}Form {`, 'i'), `${importString}\n${newExportString}`, filepath);
                 }
             }
         });
@@ -183,33 +182,6 @@ export class Update {
 
     // eslint-disable-next-line max-lines-per-function
     private static updateCrmJson(): void {
-        if (fs.existsSync('./tools/crm.json')) {
-            //crm.json
-            const crmSettings: CrmJson = JSON.parse(fs.readFileSync('./tools/crm.json', 'utf8'));
-            shell.cp('-R', `${__dirname}/root/crm.json`, '../');
-            shell.sed('-i', new RegExp('<%= publisher_prefix %>', 'ig'), crmSettings.crm.publisher_prefix, '../crm.json');
-            shell.sed('-i', new RegExp('<%= environment %>', 'ig'), crmSettings.crm.url, '../crm.json');
-            shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), (crmSettings as unknown as {webresource: {namespace:string} }).webresource.namespace, '../crm.json');
-            if (shell.test('-e', '../.git')) {
-                cp.execFileSync('git', ['add', '../crm.json']);
-            }
-
-            // Webresources/crm.json
-            const webresourcesSettings: WebresourcesCrmJson = JSON.parse(fs.readFileSync('./tools/crm.json', 'utf8'));
-            shell.cp('-R', `${__dirname}/root/Webresources/crm.json`, '.');
-            shell.sed('-i', new RegExp('<%= solution_name_deploy %>', 'ig'), webresourcesSettings.crm.solution_name_deploy, './crm.json');
-            shell.sed('-i', new RegExp('<%= solution_name_generate %>', 'ig'), webresourcesSettings.crm.solution_name_generate, './crm.json');
-            if (shell.test('-e', '../.git')) {
-                cp.execFileSync('git', ['add', './crm.json']);
-            }
-            // shell.exec('git add ./crm.json');
-
-            shell.rm('-rf', `./tools`);
-            if (shell.test('-e', '../.git')) {
-                cp.execFileSync('git', ['rm', './tools']);
-            }
-            // shell.exec('git rm ./tools');
-        }
         const crmSettings: CrmJson = JSON.parse(fs.readFileSync('../crm.json', 'utf8'));
         shell.cp('-R', `${__dirname}/root/crm.json`, '../');
         shell.sed('-i', new RegExp('<%= publisher_prefix %>', 'ig'), crmSettings.crm.publisher_prefix, '../crm.json');
