@@ -26,10 +26,10 @@ export class SetFormCustomizable extends MsalRouter {
         console.log(`Solution name: ${solution_name_deploy}`);
         const solution = await SolutionService.getSolution(solution_name_deploy,['solutionid'], this.bearer);
         console.log(`Solution id: ${solution.solutionid}`);
-        const solutionComponents = await this.getSolutionComponents(solution);
-        for (const solutionComponent of solutionComponents) {
-            console.log(`SolutionComponent: ${solutionComponent.objectid}`);
-            const systemForm = await this.getSystemForm(solutionComponent);
+        const solutionSystemFormComponents = await this.getSolutionSystemFormComponents(solution);
+        for (const solutionSystemFormComponent of solutionSystemFormComponents) {
+            console.log(`SolutionComponent: ${solutionSystemFormComponent.objectid}`);
+            const systemForm = await this.getSystemForm(solutionSystemFormComponent);
             await this.setForm(systemForm, this.customizable);
         }
     }
@@ -55,7 +55,7 @@ export class SetFormCustomizable extends MsalRouter {
         console.log(`---------------------------`);
     }
 
-    private getSolutionComponents(solution: SolutionModel): Promise<SolutionComponentModel[]> {
+    private getSolutionSystemFormComponents(solution: SolutionModel): Promise<SolutionComponentModel[]> {
         return SolutionComponentService.retrieveMultipleRecords({
             select: ['objectid'],
             filters: [{
