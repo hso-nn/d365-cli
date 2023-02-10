@@ -29,7 +29,7 @@ export class EntityRouter extends MsalRouter {
     }
 
     protected async onAuthenticated(): Promise<void> {
-        const entity = new Entity(this.bearer, this.entityName, this.options);
+        const entity = new Entity(this.bearer, this.entityName, null, this.options);
         await entity.generate();
     }
 }
