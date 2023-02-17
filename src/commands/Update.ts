@@ -97,7 +97,9 @@ export class Update {
         shell.ls(`src/**/build.json`).forEach(function (buildFilepath) {
             const split = buildFilepath.split('/');
             const entityName = split[1];
-            if (!fs.existsSync(`src/${entityName}/${entityName}.form.ts`)) {
+            // formContext.ts check is to prevent adding to webresource
+            if (fs.existsSync(`src/${entityName}/${entityName}.formContext.ts`) &&
+                !fs.existsSync(`src/${entityName}/${entityName}.form.ts`)) {
                 console.log(`Adding ${entityName}/${entityName}.form.ts...`);
                 const filepath = `src/${entityName}/${entityName}.form.ts`;
                 shell.cp('-r', `${__dirname}/Entity/Entity.form.ts`, filepath);
