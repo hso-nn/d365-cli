@@ -28,20 +28,35 @@ export class Entity {
     }
 
     public async generate(): Promise<void> {
-        await this.generateEntityFiles();
-        console.log(`Generating files for Entity '${this.entityName}'`);
-        console.log(`Using entityLogicalName '${this.entityLogicalName}'`);
-        const model = new Model(this.bearer, this.entityName);
-        await model.generate();
-        await Enum.generateEnum(this.bearer, this.entityName, this.entityLogicalName);
-        if (!this.options.skipForms) {
-            await AttributeTypings.generate(this.bearer, this.entityName, this.entityLogicalName);
-            await AttributeFormContext.generateFormContext(this.bearer, this.entityName, this.entityLogicalName);
-            await Form.generateFormFiles(this.bearer, this.entityName, this.entityLogicalName);
-        } else {
-            console.log('Skip generate form files');
+        try {
+            await this.generateEntityFiles();
+            console.log(`Generating files for Entity '${this.entityName}'`);
+            console.log(`Using entityLogicalName '${this.entityLogicalName}'`);
+            const model = new Model(this.bearer, this.entityName);
+            await model.generate();
+            await Enum.generateEnum(this.bearer, this.entityName, this.entityLogicalName);
+            if (!this.options.skipForms) {
+                await AttributeTypings.generate(this.bearer, this.entityName, this.entityLogicalName);
+                await AttributeFormContext.generateFormContext(this.bearer, this.entityName, this.entityLogicalName);
+                await Form.generateFormFiles(this.bearer, this.entityName, this.entityLogicalName);
+            } else {
+                console.log('Skip generate form files');
+            }
+            console.log('Generating files finished');
+        } catch (e) {
+            console.log(colors.red(`Form.generateFormFiles failed for ${this.entityName} ${JSON.stringify(e)}`));
+            await this.wait();
+            console.log(colors.red(`New try for failed ${this.entityName}`));
+            await this.generate();
         }
-        console.log('Generating files finished');
+    }
+
+    private wait(): Promise<void> {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve();
+            }, 5000);
+        });
     }
 
     private async generateEntityFiles(): Promise<void> {

@@ -14,6 +14,6 @@ export class RegeneratorRouter extends MsalRouter {
 
     protected async onAuthenticated(): Promise<void> {
         const regenerator = new Regenerator(this.bearer);
-        await regenerator.generate();
+        regenerator.generate();
     }
 }

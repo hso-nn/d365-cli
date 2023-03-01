@@ -15,11 +15,11 @@ export class Regenerator {
         this.bearer = bearer;
     }
 
-    public async generate(): Promise<void> {
+    public generate(): void {
         console.log('Regenerating. This may take some time...');
-        await this.regenerateEntities();
-        await this.regenerateGlobalOptionSets();
-        await this.regenerateEnvironmentVariable();
+        this.regenerateEntities().then();
+        this.regenerateGlobalOptionSets().then();
+        this.regenerateEnvironmentVariable().then();
         console.log('Generated');
     }
 
@@ -29,7 +29,7 @@ export class Regenerator {
             const physicalName = entityModel.originallocalizedname || entityModel.physicalname;
             const folderName = physicalName.replaceAll(/\W/g, '');
             const entity = new Entity(this.bearer, folderName, entityModel.logicalname, {});
-            await entity.generate();
+            entity.generate().then();
         }
     }
 
