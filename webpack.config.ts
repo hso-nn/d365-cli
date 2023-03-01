@@ -30,7 +30,8 @@ const configFunction = (env: unknown, argv: {mode: string}) =>  {
         },
         output: {
             path: dir_build,
-            filename: "[name].js"
+            filename: "[name].js",
+            hashFunction: "sha256"
         },
         resolve: {
             extensions: [".json", ".ts"]
