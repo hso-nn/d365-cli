@@ -4,9 +4,9 @@ import {GlobalOptionSet} from './GlobalOptionSet';
 import {EnvironmentVariable} from './EnvironmentVariable';
 import {WebresourcesCrmJson} from '../../root/Webresources/CrmJson';
 import {SolutionService} from '../../node/Solution/Solution.service';
-import {SolutionComponentService} from '../../node/SolutionComponent/SolutionComponent.service';
 import {EntityService} from '../../node/Entity/Entity.service';
 import { EntityModel } from '../../node/Entity/Entity.model';
+import {SolutionComponentSummaryService} from '../../node/SolutionComponentSummary/SolutionComponentSummary.service';
 
 export class Regenerator {
     private readonly bearer: string;
@@ -15,11 +15,11 @@ export class Regenerator {
         this.bearer = bearer;
     }
 
-    public async generate(): Promise<void> {
+    public generate(): void {
         console.log('Regenerating. This may take some time...');
-        await this.regenerateEntities();
-        await this.regenerateGlobalOptionSets();
-        await this.regenerateEnvironmentVariable();
+        this.regenerateEntities().then();
+        this.regenerateGlobalOptionSets().then();
+        this.regenerateEnvironmentVariable().then();
         console.log('Generated');
     }
 
@@ -27,9 +27,9 @@ export class Regenerator {
         const entityModels = await this.getEntities();
         for (const entityModel of entityModels) {
             const physicalName = entityModel.originallocalizedname || entityModel.physicalname;
-            const folderName = physicalName.replaceAll(' ', '');
+            const folderName = physicalName.replaceAll(/\W/g, '');
             const entity = new Entity(this.bearer, folderName, entityModel.logicalname, {});
-            await entity.generate();
+            entity.generate().then();
         }
     }
 
@@ -41,25 +41,25 @@ export class Regenerator {
         const filters: Filter[] = [{
             type: 'or',
             conditions: [{
-                attribute: 'componenttype',
+                attribute: 'msdyn_componenttype',
                 value: 1 // Entity
             }]
         }, {
             conditions: [{
-                attribute: '_solutionid_value',
+                attribute: 'msdyn_solutionid',
                 value: solution.solutionid
             }]
         }];
-        const solutionComponents = await SolutionComponentService.retrieveMultipleRecords({
-            select: ['objectid'],
+        const solutionComponentSummaries = await SolutionComponentSummaryService.retrieveMultipleRecords({
+            select: ['msdyn_objectid'],
             filters: filters,
         }, this.bearer);
         const conditions: Condition[] = [];
-        for (const solutionComponent of solutionComponents) {
-            const objectid = solutionComponent.objectid;
+        for (const solutionComponentSummary of solutionComponentSummaries) {
+            const msdyn_objectid = solutionComponentSummary.msdyn_objectid;
             conditions.push({
                 attribute: 'entityid',
-                value: objectid,
+                value: msdyn_objectid,
             });
         }
         return EntityService.retrieveMultipleRecords({

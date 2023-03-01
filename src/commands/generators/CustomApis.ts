@@ -3,12 +3,12 @@ import fs from 'fs';
 import {WebresourcesCrmJson} from '../../root/Webresources/CrmJson';
 import {SolutionService} from '../../node/Solution/Solution.service';
 import {CustomApiService} from '../../node/CustomApi/CustomApi.service';
-import {SolutionComponentService} from '../../node/SolutionComponent/SolutionComponent.service';
 import {CustomApiRequestParameterService} from '../../node/CustomApiRequestParameter/CustomApiRequestParameter.service';
 import {CustomApiResponsePropertyService} from '../../node/CustomApiResponseProperty/CustomApiResponseProperty.service';
 import {CustomApiModel} from '../../node/CustomApi/CustomApi.model';
 import {CustomApiRequestParameterModel} from '../../node/CustomApiRequestParameter/CustomApiRequestParameter.model';
 import {CustomApiResponsePropertyModel} from '../../node/CustomApiResponseProperty/CustomApiResponseProperty.model';
+import {SolutionComponentSummaryService} from '../../node/SolutionComponentSummary/SolutionComponentSummary.service';
 
 export class CustomApis {
     private readonly bearer: string;
@@ -87,27 +87,27 @@ export class CustomApis {
         const settings: WebresourcesCrmJson = JSON.parse(fs.readFileSync('./crm.json', 'utf8'));
         const {solution_name_generate} = settings.crm;
         const solution = await SolutionService.getSolution(solution_name_generate, ['solutionid'], this.bearer);
-        const solutionComponents = await SolutionComponentService.retrieveMultipleRecords({
-            select: ['objectid'],
+        const solutionComponentSummaries = await SolutionComponentSummaryService.retrieveMultipleRecords({
+            select: ['msdyn_objectid'],
             filters: [{
                 conditions: [{
-                    attribute: '_solutionid_value',
+                    attribute: 'msdyn_solutionid',
                     value: solution.solutionid
                 }]
             }, {
                 type: 'or',
                 conditions: [{
-                    attribute: 'componenttype',
+                    attribute: 'msdyn_componenttype',
                     value: 10051 // CustomApis
                 }]
             }]
         }, this.bearer);
         const conditions: Condition[] = [];
-        for (const solutionComponent of solutionComponents) {
-            const objectid = solutionComponent.objectid;
+        for (const solutionComponentSummary of solutionComponentSummaries) {
+            const msdyn_objectid = solutionComponentSummary.msdyn_objectid;
             conditions.push({
                 attribute: 'customapiid',
-                value: objectid,
+                value: msdyn_objectid,
             });
         }
         return CustomApiService.retrieveMultipleRecords({

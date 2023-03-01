@@ -2,10 +2,10 @@ import * as shell from 'shelljs';
 import * as fs from 'fs';
 import {PublisherService} from '../../node/Publisher/Publisher.service';
 import {SolutionService} from '../../node/Solution/Solution.service';
-import {SolutionComponentService} from '../../node/SolutionComponent/SolutionComponent.service';
 import {EnvironmentVariableDefinitionService} from '../../node/EnvironmentVariableDefinition/EnvironmentVariableDefinition.service';
 import {EnvironmentVariableDefinitionModel} from '../../node/EnvironmentVariableDefinition/EnvironmentVariableDefinition.model';
 import {WebresourcesCrmJson} from '../../root/Webresources/CrmJson';
+import {SolutionComponentSummaryService} from '../../node/SolutionComponentSummary/SolutionComponentSummary.service';
 
 export class EnvironmentVariable {
     private readonly bearer: string;
@@ -92,29 +92,29 @@ export class EnvironmentVariable {
         const settings: WebresourcesCrmJson = JSON.parse(fs.readFileSync('./crm.json', 'utf8'));
         const {solution_name_generate} = settings.crm;
         const solution = await SolutionService.getSolution(solution_name_generate, ['solutionid'], this.bearer);
-        const solutionComponents = await SolutionComponentService.retrieveMultipleRecords({
-            select: ['objectid'],
+        const solutionComponentSummaries = await SolutionComponentSummaryService.retrieveMultipleRecords({
+            select: ['msdyn_objectid'],
             filters: [{
                 conditions: [{
-                    attribute: '_solutionid_value',
+                    attribute: 'msdyn_solutionid',
                     value: solution.solutionid
                 }]
             }, {
                 type: 'or',
                 conditions: [{
-                    attribute: 'componenttype',
+                    attribute: 'msdyn_componenttype',
                     value: 380
                 }]
             }]
         }, this.bearer);
-        for (const solutionComponent of solutionComponents) {
-            const objectid = solutionComponent.objectid;
+        for (const solutionComponentSummary of solutionComponentSummaries) {
+            const msdyn_objectid = solutionComponentSummary.msdyn_objectid;
             const envVariableDefinitions = await EnvironmentVariableDefinitionService.retrieveMultipleRecords( {
                 select: ['defaultvalue', 'schemaname', 'type'],
                 filters: [{
                     conditions: [{
                         attribute: 'environmentvariabledefinitionid',
-                        value: objectid
+                        value: msdyn_objectid
                     }]
                 }]
             }, this.bearer);

@@ -1,12 +1,12 @@
 import {MsalRouter} from '../routers/MsalRouter';
 import {SolutionService} from '../node/Solution/Solution.service';
-import {SolutionComponentService} from '../node/SolutionComponent/SolutionComponent.service';
 import {SystemFormService} from '../node/SystemForm/SystemForm.service';
 import {SolutionModel} from '../node/Solution/Solution.model';
-import {SolutionComponentModel} from '../node/SolutionComponent/SolutionComponent.model';
 import {SystemFormModel} from '../node/SystemForm/SystemForm.model';
 import {WebresourcesCrmJson} from '../root/Webresources/CrmJson';
 import fs from 'fs';
+import {SolutionComponentSummaryService} from '../node/SolutionComponentSummary/SolutionComponentSummary.service';
+import {SolutionComponentSummaryModel} from '../node/SolutionComponentSummary/SolutionComponentSummary.model';
 
 export class SetFormCustomizable extends MsalRouter {
     private readonly customizable: boolean;
@@ -28,7 +28,7 @@ export class SetFormCustomizable extends MsalRouter {
         console.log(`Solution id: ${solution.solutionid}`);
         const solutionSystemFormComponents = await this.getSolutionSystemFormComponents(solution);
         for (const solutionSystemFormComponent of solutionSystemFormComponents) {
-            console.log(`SolutionComponent: ${solutionSystemFormComponent.objectid}`);
+            console.log(`SolutionComponent: ${solutionSystemFormComponent.msdyn_objectid}`);
             const systemForm = await this.getSystemForm(solutionSystemFormComponent);
             await this.setForm(systemForm, this.customizable);
         }
@@ -55,23 +55,50 @@ export class SetFormCustomizable extends MsalRouter {
         console.log(`---------------------------`);
     }
 
-    private getSolutionSystemFormComponents(solution: SolutionModel): Promise<SolutionComponentModel[]> {
-        return SolutionComponentService.retrieveMultipleRecords({
-            select: ['objectid'],
+    private async getSolutionEntityComponents(solution: SolutionModel): Promise<SolutionComponentSummaryModel[]> {
+        return SolutionComponentSummaryService.retrieveMultipleRecords({
+            select: ['msdyn_objectid', 'msdyn_name'],
             filters: [{
                 conditions: [{
-                    attribute: '_solutionid_value',
+                    attribute: 'msdyn_solutionid',
                     value: solution.solutionid
                 }, {
-                    attribute: 'componenttype',
-                    value: 60
+                    attribute: 'msdyn_componenttype',
+                    value: 1
                 }]
             }]
         }, this.bearer);
     }
 
-    private getSystemForm(solutionComponent: SolutionComponentModel): Promise<SystemFormModel> {
-        return SystemFormService.getSystemForm(solutionComponent.objectid,
+    private async getSolutionSystemFormComponents(solution: SolutionModel): Promise<SolutionComponentSummaryModel[]> {
+        const entitySummaries = await this.getSolutionEntityComponents(solution);
+        const conditions: Condition[] = [];
+        for (const entitySummary of entitySummaries) {
+            conditions.push({
+                attribute: 'msdyn_primaryentityname',
+                value: entitySummary.msdyn_name
+            });
+        }
+        const filters: Filter[] = [{
+            type: 'or',
+            conditions: conditions
+        },{
+            conditions: [{
+                attribute: 'msdyn_solutionid',
+                value: solution.solutionid
+            }, {
+                attribute: 'msdyn_componenttype',
+                value: 60
+            }]
+        }];
+        return SolutionComponentSummaryService.retrieveMultipleRecords({
+            select: ['msdyn_objectid'],
+            filters: filters,
+        }, this.bearer);
+    }
+
+    private getSystemForm(solutionComponentSummary: SolutionComponentSummaryModel): Promise<SystemFormModel> {
+        return SystemFormService.getSystemForm(solutionComponentSummary.msdyn_objectid,
             ['name', 'objecttypecode', 'iscustomizable', 'canbedeleted'], this.bearer);
     }
 }
