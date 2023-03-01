@@ -8,7 +8,7 @@ import {SystemFormService} from '../../node/SystemForm/SystemForm.service';
 import {FormTypings} from './FormTypings';
 import {WebresourcesCrmJson} from '../../root/Webresources/CrmJson';
 import {SolutionService} from '../../node/Solution/Solution.service';
-import {SolutionComponentService} from '../../node/SolutionComponent/SolutionComponent.service';
+import {SolutionComponentSummaryService} from '../../node/SolutionComponentSummary/SolutionComponentSummary.service';
 
 export class Form {
     private readonly bearer: string;
@@ -104,35 +104,40 @@ export class Form {
     private async getSystemForms(): Promise<SystemFormModel[]> {
         const settings: WebresourcesCrmJson = JSON.parse(fs.readFileSync('./crm.json', 'utf8'));
         const {solution_name_generate, only_solution_forms} = settings.crm;
-        const solution = await SolutionService.getSolution(solution_name_generate, ['solutionid'], this.bearer);
         const filters: Filter[] = [{
             type: 'or',
             conditions: [{
-                attribute: 'componenttype',
+                attribute: 'msdyn_componenttype',
                 value: 24 // Form
             }, {
-                attribute: 'componenttype',
+                attribute: 'msdyn_componenttype',
                 value: 60 // System Form
+            }]
+        }, {
+            conditions: [{
+                attribute: 'msdyn_primaryentityname',
+                value: this.entityLogicalName
             }]
         }];
         if (only_solution_forms) {
+            const solution = await SolutionService.getSolution(solution_name_generate, ['solutionid'], this.bearer);
             filters.push({
                 conditions: [{
-                    attribute: '_solutionid_value',
+                    attribute: 'msdyn_solutionid',
                     value: solution.solutionid
                 }]
             });
         }
-        const solutionComponents = await SolutionComponentService.retrieveMultipleRecords({
-            select: ['objectid'],
+        const solutionComponentSummaries = await SolutionComponentSummaryService.retrieveMultipleRecords({
+            select: ['msdyn_objectid'],
             filters: filters,
         }, this.bearer);
         const conditions: Condition[] = [];
-        for (const solutionComponent of solutionComponents) {
-            const objectid = solutionComponent.objectid;
+        for (const solutionComponentSummary of solutionComponentSummaries) {
+            const msdyn_objectid = solutionComponentSummary.msdyn_objectid;
             conditions.push({
                 attribute: 'formid',
-                value: objectid,
+                value: msdyn_objectid,
             });
         }
         return SystemFormService.retrieveMultipleRecords({
@@ -140,20 +145,7 @@ export class Form {
             filters: [{
                 type: 'or',
                 conditions: conditions
-            }, {
-                conditions: [{
-                    attribute: 'objecttypecode',
-                    value: this.entityLogicalName
-                }]
             }]
         }, this.bearer);
     }
-
-    // private async getSystemForms(): Promise<SystemFormModel[]> {
-    //     const systemForms = await SystemFormService.getSystemForms(this.entityLogicalName, ['objecttypecode', 'name', 'formjson'], this.bearer);
-    //     for (const systemForm of systemForms) {
-    //         console.log(colors.blue(`Form '${systemForm.name}' found`));
-    //     }
-    //     return systemForms;
-    // }
 }
