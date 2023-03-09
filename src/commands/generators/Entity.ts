@@ -22,7 +22,7 @@ export class Entity {
 
     constructor(bearer: string, entityName: string, entityLogicalName: string, options: EntityOptions) {
         this.bearer = bearer;
-        this.entityName = entityName;
+        this.entityName = entityName.replaceAll(/\W/g, '');
         this.entityLogicalName = entityLogicalName;
         this.options = options;
     }
