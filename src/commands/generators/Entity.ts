@@ -9,16 +9,13 @@ import {Enum} from './Enum';
 import {AttributeFormContext} from './AttributeFormContext';
 import {Form} from './Form';
 import {AttributeTypings} from './AttributeTypings';
-
-interface EntityOptions {
-    skipForms?: boolean;
-}
+import {EntityOptions} from '../../routers/EntityRouter';
 
 export class Entity {
     private readonly bearer: string;
     private readonly entityName: string;
-    private readonly options: EntityOptions;
     private entityLogicalName: string;
+    private readonly options: EntityOptions;
 
     constructor(bearer: string, entityName: string, entityLogicalName: string, options: EntityOptions) {
         this.bearer = bearer;
@@ -32,7 +29,7 @@ export class Entity {
             await this.generateEntityFiles();
             console.log(`Generating files for Entity '${this.entityName}'`);
             console.log(`Using entityLogicalName '${this.entityLogicalName}'`);
-            const model = new Model(this.bearer, this.entityName);
+            const model = new Model(this.bearer, this.entityName, this.entityLogicalName);
             await model.generate();
             await Enum.generateEnum(this.bearer, this.entityName, this.entityLogicalName);
             if (!this.options.skipForms) {

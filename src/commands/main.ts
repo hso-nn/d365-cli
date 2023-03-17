@@ -64,12 +64,19 @@ program
 program
     .command('new <name>')
     .alias('n')
+    .option('--environment', 'Environment')
+    .option('--solution_deploy', 'Deploy Solution')
+    .option('--solution_generate', 'Generate Solution')
+    .option('--solution_pcf', 'PCF Solution')
+    .option('--publisher_name', 'Publisher name')
+    .option('--publisher_prefix', 'Publisher prefix')
+    .option('--namespace', 'Namespace')
     .description('Creates a new workspace and an initial Webresource and PCF setup or creates a new PCF component')
-    .action((name: string) => {
+    .action((name: string, options) => {
         if (shell.test('-e', '../pcf')) {
             PCF.createComponent(name);
         } else {
-            Create.createProject(name);
+            Create.createProject(name, options);
         }
     })
     .on('--help', () => {
@@ -93,6 +100,8 @@ program
     .command('generate <schematic> [name]')
     .alias('g')
     .option('-s, --skipForms', 'Skip generating form files')
+    .option('-logicalName, --entityLogicalName <entityLogicalName>', 'LogicalName of the Entity')
+    .option('-t, --template <template>', 'Template of Webresource')
     .description('Generates and/or modifies files bases on a schematic.')
     .action((schematic: string, name: string, options) => {
         if (checkVersion()) {

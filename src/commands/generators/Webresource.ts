@@ -5,12 +5,17 @@ import * as fs from 'fs';
 import cp from 'child_process';
 import {CrmJson} from '../../root/CrmJson';
 
-interface Answers {
-    template: 'React' | 'HTML';
+type Template = 'React' | 'HTML';
+interface Answer {
+    template: Template;
+}
+
+export interface WebresourceOptions {
+    template?: Template;
 }
 
 export class Webresource {
-    public static generateWebresource(webresourcename: string): Promise<void> {
+    public static generateWebresource(webresourcename: string, options: WebresourceOptions): Promise<void> {
         const check = shell.grep(` ${webresourcename}:`, 'webpack.config.ts');
         if (!webresourcename) {
             console.log(colors.red('Webresource name missing'));
@@ -20,35 +25,40 @@ export class Webresource {
             console.log(colors.red(`echo Webresource ${webresourcename} already exist!`));
         } else if (process.argv[5]) {
             console.log(colors.red(`echo No spaces allowed!`));
+        } else if (options.template && !['React', 'HTML'].includes(options.template)) {
+            console.log(colors.red(`echo Webresource template must be 'React' or 'HTML'`));
         } else {
-            return Webresource.generate(webresourcename);
+            return Webresource.generate(webresourcename, options);
         }
     }
 
-    private static async generate(webresourcename: string): Promise<void> {
+    private static async generate(webresourcename: string, options: WebresourceOptions): Promise<void> {
         const folderPath = `src/${webresourcename}`;
         if (!shell.test('-d', folderPath)) {
             console.log(`Adding Webresource ${webresourcename}...`);
-            const answers = await inquirer.prompt([{
-                type: 'list',
-                name: 'template',
-                message: 'Which template do you want?',
-                choices: [
-                    'HTML',
-                    'React'
-                ]
-            }]);
+            let template = options.template;
+            if (!template) {
+                const answer = await inquirer.prompt([{
+                    type: 'list',
+                    name: 'template',
+                    message: 'Which template do you want?',
+                    choices: [
+                        'HTML',
+                        'React'
+                    ]
+                }]);
+                template = (answer as Answer).template;
+            }
             shell.mkdir(folderPath);
-            await Webresource.addWebresourceFiles(webresourcename, answers);
-            await Webresource.addBuildFile(webresourcename, answers);
+            await Webresource.addWebresourceFiles(webresourcename, template);
+            await Webresource.addBuildFile(webresourcename, template);
             console.log(`Added Webresource ${webresourcename}`);
         } else {
             console.log(colors.magenta(`Webresource ${webresourcename} already exist`));
         }
     }
 
-    private static async addWebresourceFiles(webresourcename: string, answers: Answers): Promise<void> {
-        const template = answers.template;
+    private static async addWebresourceFiles(webresourcename: string, template: Template): Promise<void> {
         const settings: CrmJson = JSON.parse(fs.readFileSync('../crm.json', 'utf8'));
         const {namespace, publisher_prefix} = settings.crm;
         const srcDir = `${__dirname}/Webresource${template === 'React' ? 'Tsx' : ''}/*.*`;
@@ -70,7 +80,7 @@ export class Webresource {
         });
     }
 
-    private static async addBuildFile(webresourcename: string, answers: Answers) : Promise<void> {
+    private static async addBuildFile(webresourcename: string, template: Template) : Promise<void> {
         console.log(`Adding ${webresourcename}/build.json`);
         const filepath = `src/${webresourcename}/build.json`;
         shell.cp('-r', `${__dirname}/Entity/build.json`, filepath);
@@ -80,7 +90,7 @@ export class Webresource {
             buildJson.webresources.push({
                 name: webresourcename,
                 build: true,
-                template: answers.template
+                template: template
             });
             shell.ShellString(JSON.stringify(buildJson, null, 2)).to(filepath);
         }
