@@ -20,9 +20,9 @@ export class Generator {
         } else if (schematic.toLowerCase() === 'entity') {
             return EntityRouter.generateEntity(name, options);
         } else if (schematic.toLowerCase() === 'webresource') {
-            return Webresource.generateWebresource(name);
+            return Webresource.generateWebresource(name, options);
         } else if (schematic.toLocaleLowerCase() === 'model') {
-            return ModelRouter.generateModel(name);
+            return ModelRouter.generateModel(name, options);
         } else if (schematic.toLowerCase() === 'licensevalidator') {
             return LicenseValidator.generateLicenseValidator(name);
         } else if (schematic.toLowerCase() === 'environmentvariable') {

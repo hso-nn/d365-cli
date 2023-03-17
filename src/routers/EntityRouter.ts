@@ -2,8 +2,9 @@ import colors from 'colors';
 import {MsalRouter} from './MsalRouter';
 import {Entity} from '../commands/generators/Entity';
 
-interface EntityOptions {
+export interface EntityOptions {
     skipForms?: boolean;
+    entityLogicalName?: string;
 }
 
 export class EntityRouter extends MsalRouter {
@@ -21,15 +22,17 @@ export class EntityRouter extends MsalRouter {
     }
 
     private readonly entityName: string;
+    private readonly entityLogicalName: string;
     private readonly options: EntityOptions;
     constructor(entityName: string, options: EntityOptions) {
         super();
         this.entityName = entityName;
+        this.entityLogicalName = options.entityLogicalName;
         this.options = options;
     }
 
     protected async onAuthenticated(): Promise<void> {
-        const entity = new Entity(this.bearer, this.entityName, null, this.options);
+        const entity = new Entity(this.bearer, this.entityName, this.entityLogicalName, this.options);
         await entity.generate();
     }
 }

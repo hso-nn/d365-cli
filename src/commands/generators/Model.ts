@@ -15,9 +15,10 @@ export class Model {
     private entityLogicalName: string;
     private attributesMetadata: AttributeMetadata[];
 
-    constructor(bearer: string, entityName: string) {
+    constructor(bearer: string, entityName: string, entityLogicalName: string) {
         this.bearer = bearer;
         this.entityName = entityName;
+        this.entityLogicalName = entityLogicalName;
     }
 
     public async generate(): Promise<void> {
@@ -27,12 +28,14 @@ export class Model {
     private async generateModelFile(): Promise<void> {
         const folderPath = `src/${this.entityName}`;
         if (!shell.test('-d', folderPath)) {
-            const answers = await inquirer.prompt([{
-                type: 'input',
-                name: 'entityLogicalName',
-                message: 'Entity LogicalName:'
-            }]);
-            this.entityLogicalName = answers.entityLogicalName;
+            if (!this.entityLogicalName) {
+                const answers = await inquirer.prompt([{
+                    type: 'input',
+                    name: 'entityLogicalName',
+                    message: 'Entity LogicalName:'
+                }]);
+                this.entityLogicalName = answers.entityLogicalName;
+            }
             try {
                 await NodeApi.getEntityDefinition(this.entityLogicalName, this.bearer, ['PrimaryIdAttribute']);
             } catch (e) {

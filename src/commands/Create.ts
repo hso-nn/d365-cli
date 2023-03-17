@@ -4,24 +4,25 @@ import * as inquirer from 'inquirer';
 import * as fs from 'fs';
 import {PCF} from './PCF';
 
-interface CreateAnswers {
+interface CreateOptions {
+    environment?: string;
     publisher_name?: string;
     publisher_prefix?: string;
-    solution_name_deploy?: string;
-    solution_name_generate?: string;
-    solution_name_pcf?: string;
-    environment?: string;
+    solution_deploy?: string;
+    solution_generate?: string;
+    solution_pcf?: string;
+
     namespace?: string;
 }
 
 export class Create {
-    public static createProject(projectname: string): Promise<void> {
+    public static createProject(name: string, options: CreateOptions): Promise<void> {
         if (process.argv[4]) {
             console.log(colors.red(`No spaces allowed!`));
-        } else if (shell.test('-e', `${projectname}/Webresources`)) {
-            console.log(colors.red(`Project ${projectname}/Webresources already exist!`));
+        } else if (shell.test('-e', `${name}/Webresources`)) {
+            console.log(colors.red(`Project ${name}/Webresources already exist!`));
         } else {
-            return Create.create(projectname);
+            return Create.create(name, options);
         }
     }
 
@@ -31,38 +32,43 @@ export class Create {
         console.log(`     The project name of the new workspace and initial Webresource setup.`);
     }
 
-    private static async create(projectname: string): Promise<void> {
-        const answers = await Create.inquirer();
-        console.log(`Initializing D365 Project ${projectname}...`);
-        if (!shell.test('-e', `${projectname}`)) {
-            shell.mkdir(projectname);
+    private static async create(name: string, options: CreateOptions): Promise<void> {
+        let createOptions: CreateOptions = options;
+        if (!options.environment || !options.solution_deploy || !options.publisher_name || !options.publisher_prefix || !options.namespace) {
+            console.log(colors.red(`Missing some required options (environment, solution_deploy, publisher_name, 
+            publisher_prefix, namespace. Command line will request them now.`));
+            createOptions = await Create.inquirer();
         }
-        shell.cd(projectname);
+        console.log(`Initializing D365 Project ${name}...`);
+        if (!shell.test('-e', `${name}`)) {
+            shell.mkdir(name);
+        }
+        shell.cd(name);
 
         shell.cp('-R', `${__dirname}/root/crm.json`, '.');
-        Create.setupWebresources(projectname, answers);
-        Create.setupPCF(projectname, answers);
+        Create.setupWebresources(name, createOptions);
+        Create.setupPCF(name, createOptions);
     }
 
-    private static setupPCF(projectname: string, answers: CreateAnswers): void {
+    private static setupPCF(name: string, options: CreateOptions): void {
         shell.mkdir('PCF');
         shell.cd('PCF');
-        const {publisher_name, publisher_prefix, solution_name_pcf} = answers;
-        PCF.initPcfSolution(solution_name_pcf, publisher_name, publisher_prefix);
+        const {publisher_name, publisher_prefix, solution_pcf} = options;
+        PCF.initPcfSolution(solution_pcf, publisher_name, publisher_prefix);
         shell.cd('..');
-        console.log(colors.green(`Please fill ${projectname}/PCF/Solutions/src/Other/Solution.xml`));
+        console.log(colors.green(`Please fill ${name}/PCF/Solutions/src/Other/Solution.xml`));
     }
 
-    private static setupWebresources(projectname: string, answers: CreateAnswers): void {
+    private static setupWebresources(name: string, options: CreateOptions): void {
         shell.mkdir('Webresources');
         shell.cp('-R', `${__dirname}/root/Webresources/*`, 'Webresources');
         shell.cp('-R', `${__dirname}/root/Webresources/.*`, 'Webresources');
         fs.renameSync(`./Webresources/gitignore`, './Webresources/.gitignore');
 
-        Create.initCrmJson(answers);
-        Create.initWebresourcesCrmJson(answers);
-        Create.initWebresourcesPackageJson(projectname, answers);
-        Create.initWebresourcesWebpackConfig(answers);
+        Create.initCrmJson(options);
+        Create.initWebresourcesCrmJson(options);
+        Create.initWebresourcesPackageJson(name, options);
+        Create.initWebresourcesWebpackConfig(options);
 
         shell.cd('Webresources');
         console.log(`Installing npm packages. This may take a while...`);
@@ -74,36 +80,36 @@ export class Create {
         shell.cd('..');
     }
 
-    private static initCrmJson(answers: CreateAnswers): void {
+    private static initCrmJson(options: CreateOptions): void {
         const crmJsonFile = shell.ls('./crm.json')[0];
-        shell.sed('-i', new RegExp('<%= publisher_prefix %>', 'ig'), answers.publisher_prefix, crmJsonFile);
-        shell.sed('-i', new RegExp('<%= environment %>', 'ig'), answers.environment, crmJsonFile);
-        shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), answers.namespace, crmJsonFile);
+        shell.sed('-i', new RegExp('<%= publisher_prefix %>', 'ig'), options.publisher_prefix, crmJsonFile);
+        shell.sed('-i', new RegExp('<%= environment %>', 'ig'), options.environment, crmJsonFile);
+        shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), options.namespace, crmJsonFile);
         const version = shell.exec('hso-d365 --version').stdout.replace(/\n/ig, '');
         shell.sed('-i', new RegExp('<%= version %>', 'ig'), version, crmJsonFile);
     }
 
-    private static initWebresourcesCrmJson(answers: CreateAnswers): void {
+    private static initWebresourcesCrmJson(options: CreateOptions): void {
         const crmJsonFile = shell.ls('Webresources/crm.json')[0];
-        shell.sed('-i', new RegExp('<%= solution_name_deploy %>', 'ig'), answers.solution_name_deploy, crmJsonFile);
-        shell.sed('-i', new RegExp('<%= solution_name_generate %>', 'ig'), answers.solution_name_generate || answers.solution_name_deploy, crmJsonFile);
+        shell.sed('-i', new RegExp('<%= solution_name_deploy %>', 'ig'), options.solution_deploy, crmJsonFile);
+        shell.sed('-i', new RegExp('<%= solution_name_generate %>', 'ig'), options.solution_generate || options.solution_deploy, crmJsonFile);
     }
 
-    private static initWebresourcesPackageJson(projectName: string, answers: CreateAnswers): void {
+    private static initWebresourcesPackageJson(name: string, options: CreateOptions): void {
         const packageJsonFile = shell.ls('Webresources/package.json')[0];
-        shell.sed('-i', '<%= projectname %>', projectName.toLowerCase(), packageJsonFile);
-        shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.solution_name_deploy, packageJsonFile);
+        shell.sed('-i', '<%= projectname %>', name.toLowerCase(), packageJsonFile);
+        shell.sed('-i', new RegExp('<%= description %>', 'ig'), options.solution_deploy, packageJsonFile);
     }
 
-    private static initWebresourcesWebpackConfig(answers: CreateAnswers): void {
+    private static initWebresourcesWebpackConfig(options: CreateOptions): void {
         const webpackConfigFile = shell.ls('Webresources/webpack.config.ts')[0];
-        shell.sed('-i', new RegExp('<%= publisher_prefix %>', 'ig'), answers.publisher_prefix, webpackConfigFile);
-        shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), answers.namespace, webpackConfigFile);
-        shell.sed('-i', new RegExp('<%= description %>', 'ig'), answers.namespace, webpackConfigFile);
+        shell.sed('-i', new RegExp('<%= publisher_prefix %>', 'ig'), options.publisher_prefix, webpackConfigFile);
+        shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), options.namespace, webpackConfigFile);
+        shell.sed('-i', new RegExp('<%= description %>', 'ig'), options.namespace, webpackConfigFile);
     }
 
     // eslint-disable-next-line max-lines-per-function
-    private static inquirer(): Promise<CreateAnswers> {
+    private static inquirer(): Promise<CreateOptions> {
         return inquirer.prompt([{
             type: 'input',
             name: 'environment',
@@ -120,7 +126,7 @@ export class Create {
             }
         }, {
             type: 'input',
-            name: 'solution_name_deploy',
+            name: 'solution_deploy',
             message: `D365 deployment Solution ('Name' column):`,
             validate: async (input) => {
                 if (!input) {
@@ -134,7 +140,7 @@ export class Create {
             }
         }, {
             type: 'input',
-            name: 'solution_name_generate',
+            name: 'solution_generate',
             message: `D365 generate Solution ('Name' column)\nIf equal to deployment Solution keep blank:`,
             validate: async (input) => {
                 if (input) {
@@ -147,7 +153,7 @@ export class Create {
             }
         }, {
             type: 'input',
-            name: 'solution_name_pcf',
+            name: 'solution_pcf',
             message: `D365 PCF Solution ('Name' column)\nIf equal to deployment Solution keep blank:`,
             validate: async (input) => {
                 if (input) {
