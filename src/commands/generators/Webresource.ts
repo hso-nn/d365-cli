@@ -22,9 +22,9 @@ export class Webresource {
         } else if(!new RegExp('[A-Z]').test(webresourcename[0])) {
             console.log(colors.red(`Webresource name must be UpperCamelCase!`));
         } else if (check.stdout !== '\n') {
-            console.log(colors.red(`echo Webresource ${webresourcename} already exist!`));
-        } else if (process.argv[5]) {
-            console.log(colors.red(`echo No spaces allowed!`));
+            console.log(colors.red(`Webresource ${webresourcename} already exist!`));
+        } else if (process.argv[7]) {
+            console.log(colors.red(`No spaces allowed!`));
         } else if (options.template && !['React', 'HTML'].includes(options.template)) {
             console.log(colors.red(`echo Webresource template must be 'React' or 'HTML'`));
         } else {
