@@ -1,5 +1,5 @@
 import shell from 'shelljs';
-import program from 'commander';
+import {Command} from 'commander';
 import {Create} from './Create';
 import {Update} from './Update';
 import {Generator} from './generators/Generator';
@@ -12,6 +12,8 @@ import {PCF} from './PCF';
 import {CrmJson} from '../root/CrmJson';
 import fs from 'fs';
 import colors from 'colors';
+
+const program = new Command();
 
 const checkVersion = (): boolean => {
     if (shell.test('-e', 'src')) {
