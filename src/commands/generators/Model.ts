@@ -1,7 +1,7 @@
 import * as shell from 'shelljs';
 import * as fs from 'fs';
 import {NodeApi} from '../../node/NodeApi/NodeApi';
-import * as inquirer from 'inquirer';
+import inquirer from 'inquirer';
 import colors from 'colors';
 import cp from 'child_process';
 
