@@ -131,6 +131,11 @@ export class WebApi {
         return WebApi.request('DELETE', uri);
     }
 
+    public static async executeFunction(functionName: string): Promise<JSON> {
+        const xmlHttpRequest = await WebApi.request('GET', `${functionName}`);
+        return xmlHttpRequest.response && JSON.parse(xmlHttpRequest.response, dateReviver);
+    }
+
     public static async executeAction<R, I extends string, V>(actionName: string, data?: ActionData<I, V>, entityLogicalName?: string, id?: string): Promise<R> {
         if (entityLogicalName) {
             return this.executeBoundAction(actionName, data, entityLogicalName, id);
