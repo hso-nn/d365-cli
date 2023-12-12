@@ -14,6 +14,7 @@ export interface SystemFormModel extends Model {
     name?: string;
     objecttypecode?: string;
     formjson?: string;
+    formxml?: string;
 }
 
 export interface FormJson {

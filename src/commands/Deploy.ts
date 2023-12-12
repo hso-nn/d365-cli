@@ -7,6 +7,7 @@ import * as xml2js from 'xml2js';
 import * as shell from 'shelljs';
 import colors from 'colors';
 import {WebresourcesCrmJson} from '../root/Webresources/CrmJson';
+import {SetOnloads} from './SetOnloads';
 
 interface LibraryItem {
     name: string;
@@ -57,6 +58,7 @@ export class Deploy extends MsalRouter {
         const {publisher_prefix, url} = this.settings.crm;
         console.log(`Deploying to ${url}...`);
         await this.deployDirectory(`dist/${publisher_prefix}_`);
+        await SetOnloads.setOnLoads(this.bearer);
         console.log('Deploy finished');
     }
 
