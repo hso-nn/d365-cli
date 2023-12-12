@@ -1,10 +1,6 @@
 import {MsalRouter} from '../routers/MsalRouter';
-import {SolutionService} from '../node/Solution/Solution.service';
 import {SystemFormService} from '../node/SystemForm/SystemForm.service';
-import {SolutionModel} from '../node/Solution/Solution.model';
 import {SystemFormModel} from '../node/SystemForm/SystemForm.model';
-import {WebresourcesCrmJson} from '../root/Webresources/CrmJson';
-import fs from 'fs';
 import {SolutionComponentSummaryService} from '../node/SolutionComponentSummary/SolutionComponentSummary.service';
 import {SolutionComponentSummaryModel} from '../node/SolutionComponentSummary/SolutionComponentSummary.model';
 
@@ -21,15 +17,11 @@ export class SetFormCustomizable extends MsalRouter {
     }
 
     private async setFormCustomizable(): Promise<void> {
-        const settings: WebresourcesCrmJson = JSON.parse(fs.readFileSync('./crm.json', 'utf8'));
-        const {solution_name_deploy} = settings.crm;
-        console.log(`Solution name: ${solution_name_deploy}`);
-        const solution = await SolutionService.getSolution(solution_name_deploy,['solutionid'], this.bearer);
-        console.log(`Solution id: ${solution.solutionid}`);
-        const solutionSystemFormComponents = await this.getSolutionSystemFormComponents(solution);
-        for (const solutionSystemFormComponent of solutionSystemFormComponents) {
-            console.log(`SolutionComponent: ${solutionSystemFormComponent.msdyn_objectid}`);
-            const systemForm = await this.getSystemForm(solutionSystemFormComponent);
+        const formSolutionComponentSummaries = await SolutionComponentSummaryService.retrieveFormSolutionComponentSummaries(this.bearer);
+
+        for (const formSolutionComponentSummary of formSolutionComponentSummaries) {
+            console.log(`SolutionComponent: ${formSolutionComponentSummary.msdyn_objectid}`);
+            const systemForm = await this.getSystemForm(formSolutionComponentSummary);
             await this.setForm(systemForm, this.customizable);
         }
     }
@@ -53,48 +45,6 @@ export class SetFormCustomizable extends MsalRouter {
             console.log(`Unmodified`);
         }
         console.log(`---------------------------`);
-    }
-
-    private async getSolutionEntityComponents(solution: SolutionModel): Promise<SolutionComponentSummaryModel[]> {
-        return SolutionComponentSummaryService.retrieveMultipleRecords({
-            select: ['msdyn_objectid', 'msdyn_name'],
-            filters: [{
-                conditions: [{
-                    attribute: 'msdyn_solutionid',
-                    value: solution.solutionid
-                }, {
-                    attribute: 'msdyn_componenttype',
-                    value: 1
-                }]
-            }]
-        }, this.bearer);
-    }
-
-    private async getSolutionSystemFormComponents(solution: SolutionModel): Promise<SolutionComponentSummaryModel[]> {
-        const entitySummaries = await this.getSolutionEntityComponents(solution);
-        const conditions: Condition[] = [];
-        for (const entitySummary of entitySummaries) {
-            conditions.push({
-                attribute: 'msdyn_primaryentityname',
-                value: entitySummary.msdyn_name
-            });
-        }
-        const filters: Filter[] = [{
-            type: 'or',
-            conditions: conditions
-        },{
-            conditions: [{
-                attribute: 'msdyn_solutionid',
-                value: solution.solutionid
-            }, {
-                attribute: 'msdyn_componenttype',
-                value: 60
-            }]
-        }];
-        return SolutionComponentSummaryService.retrieveMultipleRecords({
-            select: ['msdyn_objectid'],
-            filters: filters,
-        }, this.bearer);
     }
 
     private getSystemForm(solutionComponentSummary: SolutionComponentSummaryModel): Promise<SystemFormModel> {
