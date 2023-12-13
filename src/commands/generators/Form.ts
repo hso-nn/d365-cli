@@ -142,11 +142,19 @@ export class Form {
                 value: msdyn_objectid,
             });
         }
+        // Main https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/reference/systemform?view=dataverse-latest
         return SystemFormService.retrieveMultipleRecords({
             select: ['formid', 'description', 'name', 'objecttypecode', 'formjson'],
             filters: [{
                 type: 'or',
                 conditions: conditions
+            }, {
+                type: 'and',
+                conditions: [{
+                    attribute: 'type',
+                    operator: 'ne',
+                    value: 6 // Quick View Form 2 // Main
+                }]
             }]
         }, this.bearer);
     }
