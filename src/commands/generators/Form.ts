@@ -91,7 +91,7 @@ export class Form {
         if (!buildJson.forms.find((form: {name: string}) => form.name === formName)) {
             buildJson.forms.push({
                 name: formName,
-                build: true
+                build: false
             });
             shell.ShellString(JSON.stringify(buildJson, null, 2)).to(filepath);
             // shell.exec(`git add ${filepath}`);
