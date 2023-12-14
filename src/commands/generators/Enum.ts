@@ -51,10 +51,17 @@ export class Enum {
                 }]
             }]
         }, this.bearer);
+
+        const usedNames: string[] = [];
         for (const savedQuery of savedQueries) {
             if (savedQuery && savedQuery.returnedtypecode === this.entityLogicalName) {
                 const {name, savedqueryid} = savedQuery;
-                savedQueriesString += `    ${Enum.capitalize(name.replace(/\W/g, ''))}: {\n`;
+                let wordCharsOnlyName = name.replace(/\W/g, '');
+                if (usedNames.includes(wordCharsOnlyName)) {
+                    wordCharsOnlyName += savedqueryid.replace(/\W/g, '');
+                }
+                usedNames.push(wordCharsOnlyName);
+                savedQueriesString += `    ${Enum.capitalize(wordCharsOnlyName)}: {\n`;
                 savedQueriesString += `        name: \`${name}\`,\n`;
                 savedQueriesString += `        savedqueryid: '${savedqueryid}',\n`;
                 savedQueriesString += `    },\n`;
