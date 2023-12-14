@@ -126,7 +126,8 @@ export class ControlFormContext {
                         ControlFormContext.capitalize(attributeMetadata?.SchemaName || id) : ControlFormContext.capitalize(id);
                     if (!ControlFormContext.usedControlNames.includes(pascalSchemaName)) {
                         ControlFormContext.usedControlNames.push(pascalSchemaName);
-                        const methodName = `    static get${pascalSchemaName}Control(formContext: Xrm.FormContext): ${xrmControlType} {`;
+                        const wordCharsOnly = pascalSchemaName.replace(/\W/g, '');
+                        const methodName = `    static get${wordCharsOnly}Control(formContext: Xrm.FormContext): ${xrmControlType} {`;
                         const returnString = `return formContext.getControl('${id}');`;
                         cellControlsString += `${methodName}\n        ${returnString}\n    }\n`;
                     } else {
