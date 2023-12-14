@@ -271,7 +271,7 @@ export class Model {
                     optionSet = await NodeApi.getMultiSelectPicklistAttributeMetadata(this.entityLogicalName, logicalName, this.bearer);
                 }
                 const types = optionSet.Options.map(option => option.Value).join(' | ');
-                typeStrings += `type ${this.entityName}_${schemaName}Values = ${types};\n`;
+                typeStrings += `type ${this.entityName}_${schemaName}Values = ${types || 'unknown'};\n`;
             }
         }
         typeStrings += '\n';
