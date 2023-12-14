@@ -7,4 +7,6 @@ export interface SolutionComponentSummaryModel extends Model {
     msdyn_componenttype?: string;
     msdyn_solutionid?: string;
     msdyn_primaryentityname?: string;
+    msdyn_schemaname?: string;
+    msdyn_displayname?: string;
 }

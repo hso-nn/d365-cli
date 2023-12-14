@@ -1,7 +1,7 @@
 import {EntityForm} from './Entity.form';
 
 export const Form = {
-    //In D365 Form '<%= fullformname %>' specify Form onLoad function: <%= publisher %>.<%= namespace %>.<%= entity %>.<%= formname %>.Form.onLoad
+    //On deploy the CLI will add in D365 Form '<%= fullformname %>' the form onLoad function: <%= publisher %>.<%= namespace %>.<%= entity %>.<%= formname %>.Form.onLoad
     onLoad: async (executionContext: Xrm.Events.EventContext): Promise<void> => {
         return EntityForm.onLoad(executionContext);
     }

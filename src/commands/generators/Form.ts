@@ -58,9 +58,9 @@ export class Form {
         shell.sed('-i', new RegExp('Entity', 'g'), formName, filepath);
         shell.sed('-i', new RegExp('<%= publisher %>', 'ig'), publisher_prefix, filepath);
         shell.sed('-i', new RegExp('<%= namespace %>', 'ig'), namespace, filepath);
-        shell.sed('-i', new RegExp('<%= formname %>', 'ig'), systemForm.name, filepath);
-        shell.sed('-i', new RegExp('<%= fullformname %>', 'ig'), systemForm.name, filepath);
+        // shell.sed('-i', new RegExp('<%= formname %>', 'ig'), systemForm.name, filepath);
         shell.sed('-i', new RegExp('<%= formname %>', 'ig'), formName, filepath);
+        shell.sed('-i', new RegExp('<%= fullformname %>', 'ig'), systemForm.name, filepath);
         shell.sed('-i', new RegExp('<%= entity %>', 'ig'), this.entityName, filepath);
         // shell.exec(`git add ${filepath}`);
         if (shell.test('-e', '../.git')) {
@@ -91,7 +91,7 @@ export class Form {
         if (!buildJson.forms.find((form: {name: string}) => form.name === formName)) {
             buildJson.forms.push({
                 name: formName,
-                build: true
+                build: false
             });
             shell.ShellString(JSON.stringify(buildJson, null, 2)).to(filepath);
             // shell.exec(`git add ${filepath}`);
@@ -142,11 +142,19 @@ export class Form {
                 value: msdyn_objectid,
             });
         }
+        // Main https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/reference/systemform?view=dataverse-latest
         return SystemFormService.retrieveMultipleRecords({
             select: ['formid', 'description', 'name', 'objecttypecode', 'formjson'],
             filters: [{
                 type: 'or',
                 conditions: conditions
+            }, {
+                type: 'and',
+                conditions: [{
+                    attribute: 'type',
+                    operator: 'ne',
+                    value: 6 // Quick View Form 2 // Main
+                }]
             }]
         }, this.bearer);
     }

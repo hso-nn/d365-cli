@@ -1,6 +1,6 @@
 import colors from 'colors';
 import * as shell from 'shelljs';
-import * as inquirer from 'inquirer';
+import inquirer from 'inquirer';
 import * as fs from 'fs';
 import {PCF} from './PCF';
 
@@ -114,7 +114,7 @@ export class Create {
             type: 'input',
             name: 'environment',
             message: 'D365 environment url (eg. https://yourproject.crm4.dynamics.com):',
-            validate: async (input) => {
+            validate: async (input: string): Promise<boolean> => {
                 if (!input) {
                     throw new Error('You need to provide an environment');
                 }
@@ -128,7 +128,7 @@ export class Create {
             type: 'input',
             name: 'solution_deploy',
             message: `D365 deployment Solution ('Name' column):`,
-            validate: async (input) => {
+            validate: async (input: string) => {
                 if (!input) {
                     throw new Error('You need to provide a solution');
                 }
@@ -142,7 +142,7 @@ export class Create {
             type: 'input',
             name: 'solution_generate',
             message: `D365 generate Solution ('Name' column)\nIf equal to deployment Solution keep blank:`,
-            validate: async (input) => {
+            validate: async (input: string) => {
                 if (input) {
                     const solutionNameRegExp = new RegExp('[a-zA-Z_\\d]*');
                     if (!solutionNameRegExp.test(input)) {
@@ -155,7 +155,7 @@ export class Create {
             type: 'input',
             name: 'solution_pcf',
             message: `D365 PCF Solution ('Name' column)\nIf equal to deployment Solution keep blank:`,
-            validate: async (input) => {
+            validate: async (input: string) => {
                 if (input) {
                     const solutionNameRegExp = new RegExp('[a-zA-Z_\\d]*');
                     if (!solutionNameRegExp.test(input)) {
@@ -168,7 +168,7 @@ export class Create {
             type: 'input',
             name: 'publisher_name',
             message: 'D365 Publisher Name (not Display Name):',
-            validate: async (input) => {
+            validate: async (input: string) => {
                 if (!input) {
                     throw new Error('You need to provide a publisher name');
                 }
@@ -182,7 +182,7 @@ export class Create {
             type: 'input',
             name: 'publisher_prefix',
             message: 'D365 Publisher Prefix (3 chars a-z):',
-            validate: async (input) => {
+            validate: async (input: string) => {
                 if (!input) {
                     throw new Error('You need to provide a publisher');
                 }
@@ -196,7 +196,7 @@ export class Create {
             type: 'input',
             name: 'namespace',
             message: 'Customer or Product name:',
-            validate: async (input) => {
+            validate: async (input: string) => {
                 if (!input) {
                     throw new Error('You need to provide a customer or product name');
                 }

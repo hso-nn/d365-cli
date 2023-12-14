@@ -1,7 +1,7 @@
 import * as shell from 'shelljs';
 import * as fs from 'fs';
 import {NodeApi} from '../../node/NodeApi/NodeApi';
-import * as inquirer from 'inquirer';
+import inquirer from 'inquirer';
 import colors from 'colors';
 import cp from 'child_process';
 
@@ -271,7 +271,7 @@ export class Model {
                     optionSet = await NodeApi.getMultiSelectPicklistAttributeMetadata(this.entityLogicalName, logicalName, this.bearer);
                 }
                 const types = optionSet.Options.map(option => option.Value).join(' | ');
-                typeStrings += `type ${this.entityName}_${schemaName}Values = ${types};\n`;
+                typeStrings += `type ${this.entityName}_${schemaName}Values = ${types || 'never'};\n`;
             }
         }
         typeStrings += '\n';

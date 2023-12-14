@@ -65,7 +65,7 @@ export class AttributeFormContext {
         } else if (['DateTime'].includes(attributeType)) {
             return 'Xrm.Attributes.DateAttribute';
         } else if (['Boolean'].includes(attributeType)) {
-            return 'Xrm.Attributes.BooleanAttribute | Xrm.Attributes.EnumAttribute<number>';
+            return 'Xrm.Attributes.BooleanAttribute';
         } else if (['Picklist', 'Status', 'State'].includes(attributeType)) {
             const typeName = `${this.entityName}_${schemaName}Values`;
             return `Xrm.Attributes.OptionSetAttribute<${typeName}>`;

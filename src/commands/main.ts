@@ -1,5 +1,5 @@
 import shell from 'shelljs';
-import program from 'commander';
+import {Command} from 'commander';
 import {Create} from './Create';
 import {Update} from './Update';
 import {Generator} from './generators/Generator';
@@ -12,6 +12,9 @@ import {PCF} from './PCF';
 import {CrmJson} from '../root/CrmJson';
 import fs from 'fs';
 import colors from 'colors';
+import {SetOnloads} from './SetOnloads';
+
+const program = new Command();
 
 const checkVersion = (): boolean => {
     if (shell.test('-e', 'src')) {
@@ -187,6 +190,16 @@ program
     })
     .on('--help', () => {
         console.log(`Sets the Solution forms iscustomizable/canbedeleted true/false`);
+    });
+
+program
+    .command('setOnloads')
+    .description('Set the Onload events for the forms')
+    .action(() => {
+        new SetOnloads();
+    })
+    .on('--help', () => {
+        console.log(`Set the Onload events for the forms`);
     });
 
 program
