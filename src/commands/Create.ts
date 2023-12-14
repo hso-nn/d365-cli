@@ -2,7 +2,6 @@ import colors from 'colors';
 import * as shell from 'shelljs';
 import inquirer from 'inquirer';
 import * as fs from 'fs';
-import {PCF} from './PCF';
 
 interface CreateOptions {
     environment?: string;
@@ -10,8 +9,6 @@ interface CreateOptions {
     publisher_prefix?: string;
     solution_deploy?: string;
     solution_generate?: string;
-    solution_pcf?: string;
-
     namespace?: string;
 }
 
@@ -47,16 +44,6 @@ export class Create {
 
         shell.cp('-R', `${__dirname}/root/crm.json`, '.');
         Create.setupWebresources(name, createOptions);
-        Create.setupPCF(name, createOptions);
-    }
-
-    private static setupPCF(name: string, options: CreateOptions): void {
-        shell.mkdir('PCF');
-        shell.cd('PCF');
-        const {publisher_name, publisher_prefix, solution_pcf} = options;
-        PCF.initPcfSolution(solution_pcf, publisher_name, publisher_prefix);
-        shell.cd('..');
-        console.log(colors.green(`Please fill ${name}/PCF/Solutions/src/Other/Solution.xml`));
     }
 
     private static setupWebresources(name: string, options: CreateOptions): void {
@@ -142,19 +129,6 @@ export class Create {
             type: 'input',
             name: 'solution_generate',
             message: `D365 generate Solution ('Name' column)\nIf equal to deployment Solution keep blank:`,
-            validate: async (input: string) => {
-                if (input) {
-                    const solutionNameRegExp = new RegExp('[a-zA-Z_\\d]*');
-                    if (!solutionNameRegExp.test(input)) {
-                        throw new Error('You need to provide a valid solution name');
-                    }
-                }
-                return true;
-            }
-        }, {
-            type: 'input',
-            name: 'solution_pcf',
-            message: `D365 PCF Solution ('Name' column)\nIf equal to deployment Solution keep blank:`,
             validate: async (input: string) => {
                 if (input) {
                     const solutionNameRegExp = new RegExp('[a-zA-Z_\\d]*');

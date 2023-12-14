@@ -23,7 +23,6 @@ export class Update {
         console.log(`Updating D365 Project...`);
         Update.updateSrcFolder();
         Update.updateCrmJson();
-        Update.updatePCF();
         Update.updateProjectRootFolder();
         Update.updateEntityFiles();
         Update.updateFormFiles();
@@ -128,21 +127,6 @@ export class Update {
                 }
             }
         });
-    }
-
-    private static updatePCF(): void {
-        if (!shell.test('-e', '../PCF')) {
-            shell.cd('..');
-            const crmSettings: CrmJson = JSON.parse(fs.readFileSync('./crm.json', 'utf8'));
-            shell.mkdir('PCF');
-            shell.cd('PCF');
-            shell.mkdir('Solutions');
-            shell.cd('Solutions');
-            shell.exec(`pac solution init --publisher-name ${crmSettings.crm.publisher_prefix} --publisher-prefix ${crmSettings.crm.publisher_prefix}`);
-            shell.cd('..');
-            shell.cd('..');
-            shell.cd('Webresources');
-        }
     }
 
     // eslint-disable-next-line max-lines-per-function
