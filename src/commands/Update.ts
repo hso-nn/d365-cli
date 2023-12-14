@@ -63,12 +63,13 @@ export class Update {
         }
         // shell.exec('git add postcss.config.js');
 
-        console.log(`Updating karma.conf.js`);
-        shell.cp('-R', `${__dirname}/root/Webresources/karma.conf.js`, '.');
+        console.log(`Remove karma.conf.js`);
         if (shell.test('-e', '../.git')) {
-            cp.execFileSync('git', ['add', 'karma.conf.js']);
+            cp.execFileSync('git', ['rm', 'karma.conf.js']);
+            // shell.exec('git rm karma.conf.js');
+        } else {
+            shell.rm('karma.conf.js');
         }
-        // shell.exec('git add karma.conf.js');
 
         console.log(`Updating tsconfig.json`);
         shell.cp('-R', `${__dirname}/root/Webresources/tsconfig.json`, '.');
@@ -171,7 +172,11 @@ export class Update {
         shell.cp('-R', `${__dirname}/root/Webresources/src/util`, './src');
         if (shell.test('-e', '../.git')) {
             cp.execFileSync('git', ['add', 'src/util']);
+            cp.execFileSync('git', ['rm', 'src/util/FormUtil.spec.ts']);
+        } else {
+            shell.rm('src/util/FormUtil.spec.ts');
         }
+
         // shell.exec('git add src/util');
 
         console.log(`Updating WebApi...`);

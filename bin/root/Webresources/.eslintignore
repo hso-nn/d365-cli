@@ -1,5 +1,4 @@
 webpack.config.ts
-karma.conf.js
 test-main.js
 postcss.config.js
 msbuild-formatter.js
