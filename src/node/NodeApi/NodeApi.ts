@@ -29,7 +29,7 @@ interface Option {
     }
 }
 
-interface OptionSet {
+export interface OptionSet {
     Name: string;
     IsGlobal: boolean;
     FalseOption?: Option;

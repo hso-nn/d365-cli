@@ -1,6 +1,6 @@
 import * as shell from 'shelljs';
 import * as fs from 'fs';
-import {NodeApi} from '../../node/NodeApi/NodeApi';
+import {NodeApi, OptionSet} from '../../node/NodeApi/NodeApi';
 import {SavedQueryService} from '../../node/SavedQuery/SavedQuery.service';
 import cp from 'child_process';
 
@@ -92,23 +92,19 @@ export class Enum {
         let enumStrings = '';
         const attributesMetadata = await NodeApi.getAttributesMetadata(this.entityLogicalName, this.bearer);
         for (const attribute of attributesMetadata) {
-            const {AttributeType: attributeType, LogicalName: logicalName, SchemaName: schemaName, AttributeTypeName: attributeTypeName} = attribute;
+            const {AttributeType: attributeType, SchemaName: schemaName, AttributeTypeName: attributeTypeName} = attribute;
             if (['Picklist', 'State', 'Status'].includes(attributeType) || attributeTypeName.Value === 'MultiSelectPicklistType') {
-                let optionSet;
-                if (attributeType === 'Picklist') {
-                    optionSet = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
-                } else if (attributeType === 'State') {
-                    optionSet = await NodeApi.getStateOptionSet(this.entityLogicalName, this.bearer);
-                } else if (attributeType === 'Status') {
-                    optionSet = await NodeApi.getStatusOptionSet(this.entityLogicalName, this.bearer);
-                } else {
-                    optionSet = await NodeApi.getMultiSelectPicklistAttributeMetadata(this.entityLogicalName, logicalName, this.bearer);
-                }
+                const optionSet = await this.getOptionSet(attribute);
                 if (!optionSet.IsGlobal) {
                     const pascalSchemaName = Enum.capitalize(schemaName);
                     enumStrings += `export enum ${pascalSchemaName} {\n`;
+                    const usedLabels: string[] = [];
                     for (const option of optionSet.Options) {
                         let label = option.Label.UserLocalizedLabel.Label.replace(/\W/g, '');
+                        if (usedLabels.includes(label)) {
+                            label += option.Value;
+                        }
+                        usedLabels.push(label);
                         if (!label.charAt(0).match(/^[a-zA-Z]/)) {
                             label = `'${label}'`;
                         }
@@ -122,6 +118,21 @@ export class Enum {
             enumStrings += '\n';
         }
         return enumStrings;
+    }
+
+    private async getOptionSet(attribute: AttributeMetadata): Promise<OptionSet> {
+        const {AttributeType: attributeType, LogicalName: logicalName} = attribute;
+        let optionSet: OptionSet;
+        if (attributeType === 'Picklist') {
+            optionSet = await NodeApi.getPicklistOptionSet(this.entityLogicalName, logicalName, this.bearer);
+        } else if (attributeType === 'State') {
+            optionSet = await NodeApi.getStateOptionSet(this.entityLogicalName, this.bearer);
+        } else if (attributeType === 'Status') {
+            optionSet = await NodeApi.getStatusOptionSet(this.entityLogicalName, this.bearer);
+        } else {
+            optionSet = await NodeApi.getMultiSelectPicklistAttributeMetadata(this.entityLogicalName, logicalName, this.bearer);
+        }
+        return optionSet;
     }
 
     private static capitalize(text: string): string {
