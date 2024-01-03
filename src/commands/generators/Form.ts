@@ -106,7 +106,7 @@ export class Form {
     private async getSystemForms(): Promise<SystemFormModel[]> {
         const settings: WebresourcesCrmJson = JSON.parse(fs.readFileSync('./crm.json', 'utf8'));
         const {solution_name_generate, only_solution_forms} = settings.crm;
-        const filters: Filter[] = [{
+        const solutionComponentFilters: Filter[] = [{
             type: 'or',
             conditions: [{
                 attribute: 'msdyn_componenttype',
@@ -123,7 +123,7 @@ export class Form {
         }];
         if (only_solution_forms) {
             const solution = await SolutionService.getSolution(solution_name_generate, ['solutionid'], this.bearer);
-            filters.push({
+            solutionComponentFilters.push({
                 conditions: [{
                     attribute: 'msdyn_solutionid',
                     value: solution.solutionid
@@ -132,30 +132,33 @@ export class Form {
         }
         const solutionComponentSummaries = await SolutionComponentSummaryService.retrieveMultipleRecords({
             select: ['msdyn_objectid'],
-            filters: filters,
+            filters: solutionComponentFilters,
         }, this.bearer);
-        const conditions: Condition[] = [];
+        const formIdConditions: Condition[] = [];
         for (const solutionComponentSummary of solutionComponentSummaries) {
             const msdyn_objectid = solutionComponentSummary.msdyn_objectid;
-            conditions.push({
+            formIdConditions.push({
                 attribute: 'formid',
                 value: msdyn_objectid,
             });
         }
-        // Main https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/reference/systemform?view=dataverse-latest
-        return SystemFormService.retrieveMultipleRecords({
-            select: ['formid', 'description', 'name', 'objecttypecode', 'formjson'],
-            filters: [{
-                type: 'or',
-                conditions: conditions
-            }, {
-                type: 'and',
-                conditions: [{
-                    attribute: 'type',
-                    operator: 'ne',
-                    value: 6 // Quick View Form 2 // Main
-                }]
-            }]
-        }, this.bearer);
+        if (formIdConditions.length > 0) {
+            // Main https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/reference/systemform?view=dataverse-latest
+            return SystemFormService.retrieveMultipleRecords({
+                select: ['formid', 'description', 'name', 'objecttypecode', 'formjson'],
+                filters: [{
+                    type: 'or',
+                    conditions: formIdConditions
+                }, {
+                    type: 'and',
+                    conditions: [{
+                        attribute: 'type',
+                        operator: 'ne',
+                        value: 6 // Quick View Form 2 // Main
+                    }]
+                }],
+            }, this.bearer);
+        }
+        return [];
     }
 }
