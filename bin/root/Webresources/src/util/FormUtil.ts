@@ -18,6 +18,33 @@ export class FormUtil {
         }
     }
 
+    static async addCustomViewFilterAndLink(lookupControl: Xrm.Controls.LookupControl, filterXML: string, linkXML: string): Promise<void> {
+        const viewId = lookupControl.getDefaultView();
+        const parser = new DOMParser();
+        const defaultView = await Xrm.WebApi.retrieveRecord('savedquery', viewId);
+        const xmlDoc: Document = parser.parseFromString(defaultView.fetchxml, 'text/xml');
+
+        //replace filter
+        if (filterXML.length > 0) {
+            if (xmlDoc.getElementsByTagName('filter').length === 0) {
+                xmlDoc.getElementsByTagName('entity')[0].appendChild(parser.parseFromString(filterXML, 'text/xml').firstChild);
+            } else {
+                xmlDoc.getElementsByTagName('filter')[0].replaceWith(parser.parseFromString(filterXML, 'text/xml').firstChild);
+            }
+        }
+        //replace link-entity
+        if (linkXML.length > 0) {
+            if (xmlDoc.getElementsByTagName('link-entity').length === 0) {
+                xmlDoc.getElementsByTagName('entity')[0].appendChild(parser.parseFromString(linkXML, 'text/xml').firstChild);
+            } else {
+                xmlDoc.getElementsByTagName('link-entity')[0].replaceWith(parser.parseFromString(linkXML, 'text/xml').firstChild);
+            }
+        }
+
+        const firstChild = xmlDoc.firstChild as Element;
+        lookupControl.addCustomView(viewId, defaultView.returnedtypecode, defaultView.name, firstChild.outerHTML, defaultView.layoutxml, true);
+    }
+
     static setDisabled(executionContext: Xrm.Events.EventContext, disabled: boolean, attributeNames: string[]): void {
         const formContext = executionContext.getFormContext();
         attributeNames.forEach((fieldname: string) => {
@@ -38,7 +65,7 @@ export class FormUtil {
         });
     }
 
-    static setValue(executionContext: Xrm.Events.EventContext, value: any, attributeNames: string[]): void {
+    static setValue(executionContext: Xrm.Events.EventContext, value: unknown, attributeNames: string[]): void {
         const formContext = executionContext.getFormContext();
         attributeNames.forEach((fieldname: string) => {
             const attribute: Xrm.Attributes.Attribute = formContext.getAttribute(fieldname);
