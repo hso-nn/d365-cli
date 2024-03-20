@@ -13,8 +13,8 @@ export class EntityRouter extends MsalRouter {
             console.log(colors.red('Entity name missing'));
         } else if(!new RegExp('[A-Z]').test(entityName[0])) {
             console.log(colors.red(`Entity name must be UpperCamelCase!`));
-        } else if (!options.skipForms && process.argv[5] || process.argv[6]) {
-            console.log(colors.red(`No spaces allowed!`));
+        // } else if (!options.skipForms && process.argv[5] || process.argv[6]) {
+        //     console.log(colors.red(`No spaces allowed!`));
         } else {
             new EntityRouter(entityName, options);
         }

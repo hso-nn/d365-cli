@@ -8,7 +8,6 @@ import {Resx} from './Resx';
 import {SetFormCustomizable} from './SetFormCustomizable';
 import packageJson from '../../package.json';
 import {RegeneratorRouter} from '../routers/RegerenatorRouter';
-import {PCF} from './PCF';
 import {CrmJson} from '../root/CrmJson';
 import fs from 'fs';
 import colors from 'colors';
@@ -70,17 +69,12 @@ program
     .option('--environment', 'Environment')
     .option('--solution_deploy', 'Deploy Solution')
     .option('--solution_generate', 'Generate Solution')
-    .option('--solution_pcf', 'PCF Solution')
     .option('--publisher_name', 'Publisher name')
     .option('--publisher_prefix', 'Publisher prefix')
     .option('--namespace', 'Namespace')
-    .description('Creates a new workspace and an initial Webresource and PCF setup or creates a new PCF component')
+    .description('Creates a new workspace and an initial Webresource')
     .action((name: string, options) => {
-        if (shell.test('-e', '../pcf')) {
-            PCF.createComponent(name);
-        } else {
-            Create.createProject(name, options);
-        }
+        Create.createProject(name, options);
     })
     .on('--help', () => {
         Create.showCreateHelp();
@@ -144,11 +138,7 @@ program
     .alias('b')
     .description('Compiles project into an output directory named dist')
     .action(() => {
-        if (shell.test('-f', 'Solutions.cdsproj')) {
-            PCF.build();
-        } else {
-            shell.exec('npm run build:prod');
-        }
+        shell.exec('npm run build:prod');
     })
     .on('--help', () => {
         console.log(`The command can be used to build the project to be distributed to the D365 environment using the 'deploy' command`);
@@ -159,11 +149,7 @@ program
     .option('-f, --force', 'Force unmodified files as well')
     .description('Invokes the deploy builder')
     .action(({force}) => {
-        if (shell.test('-f', 'Solutions.cdsproj') || shell.test('-f', 'pcfconfig.json')) {
-            PCF.deploy();
-        } else {
-            Deploy.deployProject(force);
-        }
+        Deploy.deployProject(force);
     }).on('--help', () => {
         console.log(`Distributes the project to the D365 environment. You need to run the 'build' command first`);
     });
@@ -209,17 +195,10 @@ program
     .action(async () => {
         const path = process.cwd();
         const settings: CrmJson = JSON.parse(fs.readFileSync('../crm.json', 'utf8'));
-        if (shell.test('-e', 'Solutions')) {
-            const regexPCF = `REGEX:(?insx).+\\/cc_${settings.crm.publisher_prefix}.(?'foldername'[^?]*)\\/(?'fname'[^?]*.js)`;
-            const locationPCF = `${path}\\\${foldername}\\out\\controls\\\${foldername}\\\${fname}`;
-            console.log(`Please add to first Rule Editor line (including REGEX:): \n${regexPCF}`);
-            console.log(`Please add to second Rule Editor line: \n${locationPCF}`);
-        } else {
-            const regexWR = `REGEX:(?insx).+\\/${settings.crm.publisher_prefix}_\\/${settings.crm.namespace}\\/(?'foldername'[^?]*)\\/(?'fname'[^?]*.js)`;
-            const locationWR = `${path}\\dist\\${settings.crm.publisher_prefix}_\\${settings.crm.namespace}\\\${foldername}\\\${fname}`;
-            console.log(`Please add to first Rule Editor line (including REGEX:): \n${regexWR}`);
-            console.log(`Please add to second Rule Editor line: \n${locationWR}`);
-        }
+        const regexWR = `REGEX:(?insx).+\\/${settings.crm.publisher_prefix}_\\/${settings.crm.namespace}\\/(?'foldername'[^?]*)\\/(?'fname'[^?]*.js)`;
+        const locationWR = `${path}\\dist\\${settings.crm.publisher_prefix}_\\${settings.crm.namespace}\\\${foldername}\\\${fname}`;
+        console.log(`Please add to first Rule Editor line (including REGEX:): \n${regexWR}`);
+        console.log(`Please add to second Rule Editor line: \n${locationWR}`);
     });
 
 program

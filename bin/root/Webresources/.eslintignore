@@ -1,5 +1,4 @@
 webpack.config.ts
-test-main.js
 postcss.config.js
 msbuild-formatter.js
 dist
