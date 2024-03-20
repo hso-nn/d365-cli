@@ -59,7 +59,7 @@ export class AttributeFormContext {
     // https://docs.microsoft.com/en-us/dotnet/api/microsoft.xrm.sdk.metadata.attributemetadata?view=dynamics-general-ce-9
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public async getXrmAttributeType(attribute: AttributeMetadata): Promise<string> {
-        const {AttributeType: attributeType, SchemaName: schemaName} = attribute;
+        const {AttributeType: attributeType, AttributeTypeName: attributeTypeName, SchemaName: schemaName} = attribute;
         if (['String', 'Memo', 'Uniqueidentifier'].includes(attributeType)) {
             return 'Xrm.Attributes.StringAttribute';
         } else if (['DateTime'].includes(attributeType)) {
@@ -71,6 +71,8 @@ export class AttributeFormContext {
             return `Xrm.Attributes.OptionSetAttribute<${typeName}>`;
         } else if (['Integer', 'Double', 'BigInt', 'Decimal', 'Double', 'Money'].includes(attributeType)) {
             return 'Xrm.Attributes.NumberAttribute';
+        } else if (attributeTypeName.Value === 'MultiSelectPicklistType') {
+            return 'Xrm.Attributes.MultiSelectOptionSetAttribute';
         } else if (['Lookup', 'Customer', 'Owner'].includes(attributeType)) {
             return 'Xrm.Attributes.LookupAttribute';
         } else {

@@ -146,7 +146,9 @@ export class ControlFormContext {
                 return 'Xrm.Controls.StringControl';
             } else if (['DateTime'].includes(attributeType)) {
                 return 'Xrm.Controls.DateControl';
-            } else if (['Boolean', 'Picklist'].includes(attributeType) || attributeTypeName.Value === 'MultiSelectPicklistType') {
+            } else if (attributeTypeName.Value === 'MultiSelectPicklistType') {
+                return 'Xrm.Controls.MultiSelectOptionSetControl';
+            } else if (['Boolean', 'Picklist'].includes(attributeType)) {
                 return 'Xrm.Controls.OptionSetControl';
             } else if (['Lookup'].includes(attributeType)) {
                 return `Xrm.Controls.LookupControl`;
