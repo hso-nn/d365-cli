@@ -14,9 +14,7 @@ interface CreateOptions {
 
 export class Create {
     public static createProject(name: string, options: CreateOptions): Promise<void> {
-        if (process.argv[4]) {
-            console.log(colors.red(`No spaces allowed!`));
-        } else if (shell.test('-e', `${name}/Webresources`)) {
+        if (shell.test('-e', `${name}/Webresources`)) {
             console.log(colors.red(`Project ${name}/Webresources already exist!`));
         } else {
             return Create.create(name, options);
