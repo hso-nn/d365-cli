@@ -5,7 +5,7 @@ import * as xml2js from 'xml2js';
 interface XmlItem {
     $: {
         name: string;
-        'xml-space': string;
+        'xml:space': string;
     };
     value: string[];
 }
@@ -88,7 +88,7 @@ export class Resx {
                 xmlDoc.root.data.push({
                     $: {
                         name: codeKey,
-                        'xml-space': 'preserve'
+                        'xml:space': 'preserve'
                     },
                     value: [codeKey]
                 });
